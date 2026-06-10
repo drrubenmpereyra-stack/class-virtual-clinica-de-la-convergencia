@@ -351,9 +351,11 @@ window.mostrarParticipantes = async () => {
     main.prepend(btnCarga);
 
     const snapshot = await db.collection("participantes").get();
+    
+    // CORRECCIÓN: He agregado los TH faltantes (Título y DNI)
     let html = `<table class="tabla-clinica">
         <thead>
-            <tr><th>Foto</th><th>Nombre</th><th>DNI</th><th>Profesión</th><th>Legajo</th><th>Teléfono</th><th>Acciones</th></tr>
+            <tr><th>Foto</th><th>Nombre</th><th>DNI</th><th>Profesión</th><th>Legajo</th><th>Teléfono</th><th>Título</th><th>DNI</th><th>Acciones</th></tr>
         </thead>
         <tbody>`;
     
@@ -366,6 +368,8 @@ window.mostrarParticipantes = async () => {
             <td>${p.profesion}</td>
             <td>${p.legajo}</td>
             <td>${p.telefono}</td>
+            <td>${p.titulo ? `<a href="${p.titulo}" target="_blank" style="color:var(--cyan); font-size: 20px; text-decoration:none;">●</a>` : `<span style="color:#ccc; font-size: 20px;">○</span>`}</td>
+            <td>${p.dniImg ? `<a href="${p.dniImg}" target="_blank" style="color:var(--cyan); font-size: 20px; text-decoration:none;">●</a>` : `<span style="color:#ccc; font-size: 20px;">○</span>`}</td>
             <td>
                 <button onclick="renderFormularioParticipante('${doc.id}')" class="btn-green">Editar</button>
                 <button onclick="eliminarParticipante('${doc.id}')" class="btn-red">Eliminar</button>
@@ -389,6 +393,8 @@ window.renderFormularioParticipante = async (id = null) => {
             <input id="inLegajo" value="${p.legajo}" placeholder="Código/Legajo (Pass)">
             <input id="inTel" value="${p.telefono}" placeholder="Teléfono">
             <input id="inImg" value="${p.imagen}" placeholder="Link de foto (Drive)">
+            <input id="inTitulo" value="${p.titulo || ''}" placeholder="Link Drive: Título">
+            <input id="inDniImg" value="${p.dniImg || ''}" placeholder="Link Drive: DNI (Anverso/Reverso)">
             <button onclick="guardarParticipante('${id || ''}')" class="btn-gold">Guardar Datos</button>
             <button onclick="mostrarParticipantes()" class="btn-red">Cancelar</button>
         </div>
@@ -402,7 +408,9 @@ window.guardarParticipante = async (id) => {
         profesion: document.getElementById('inProf').value,
         legajo: document.getElementById('inLegajo').value,
         telefono: document.getElementById('inTel').value,
-        imagen: document.getElementById('inImg').value
+        imagen: document.getElementById('inImg').value, 
+        titulo: document.getElementById('inTitulo').value,
+        dniImg: document.getElementById('inDniImg').value
     };
     if (id) await db.collection("participantes").doc(id).update(data);
     else await db.collection("participantes").add(data);
@@ -418,5 +426,6 @@ window.eliminarParticipante = async (id) => {
 };
 // --- ARRANQUE ---
 document.body.onload = renderLogin;
+
 
 
