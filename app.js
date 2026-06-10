@@ -97,6 +97,10 @@ function mostrarDashboard() {
 if (b === "Participantes") {
     btn.onclick = () => mostrarParticipantes();
 }
+// PARA PAGOS (Solo vista admin)
+if (b === "Pagos") {
+    btn.onclick = () => mostrarDashboardPagos();
+}
 
     navMenu.appendChild(btn);
 });
@@ -423,6 +427,71 @@ window.eliminarParticipante = async (id) => {
         await db.collection("participantes").doc(id).delete();
         mostrarParticipantes();
     }
+};
+window.mostrarDashboardPagos = async () => {
+    const main = document.getElementById('main-view');
+    main.innerHTML = `<h2>Dashboard Financiero</h2><div id="stats-container">Cargando datos...</div>`;
+
+    const snapshot = await db.collection("pagos").get();
+    let pagado = 0, pendiente = 0;
+
+    snapshot.forEach(doc => {
+        const p = doc.data();
+        const monto = parseFloat(p.monto) || 0;
+        if (p.estado === 'Pagado') pagado += monto;
+        else if (p.estado === 'Pendiente') pendiente += monto;
+    });
+
+    const total = pagado + pendiente;
+    const porcentaje = total > 0 ? (pagado / total) * 100 : 0;
+
+    document.getElementById('stats-container').innerHTML = `
+        <div class="card">
+            <h3>Resumen: ${porcentaje.toFixed(1)}% Cobrado</h3>
+            <progress value="${pagado}" max="${total}" style="width:100%; height:30px;"></progress>
+            <p><strong>Pagado:</strong> $${pagado.toLocaleString()} | <strong>Pendiente:</strong> $${pendiente.toLocaleString()}</p>
+            <button onclick="renderFormularioPago()" class="btn-gold">+ Registrar Pago</button>
+            <button onclick="mostrarListaPagos()" class="btn-green">Ver Lista Completa</button>
+        </div>`;
+};
+window.renderFormularioPago = () => {
+    document.getElementById('main-view').innerHTML = `
+        <div class="card">
+            <h2>Registrar Nuevo Pago</h2>
+            <input id="inNombreEstudiante" placeholder="Nombre del Estudiante">
+            <select id="inEncuentro">${[...Array(10)].map((_, i) => `<option value="${i+1}">Encuentro ${i+1}</option>`).join('')}</select>
+            <input id="inMonto" type="number" placeholder="Monto ($)">
+            <select id="inEstado"><option value="Pagado">Pagado</option><option value="Pendiente">Pendiente</option><option value="Becado">Becado</option></select>
+            <select id="inMedio"><option value="Efectivo">Efectivo</option><option value="Transferencia">Transferencia</option></select>
+            <button onclick="guardarPago()" class="btn-gold">Guardar Pago</button>
+            <button onclick="mostrarDashboardPagos()" class="btn-red">Cancelar</button>
+        </div>`;
+};
+window.guardarPago = async () => {
+    const data = {
+        nombreEstudiante: document.getElementById('inNombreEstudiante').value,
+        encuentro: document.getElementById('inEncuentro').value,
+        monto: document.getElementById('inMonto').value,
+        estado: document.getElementById('inEstado').value,
+        medio: document.getElementById('inMedio').value
+    };
+    await db.collection("pagos").add(data);
+    alert("Pago registrado con éxito");
+    mostrarDashboardPagos();
+};
+window.mostrarListaPagos = async () => {
+    const main = document.getElementById('main-view');
+    main.innerHTML = `<h2>Historial de Pagos</h2><div id="lista-pagos">Cargando...</div>`;
+    const snapshot = await db.collection("pagos").get();
+    let html = `<table class="tabla-clinica">
+        <thead><tr><th>Estudiante</th><th>Encuentro</th><th>Monto</th><th>Estado</th><th>Medio</th></tr></thead>
+        <tbody>`;
+    snapshot.forEach(doc => {
+        const p = doc.data();
+        html += `<tr><td>${p.nombreEstudiante}</td><td>Encuentro ${p.encuentro}</td><td>$${p.monto}</td><td>${p.estado}</td><td>${p.medio}</td></tr>`;
+    });
+    html += `</tbody></table><br><button onclick="mostrarDashboardPagos()" class="btn-red">Volver al Dashboard</button>`;
+    document.getElementById('lista-pagos').innerHTML = html;
 };
 // --- ARRANQUE ---
 document.body.onload = renderLogin;
