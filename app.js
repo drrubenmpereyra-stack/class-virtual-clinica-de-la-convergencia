@@ -91,47 +91,84 @@ function mostrarDashboard() {
 document.body.onload = renderLogin;
 // --- LÓGICA DE ENCUENTROS ---
 
+// --- LÓGICA DE ENCUENTROS (VERSION COMPLETA) ---
+
 window.mostrarEncuentros = async () => {
     const main = document.getElementById('main-view');
     main.innerHTML = `<h2>Encuentros</h2><div id="lista-encuentros">Cargando...</div>`;
     
-    // Botón de carga solo para admin
     if (usuarioActual.rol === 'admin') {
-        const btn = document.createElement('button');
-        btn.className = "btn-gold";
-        btn.innerText = "Cargar Nuevo Encuentro";
-        btn.onclick = renderFormulario;
-        main.prepend(btn);
+        const btnCarga = document.createElement('button');
+        btnCarga.className = "btn-gold";
+        btnCarga.innerText = "Cargar Nuevo Encuentro";
+        btnCarga.onclick = () => renderFormulario();
+        main.prepend(btnCarga);
     }
 
     const snapshot = await db.collection("encuentros").get();
     let lista = "";
     snapshot.forEach(doc => {
         const e = doc.data();
+        const hoy = new Date().toISOString().split('T')[0];
+        const estado = e.fecha >= hoy ? "Próximo" : "Publicado";
+        
         lista += `
-            <div class="card" style="margin-top:20px;">
+            <div class="card" style="margin-top:20px; border: 1px solid #ccc;">
                 <h3>${e.nombre}</h3>
-                <p>Link: <a href="${e.meet}" target="_blank">Ir al Meet</a></p>
+                <p>Fecha: ${e.fecha} | Estado: <strong>${estado}</strong></p>
+                <img src="${e.imagen}" style="width:150px; display:block; margin:auto;">
+                <br>
+                <button onclick="window.open('${e.meet}')">Ir al Meet</button>
+                <button onclick="window.open('${e.drive}')">Ver Clase (Drive)</button>
+                ${usuarioActual.rol === 'admin' ? `
+                    <button onclick="renderFormulario('${doc.id}')" class="btn-green">Editar</button>
+                    <button onclick="eliminarEncuentro('${doc.id}')" class="btn-red">Eliminar</button>
+                ` : ''}
             </div>`;
     });
-    document.getElementById('lista-encuentros').innerHTML = lista || "<p>No hay encuentros cargados.</p>";
+    document.getElementById('lista-encuentros').innerHTML = lista || "<p>No hay encuentros.</p>";
 };
 
-window.renderFormulario = () => {
+window.renderFormulario = async (id = null) => {
+    let e = { nombre: '', imagen: '', fecha: '', meet: '', drive: '' };
+    if (id) {
+        const doc = await db.collection("encuentros").doc(id).get();
+        e = doc.data();
+    }
+    
     document.getElementById('main-view').innerHTML = `
         <div class="card">
-            <h2>Cargar Encuentro</h2>
-            <input id="inNombre" placeholder="Nombre del encuentro">
-            <input id="inMeet" placeholder="Link de Meet">
-            <button onclick="guardarEncuentro()" class="btn-gold">Guardar en Base de Datos</button>
+            <h2>${id ? 'Editar' : 'Cargar'} Encuentro</h2>
+            <input id="inNombre" value="${e.nombre}" placeholder="Nombre del encuentro">
+            <input id="inImg" value="${e.imagen}" placeholder="Link de imagen">
+            <input id="inFecha" type="date" value="${e.fecha}">
+            <input id="inMeet" value="${e.meet}" placeholder="Link de Meet">
+            <input id="inDrive" value="${e.drive}" placeholder="Link de Clase Grabada (Drive)">
+            <button onclick="guardarEncuentro('${id || ''}')" class="btn-gold">Guardar Datos</button>
+            <button onclick="mostrarEncuentros()" class="btn-red">Cancelar</button>
         </div>
     `;
 };
 
-window.guardarEncuentro = async () => {
-    const nombre = document.getElementById('inNombre').value;
-    const meet = document.getElementById('inMeet').value;
-    await db.collection("encuentros").add({ nombre, meet });
-    alert("Guardado correctamente");
+window.guardarEncuentro = async (id) => {
+    const data = {
+        nombre: document.getElementById('inNombre').value,
+        imagen: document.getElementById('inImg').value,
+        fecha: document.getElementById('inFecha').value,
+        meet: document.getElementById('inMeet').value,
+        drive: document.getElementById('inDrive').value
+    };
+    
+    if (id) await db.collection("encuentros").doc(id).update(data);
+    else await db.collection("encuentros").add(data);
+    
+    alert("Datos guardados correctamente");
     mostrarEncuentros();
+};
+
+window.eliminarEncuentro = async (id) => {
+    if (confirm("¿Seguro que quieres eliminar este encuentro?")) {
+        await db.collection("encuentros").doc(id).delete();
+        mostrarEncuentros();
+    }
 };
