@@ -66,7 +66,10 @@ function reproducirIntro() {
 function mostrarDashboard() {
     const navMenu = document.getElementById('nav-menu');
     const botones = usuarioActual.rol === 'admin' ? LISTA_ADMIN : LISTA_ALUMNO;
-    navMenu.innerHTML = botones.map(b => `<button class="${MAPA_BOTONES[b] || ''}">${b}</button>`).join('');
+   navMenu.innerHTML = botones.map(b => {
+    const accion = (b === "Encuentros") ? 'onclick="mostrarEncuentros()"' : '';
+    return `<button class="${MAPA_BOTONES[b] || ''}" ${accion}>${b}</button>`;
+}).join('');
     document.getElementById('main-view').innerHTML = `
         <div class="card">
             <img src="${usuarioActual.user.toLowerCase()}.jpg" onerror="this.src='logo.jpg'" style="width:150px; border-radius:50%; border:3px solid #00d2ff;">
@@ -76,3 +79,49 @@ function mostrarDashboard() {
 }
 
 document.body.onload = renderLogin;
+// --- LÓGICA DE ENCUENTROS ---
+
+window.mostrarEncuentros = async () => {
+    const main = document.getElementById('main-view');
+    main.innerHTML = `<h2>Encuentros</h2><div id="lista-encuentros">Cargando...</div>`;
+    
+    // Botón de carga solo para admin
+    if (usuarioActual.rol === 'admin') {
+        const btn = document.createElement('button');
+        btn.className = "btn-gold";
+        btn.innerText = "Cargar Nuevo Encuentro";
+        btn.onclick = renderFormulario;
+        main.prepend(btn);
+    }
+
+    const snapshot = await db.collection("encuentros").get();
+    let lista = "";
+    snapshot.forEach(doc => {
+        const e = doc.data();
+        lista += `
+            <div class="card" style="margin-top:20px;">
+                <h3>${e.nombre}</h3>
+                <p>Link: <a href="${e.meet}" target="_blank">Ir al Meet</a></p>
+            </div>`;
+    });
+    document.getElementById('lista-encuentros').innerHTML = lista || "<p>No hay encuentros cargados.</p>";
+};
+
+window.renderFormulario = () => {
+    document.getElementById('main-view').innerHTML = `
+        <div class="card">
+            <h2>Cargar Encuentro</h2>
+            <input id="inNombre" placeholder="Nombre del encuentro">
+            <input id="inMeet" placeholder="Link de Meet">
+            <button onclick="guardarEncuentro()" class="btn-gold">Guardar en Base de Datos</button>
+        </div>
+    `;
+};
+
+window.guardarEncuentro = async () => {
+    const nombre = document.getElementById('inNombre').value;
+    const meet = document.getElementById('inMeet').value;
+    await db.collection("encuentros").add({ nombre, meet });
+    alert("Guardado correctamente");
+    mostrarEncuentros();
+};
