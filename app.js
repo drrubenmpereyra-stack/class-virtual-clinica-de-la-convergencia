@@ -62,19 +62,18 @@ function reproducirIntro() {
         </div>
     `;
 }
-
 function mostrarDashboard() {
     const navMenu = document.getElementById('nav-menu');
     const botones = usuarioActual.rol === 'admin' ? LISTA_ADMIN : LISTA_ALUMNO;
     
-    // Aquí asignamos el onclick directamente a cada botón
-   // BUSCA ESTA LÍNEA Y REEMPLÁZALA POR ESTA:
-navMenu.innerHTML = botones.map(b => `<button class="${MAPA_BOTONES[b] || ''}" ${b === 'Encuentros' ? 'onclick="mostrarEncuentros()"' : ''}>${b}</button>`).join('');
+    // Limpieza total antes de inyectar para evitar duplicados
+    navMenu.innerHTML = '';
+    
     botones.forEach(b => {
         const btn = document.createElement('button');
         btn.className = MAPA_BOTONES[b] || '';
         btn.textContent = b;
-        // Si el botón es "Encuentros", le damos vida. Si no, no hace nada.
+        // Asignación directa al elemento creado, evitando errores de texto
         if (b === "Encuentros") {
             btn.onclick = () => mostrarEncuentros();
         }
@@ -89,10 +88,12 @@ navMenu.innerHTML = botones.map(b => `<button class="${MAPA_BOTONES[b] || ''}" $
     `;
 }
 
+
 document.body.onload = renderLogin;
 // --- LÓGICA DE ENCUENTROS ---
 window.mostrarEncuentros = async () => {
     const main = document.getElementById('main-view');
+    // Limpieza del contenedor antes de cargar
     main.innerHTML = `<h2>Encuentros</h2><div id="lista-encuentros">Cargando...</div>`;
     
     if (usuarioActual.rol === 'admin') {
@@ -104,13 +105,14 @@ window.mostrarEncuentros = async () => {
     }
 
     const snapshot = await db.collection("encuentros").get();
-    let lista = "";
+    let htmlLista = ""; 
+    
     snapshot.forEach(doc => {
         const e = doc.data();
         const hoy = new Date().toISOString().split('T')[0];
         const estado = (e.fecha >= hoy) ? "Próximo" : "Publicado";
         
-        lista += `
+        htmlLista += `
             <div class="card" style="margin-top:20px; border: 1px solid #ccc;">
                 <h3>${e.nombre}</h3>
                 <p>Fecha: ${e.fecha} | Estado: <strong>${estado}</strong></p>
@@ -124,7 +126,7 @@ window.mostrarEncuentros = async () => {
                 ` : ''}
             </div>`;
     });
-    document.getElementById('lista-encuentros').innerHTML = lista || "<p>No hay encuentros cargados.</p>";
+    document.getElementById('lista-encuentros').innerHTML = htmlLista || "<p>No hay encuentros cargados.</p>";
 };
 
 window.renderFormulario = async (id = null) => {
