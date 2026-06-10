@@ -89,6 +89,10 @@ function mostrarDashboard() {
     if (b === "Biblioteca") {
         btn.onclick = () => mostrarBiblioteca();
     }
+    // PARA TALLERES
+    if (b === "Talleres") {
+    btn.onclick = () => mostrarTalleres();
+}
 
     navMenu.appendChild(btn);
 });
@@ -254,6 +258,80 @@ window.eliminarMaterial = async (id) => {
     if (confirm("¿Seguro que quieres eliminar este material?")) {
         await db.collection("biblioteca").doc(id).delete();
         mostrarBiblioteca();
+    }
+};
+// --- LÓGICA DE TALLERES ---
+window.mostrarTalleres = async () => {
+    const main = document.getElementById('main-view');
+    main.innerHTML = `<h2>Talleres</h2><div id="lista-talleres">Cargando...</div>`;
+    
+    if (usuarioActual.rol === 'admin') {
+        const btnCarga = document.createElement('button');
+        btnCarga.className = "btn-gold";
+        btnCarga.innerText = "Cargar Nuevo Taller";
+        btnCarga.onclick = () => renderFormularioTalleres();
+        main.prepend(btnCarga);
+    }
+
+    const snapshot = await db.collection("talleres").get();
+    let htmlLista = ""; 
+    
+    snapshot.forEach(doc => {
+        const item = doc.data();
+        htmlLista += `
+            <div class="card" style="margin-top:20px; border: 1px solid #ccc;">
+                <h3>${item.nombre}</h3>
+                <img src="${item.imagen}" style="width:150px; display:block; margin:auto;" onerror="this.src='logo.jpg'">
+                <p>Descripción: ${item.descripcion || 'Sin descripción'}</p>
+                <button onclick="window.open('${item.link}')">Acceder al Taller</button>
+                ${usuarioActual.rol === 'admin' ? `
+                    <button onclick="renderFormularioTalleres('${doc.id}')" class="btn-green">Editar</button>
+                    <button onclick="eliminarTaller('${doc.id}')" class="btn-red">Eliminar</button>
+                ` : ''}
+            </div>`;
+    });
+    document.getElementById('lista-talleres').innerHTML = htmlLista || "<p>No hay talleres disponibles.</p>";
+};
+
+window.renderFormularioTalleres = async (id = null) => {
+    let item = { nombre: '', imagen: '', descripcion: '', link: '' };
+    if (id) {
+        const doc = await db.collection("talleres").doc(id).get();
+        item = doc.data();
+    }
+    
+    document.getElementById('main-view').innerHTML = `
+        <div class="card">
+            <h2>${id ? 'Editar' : 'Cargar'} Taller</h2>
+            <input id="inNombre" value="${item.nombre}" placeholder="Nombre del taller">
+            <input id="inImg" value="${item.imagen}" placeholder="Link de imagen">
+            <input id="inDesc" value="${item.descripcion}" placeholder="Breve descripción">
+            <input id="inLink" value="${item.link}" placeholder="Link de acceso">
+            <button onclick="guardarTaller('${id || ''}')" class="btn-gold">Guardar Datos</button>
+            <button onclick="mostrarTalleres()" class="btn-red">Cancelar</button>
+        </div>
+    `;
+};
+
+window.guardarTaller = async (id) => {
+    const data = {
+        nombre: document.getElementById('inNombre').value,
+        imagen: document.getElementById('inImg').value,
+        descripcion: document.getElementById('inDesc').value,
+        link: document.getElementById('inLink').value
+    };
+    
+    if (id) await db.collection("talleres").doc(id).update(data);
+    else await db.collection("talleres").add(data);
+    
+    alert("Taller guardado correctamente");
+    mostrarTalleres();
+};
+
+window.eliminarTaller = async (id) => {
+    if (confirm("¿Seguro que quieres eliminar este taller?")) {
+        await db.collection("talleres").doc(id).delete();
+        mostrarTalleres();
     }
 };
 // --- ARRANQUE ---
