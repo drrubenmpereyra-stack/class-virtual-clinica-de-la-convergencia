@@ -66,10 +66,20 @@ function reproducirIntro() {
 function mostrarDashboard() {
     const navMenu = document.getElementById('nav-menu');
     const botones = usuarioActual.rol === 'admin' ? LISTA_ADMIN : LISTA_ALUMNO;
-   navMenu.innerHTML = botones.map(b => {
-    const accion = (b === "Encuentros") ? 'onclick="mostrarEncuentros()"' : '';
-    return `<button class="${MAPA_BOTONES[b] || ''}" ${accion}>${b}</button>`;
-}).join('');
+    
+    // Aquí asignamos el onclick directamente a cada botón
+    navMenu.innerHTML = '';
+    botones.forEach(b => {
+        const btn = document.createElement('button');
+        btn.className = MAPA_BOTONES[b] || '';
+        btn.textContent = b;
+        // Si el botón es "Encuentros", le damos vida. Si no, no hace nada.
+        if (b === "Encuentros") {
+            btn.onclick = () => mostrarEncuentros();
+        }
+        navMenu.appendChild(btn);
+    });
+
     document.getElementById('main-view').innerHTML = `
         <div class="card">
             <img src="${usuarioActual.user.toLowerCase()}.jpg" onerror="this.src='logo.jpg'" style="width:150px; border-radius:50%; border:3px solid #00d2ff;">
