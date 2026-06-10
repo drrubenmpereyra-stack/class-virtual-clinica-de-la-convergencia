@@ -28,3 +28,36 @@ button:active { transform: scale(0.95); }
     object-fit: cover;
     border: 2px solid #00d2ff;
 }
+/* --- ESTILOS DE TABLA CLINICA --- */
+.tabla-clinica {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin-top: 20px !important;
+    background-color: white !important;
+    font-family: sans-serif !important;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1) !important;
+}
+
+.tabla-clinica thead tr {
+    background-color: var(--cyan) !important;
+    color: #ffffff !important;
+}
+
+.tabla-clinica th, .tabla-clinica td {
+    padding: 12px 15px !important;
+    border: 1px solid #ddd !important;
+    text-align: left !important;
+}
+
+.tabla-clinica tbody tr:nth-of-type(even) {
+    background-color: #f3f3f3 !important;
+}
+
+.foto-participante {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    border: 2px solid var(--cyan) !important;
+    display: block !important;
+}
