@@ -1,0 +1,23 @@
+:root { --primary-blue: #1a2a3a; --gold: #FFD700; --red: #FF4500; --green: #32CD32; --orange: #FF8C00; --sky: #87CEEB; --cyan: #00d2ff; }
+body { margin: 0; font-family: sans-serif; background-color: #f0f2f5; }
+.header { background-color: var(--primary-blue); padding: 15px 40px; display: flex; align-items: center; border-bottom: 4px solid var(--cyan); }
+.logo-img { height: 50px; width: 50px; object-fit: cover; border-radius: 50%; border: 2px solid var(--cyan); }
+.container { max-width: 1000px; margin: 40px auto; padding: 20px; }
+.card { background: white; padding: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; }
+
+input { display: block; width: 100%; max-width: 300px; margin: 10px auto; padding: 12px; border: 1px solid #ccc; box-sizing: border-box; }
+button { background: var(--primary-blue); color: white; padding: 10px 20px; margin: 5px; font-weight: 600; cursor: pointer; transition: 0.3s; text-transform: uppercase; border-radius: 0; border: 2px solid transparent; }
+button:active { transform: scale(0.95); }
+
+.btn-gold { border-color: var(--gold); }
+.btn-gold:hover { background: var(--gold); color: var(--primary-blue); }
+.btn-red { border-color: var(--red); }
+.btn-red:hover { background: var(--red); }
+.btn-green { border-color: var(--green); }
+.btn-green:hover { background: var(--green); }
+.btn-orange { border-color: var(--orange); }
+.btn-orange:hover { background: var(--orange); }
+.btn-blue { border-color: var(--cyan); }
+.btn-blue:hover { background: var(--cyan); color: var(--primary-blue); }
+.btn-sky { border-color: var(--sky); }
+.btn-sky:hover { background: var(--sky); color: var(--primary-blue); }
