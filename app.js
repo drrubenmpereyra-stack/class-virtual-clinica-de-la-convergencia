@@ -93,6 +93,10 @@ function mostrarDashboard() {
     if (b === "Talleres") {
     btn.onclick = () => mostrarTalleres();
 }
+// PARA PARTICIPANTES (solo vista adm)
+if (b === "Participantes") {
+    btn.onclick = () => mostrarParticipantes();
+}
 
     navMenu.appendChild(btn);
 });
@@ -332,6 +336,83 @@ window.eliminarTaller = async (id) => {
     if (confirm("¿Seguro que quieres eliminar este taller?")) {
         await db.collection("talleres").doc(id).delete();
         mostrarTalleres();
+    }
+};
+// --- LÓGICA DE PARTICIPANTES ---
+window.mostrarParticipantes = async () => {
+    const main = document.getElementById('main-view');
+    main.innerHTML = `<h2>Participantes</h2><div id="lista-participantes">Cargando tabla...</div>`;
+    
+    const btnCarga = document.createElement('button');
+    btnCarga.className = "btn-gold";
+    btnCarga.innerText = "Cargar Nuevo Participante";
+    btnCarga.onclick = () => renderFormularioParticipante();
+    main.prepend(btnCarga);
+
+    const snapshot = await db.collection("participantes").get();
+    let tabla = `
+        <table border="1" style="width:100%; border-collapse:collapse; margin-top:20px;">
+            <tr>
+                <th>Apellido y Nombres</th><th>DNI</th><th>Profesión</th><th>Legajo/Pass</th><th>Teléfono</th><th>Acciones</th>
+            </tr>`;
+    
+    snapshot.forEach(doc => {
+        const p = doc.data();
+        tabla += `
+            <tr>
+                <td>${p.nombre}</td>
+                <td>${p.dni}</td>
+                <td>${p.profesion}</td>
+                <td>${p.legajo}</td>
+                <td>${p.telefono}</td>
+                <td>
+                    <button onclick="renderFormularioParticipante('${doc.id}')">Editar</button>
+                    <button onclick="eliminarParticipante('${doc.id}')" class="btn-red">Eliminar</button>
+                </td>
+            </tr>`;
+    });
+    tabla += `</table>`;
+    document.getElementById('lista-participantes').innerHTML = tabla;
+};
+
+window.renderFormularioParticipante = async (id = null) => {
+    let p = { nombre: '', dni: '', profesion: '', legajo: '', telefono: '', imagen: '' };
+    if (id) { const doc = await db.collection("participantes").doc(id).get(); p = doc.data(); }
+    
+    document.getElementById('main-view').innerHTML = `
+        <div class="card">
+            <h2>${id ? 'Editar' : 'Cargar'} Participante</h2>
+            <input id="inNombre" value="${p.nombre}" placeholder="Apellido y Nombres">
+            <input id="inDni" value="${p.dni}" placeholder="D.N.I.">
+            <input id="inProf" value="${p.profesion}" placeholder="Profesión">
+            <input id="inLegajo" value="${p.legajo}" placeholder="Código/Legajo (Pass)">
+            <input id="inTel" value="${p.telefono}" placeholder="Teléfono">
+            <input id="inImg" value="${p.imagen}" placeholder="Link de foto (Drive)">
+            <button onclick="guardarParticipante('${id || ''}')" class="btn-gold">Guardar Datos</button>
+            <button onclick="mostrarParticipantes()" class="btn-red">Cancelar</button>
+        </div>
+    `;
+};
+
+window.guardarParticipante = async (id) => {
+    const data = {
+        nombre: document.getElementById('inNombre').value,
+        dni: document.getElementById('inDni').value,
+        profesion: document.getElementById('inProf').value,
+        legajo: document.getElementById('inLegajo').value,
+        telefono: document.getElementById('inTel').value,
+        imagen: document.getElementById('inImg').value
+    };
+    if (id) await db.collection("participantes").doc(id).update(data);
+    else await db.collection("participantes").add(data);
+    alert("Participante guardado");
+    mostrarParticipantes();
+};
+
+window.eliminarParticipante = async (id) => {
+    if (confirm("¿Seguro que quieres borrar a este participante?")) {
+        await db.collection("participantes").doc(id).delete();
+        mostrarParticipantes();
     }
 };
 // --- ARRANQUE ---
