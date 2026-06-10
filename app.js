@@ -56,24 +56,30 @@ function renderLogin() {
 function reproducirIntro() {
     document.getElementById('main-view').innerHTML = `
         <div style="text-align:center;">
-            <video id="intro-video" width="600" autoplay onended="mostrarDashboard()">
+           <video id="intro-video" width="600" autoplay onended="this.onended=null; mostrarDashboard()">
                 <source src="https://github.com/drrubenmpereyra-stack/intro-aula-virtial-cc-DRPEREYRA/raw/refs/heads/main/INTRO_CC.mp4" type="video/mp4">
             </video>
         </div>
     `;
 }
+// Variable global fuera de la función
+let dashboardRenderizado = false;
+
 function mostrarDashboard() {
     const navMenu = document.getElementById('nav-menu');
-    const botones = usuarioActual.rol === 'admin' ? LISTA_ADMIN : LISTA_ALUMNO;
     
-    // Limpieza total antes de inyectar para evitar duplicados
-    navMenu.innerHTML = '';
+    // LIMPIEZA AGRESIVA: Eliminamos todo nodo hijo antes de crear nada nuevo
+    while (navMenu.firstChild) {
+        navMenu.removeChild(navMenu.firstChild);
+    }
+    
+    const botones = usuarioActual.rol === 'admin' ? LISTA_ADMIN : LISTA_ALUMNO;
     
     botones.forEach(b => {
         const btn = document.createElement('button');
         btn.className = MAPA_BOTONES[b] || '';
         btn.textContent = b;
-        // Asignación directa al elemento creado, evitando errores de texto
+        
         if (b === "Encuentros") {
             btn.onclick = () => mostrarEncuentros();
         }
@@ -87,7 +93,6 @@ function mostrarDashboard() {
         </div>
     `;
 }
-
 
 document.body.onload = renderLogin;
 // --- LÓGICA DE ENCUENTROS ---
