@@ -68,7 +68,8 @@ function mostrarDashboard() {
     const botones = usuarioActual.rol === 'admin' ? LISTA_ADMIN : LISTA_ALUMNO;
     
     // Aquí asignamos el onclick directamente a cada botón
-    navMenu.innerHTML = '';
+   // BUSCA ESTA LÍNEA Y REEMPLÁZALA POR ESTA:
+navMenu.innerHTML = botones.map(b => `<button class="${MAPA_BOTONES[b] || ''}" ${b === 'Encuentros' ? 'onclick="mostrarEncuentros()"' : ''}>${b}</button>`).join('');
     botones.forEach(b => {
         const btn = document.createElement('button');
         btn.className = MAPA_BOTONES[b] || '';
@@ -90,9 +91,6 @@ function mostrarDashboard() {
 
 document.body.onload = renderLogin;
 // --- LÓGICA DE ENCUENTROS ---
-
-// --- LÓGICA DE ENCUENTROS (VERSION COMPLETA) ---
-
 window.mostrarEncuentros = async () => {
     const main = document.getElementById('main-view');
     main.innerHTML = `<h2>Encuentros</h2><div id="lista-encuentros">Cargando...</div>`;
@@ -110,7 +108,7 @@ window.mostrarEncuentros = async () => {
     snapshot.forEach(doc => {
         const e = doc.data();
         const hoy = new Date().toISOString().split('T')[0];
-        const estado = e.fecha >= hoy ? "Próximo" : "Publicado";
+        const estado = (e.fecha >= hoy) ? "Próximo" : "Publicado";
         
         lista += `
             <div class="card" style="margin-top:20px; border: 1px solid #ccc;">
@@ -126,7 +124,7 @@ window.mostrarEncuentros = async () => {
                 ` : ''}
             </div>`;
     });
-    document.getElementById('lista-encuentros').innerHTML = lista || "<p>No hay encuentros.</p>";
+    document.getElementById('lista-encuentros').innerHTML = lista || "<p>No hay encuentros cargados.</p>";
 };
 
 window.renderFormulario = async (id = null) => {
