@@ -98,7 +98,6 @@ document.body.onload = renderLogin;
 // --- LÓGICA DE ENCUENTROS ---
 window.mostrarEncuentros = async () => {
     const main = document.getElementById('main-view');
-    // Limpieza del contenedor antes de cargar
     main.innerHTML = `<h2>Encuentros</h2><div id="lista-encuentros">Cargando...</div>`;
     
     if (usuarioActual.rol === 'admin') {
@@ -111,33 +110,26 @@ window.mostrarEncuentros = async () => {
 
     const snapshot = await db.collection("encuentros").get();
     let htmlLista = ""; 
- snapshot.forEach(doc => {
-    const e = doc.data();
-    const hoy = new Date().toISOString().split('T')[0];
-    const estado = (e.fecha >= hoy) ? "Próximo" : "Publicado";
     
-    // Transformamos el link de Drive a link de visualización directa
-    let imagenDirecta = e.imagen;
-    if (imagenDirecta.includes("drive.google.com")) {
-        const fileId = imagenDirecta.split('/d/')[1].split('/')[0];
-        imagenDirecta = `https://lh3.googleusercontent.com/d/${fileId}`;
-    }
-
-    htmlLista += `
-        <div class="card" style="margin-top:20px; border: 1px solid #ccc;">
-            <h3>${e.nombre}</h3>
-            <p>Fecha: ${e.fecha} | Estado: <strong>${estado}</strong></p>
-            <img src="${imagenDirecta}" style="width:150px; display:block; margin:auto;" onerror="this.src='logo.jpg'">
-            <br>
-            <button onclick="window.open('${e.meet}')">Ir al Meet</button>
-            <button onclick="window.open('${e.drive}')">Ver Clase (Drive)</button>
-            ${usuarioActual.rol === 'admin' ? `
-                <button onclick="renderFormulario('${doc.id}')" class="btn-green">Editar</button>
-                <button onclick="eliminarEncuentro('${doc.id}')" class="btn-red">Eliminar</button>
-            ` : ''}
-        </div>`;
-});   
-
+    snapshot.forEach(doc => {
+        const e = doc.data();
+        const hoy = new Date().toISOString().split('T')[0];
+        const estado = (e.fecha >= hoy) ? "Próximo" : "Publicado";
+        
+        htmlLista += `
+            <div class="card" style="margin-top:20px; border: 1px solid #ccc;">
+                <h3>${e.nombre}</h3>
+                <p>Fecha: ${e.fecha} | Estado: <strong>${estado}</strong></p>
+                <img src="${e.imagen}" style="width:150px; display:block; margin:auto;" onerror="this.src='logo.jpg'">
+                <br>
+                <button onclick="window.open('${e.meet}')">Ir al Meet</button>
+                <button onclick="window.open('${e.drive}')">Ver Clase (Drive)</button>
+                ${usuarioActual.rol === 'admin' ? `
+                    <button onclick="renderFormulario('${doc.id}')" class="btn-green">Editar</button>
+                    <button onclick="eliminarEncuentro('${doc.id}')" class="btn-red">Eliminar</button>
+                ` : ''}
+            </div>`;
+    });
     document.getElementById('lista-encuentros').innerHTML = htmlLista || "<p>No hay encuentros cargados.</p>";
 };
 
