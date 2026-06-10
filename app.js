@@ -342,7 +342,7 @@ window.eliminarTaller = async (id) => {
 // --- LÓGICA DE PARTICIPANTES ---
 window.mostrarParticipantes = async () => {
     const main = document.getElementById('main-view');
-    main.innerHTML = `<h2>Participantes</h2><div id="lista-participantes">Cargando tabla...</div>`;
+    main.innerHTML = `<h2>Participantes</h2><div id="lista-participantes">Cargando...</div>`;
     
     const btnCarga = document.createElement('button');
     btnCarga.className = "btn-gold";
@@ -351,37 +351,29 @@ window.mostrarParticipantes = async () => {
     main.prepend(btnCarga);
 
     const snapshot = await db.collection("participantes").get();
-    
-    let tabla = `
-        <table class="tabla-clinica">
-            <thead>
-                <tr>
-                    <th>Foto</th><th>Nombre</th><th>DNI</th><th>Profesión</th><th>Legajo</th><th>Teléfono</th><th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>`;
+    let html = `<table class="tabla-clinica">
+        <thead>
+            <tr><th>Foto</th><th>Nombre</th><th>DNI</th><th>Profesión</th><th>Legajo</th><th>Teléfono</th><th>Acciones</th></tr>
+        </thead>
+        <tbody>`;
     
     snapshot.forEach(doc => {
         const p = doc.data();
-        const imgUrl = p.imagen || 'logo.jpg';
-        
-        tabla += `
-            <tr>
-                <td><img src="${imgUrl}" class="foto-participante" onerror="this.src='logo.jpg'"></td>
-                <td>${p.nombre}</td>
-                <td>${p.dni}</td>
-                <td>${p.profesion}</td>
-                <td>${p.legajo}</td>
-                <td>${p.telefono}</td>
-                <td>
-                    <button onclick="renderFormularioParticipante('${doc.id}')" class="btn-green">Editar</button>
-                    <button onclick="eliminarParticipante('${doc.id}')" class="btn-red">Eliminar</button>
-                </td>
-            </tr>`;
+        html += `<tr>
+            <td><img src="${p.imagen || 'logo.jpg'}" class="foto-participante" onerror="this.src='logo.jpg'"></td>
+            <td>${p.nombre}</td>
+            <td>${p.dni}</td>
+            <td>${p.profesion}</td>
+            <td>${p.legajo}</td>
+            <td>${p.telefono}</td>
+            <td>
+                <button onclick="renderFormularioParticipante('${doc.id}')" class="btn-green">Editar</button>
+                <button onclick="eliminarParticipante('${doc.id}')" class="btn-red">Eliminar</button>
+            </td>
+        </tr>`;
     });
-    
-    tabla += `</tbody></table>`;
-    document.getElementById('lista-participantes').innerHTML = tabla;
+    html += `</tbody></table>`;
+    document.getElementById('lista-participantes').innerHTML = html;
 };
 
 window.renderFormularioParticipante = async (id = null) => {
