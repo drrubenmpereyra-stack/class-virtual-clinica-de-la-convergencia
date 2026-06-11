@@ -696,22 +696,35 @@ window.mostrarDashboardMensajes = async () => {
                       <button onclick="renderFormularioMensajes()" class="btn-convergencia">+ Redactar</button>
                       <div id="lista-mensajes">Cargando...</div>`;
     
-    // Consulta directa a tu base de datos
-    const snapshot = await db.collection("mensajes").orderBy("fecha", "desc").get();
-    
-    let html = `<table class="tabla-clinica"><thead><tr><th>Fecha</th><th>De</th><th>Para</th><th>Asunto</th><th>Acción</th></tr></thead><tbody>`;
-    
-    snapshot.forEach(doc => {
-        const m = doc.data();
-        html += `<tr><td>${m.fecha || ''}</td><td>${m.remitente || 'Alumno'}</td><td>${m.destinatario}</td><td>${m.asunto}</td>
-        <td>
-            <button onclick="verCuerpo('${m.cuerpo.replace(/'/g, "\\'")}')">Leer</button>
-            <button onclick="eliminarMensaje('${doc.id}')">Borrar</button>
-        </td></tr>`;
-    });
-    
-    html += `</tbody></table><br><button onclick="mostrarDashboard()" class="btn-cancelar">Volver</button>`;
-    document.getElementById('lista-mensajes').innerHTML = html;
+    try {
+        const snapshot = await db.collection("mensajes").orderBy("fecha", "desc").get();
+        let html = `<table class="tabla-clinica"><thead><tr><th>Fecha</th><th>De</th><th>Para</th><th>Asunto</th><th>Acción</th></tr></thead><tbody>`;
+        
+        snapshot.forEach(doc => {
+            const m = doc.data();
+            // CORRECCIÓN: Si m.cuerpo es undefined o null, usamos "Sin contenido"
+            const cuerpoSeguro = (m.cuerpo || "Sin contenido");
+            // Escapamos comillas solo si el cuerpo existe
+            const cuerpoEscapado = cuerpoSeguro.replace(/'/g, "\\'");
+            
+            html += `<tr>
+                <td>${m.fecha || 'N/A'}</td>
+                <td>${m.remitente || 'Alumno'}</td>
+                <td>${m.destinatario || 'TODOS'}</td>
+                <td>${m.asunto || 'Sin asunto'}</td>
+                <td>
+                    <button onclick="verCuerpo('${cuerpoEscapado}')">Leer</button>
+                    <button onclick="eliminarMensaje('${doc.id}')">Borrar</button>
+                </td>
+            </tr>`;
+        });
+        
+        html += `</tbody></table><br><button onclick="mostrarDashboard()" class="btn-cancelar">Volver</button>`;
+        document.getElementById('lista-mensajes').innerHTML = html;
+    } catch (e) {
+        console.error("Error al renderizar tabla:", e);
+        document.getElementById('lista-mensajes').innerHTML = "Error al cargar mensajes: " + e.message;
+    }
 };
 
 window.mostrarMisMensajes = async (nombre) => {
