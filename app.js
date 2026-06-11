@@ -658,9 +658,9 @@ window.mostrarMiAsistencia = async (nombre) => {
 };
 window.renderMensajeria = (esAdministrador) => {
     const main = document.getElementById('main-view');
-    main.textContent = ''; // Limpieza limpia
+    main.textContent = ''; // Limpieza total
 
-    // 1. Contenedor
+    // 1. Contenedor principal
     const container = document.createElement('div');
     container.className = 'card-mensajeria';
     
@@ -677,13 +677,13 @@ window.renderMensajeria = (esAdministrador) => {
     btnEnviar.textContent = 'Enviar Mensaje';
     btnEnviar.className = 'btn-enviar';
     
-    // 3. Lógica de Envío Unificada
+    // Lógica de Envío
     btnEnviar.onclick = async () => {
         if (!inputAsunto.value || !textarea.value) return alert("Completa los campos");
         
         await db.collection("mensajes").add({
             remitente: esAdministrador ? "Administración" : usuarioActual.nombre,
-            destinatario: esAdministrador ? "TODOS" : "Administración", // Ajustable
+            destinatario: esAdministrador ? "TODOS" : "Administración",
             asunto: inputAsunto.value,
             cuerpo: textarea.value,
             fecha: new Date().toLocaleString()
@@ -693,27 +693,58 @@ window.renderMensajeria = (esAdministrador) => {
         textarea.value = '';
     };
 
-    // 4. Lista de mensajes (Refresco constante)
-    const lista = document.createElement('div');
+    // 3. Tabla de Mensajes
+    const tabla = document.createElement('table');
+    tabla.style.width = '100%';
+    tabla.style.borderCollapse = 'collapse';
+    tabla.style.marginTop = '20px';
     
-    container.append(inputAsunto, textarea, btnEnviar, lista);
+    tabla.innerHTML = `
+        <thead>
+            <tr style="background:#1b3a2a; color:white; text-align:left;">
+                <th style="padding:10px;">Fecha</th>
+                <th>Remitente</th>
+                <th>Asunto</th>
+                <th>Mensaje</th>
+                <th>Destinatario</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody id="tabla-body"></tbody>`;
+
+    container.append(inputAsunto, textarea, btnEnviar, tabla);
     main.appendChild(container);
+    const tbody = document.getElementById('tabla-body');
 
     // Carga de datos
     db.collection("mensajes").orderBy("fecha", "desc").onSnapshot(snap => {
-        lista.textContent = '';
+        tbody.innerHTML = '';
         snap.forEach(doc => {
             const m = doc.data();
-            // Filtro lógico: Admin ve todo, Alumno ve lo suyo
-            if (esAdministrador || m.remitente === usuarioActual.nombre || m.destinatario === "TODOS") {
-                const msg = document.createElement('div');
-                msg.style.borderBottom = '1px solid #ccc';
-                msg.textContent = `${m.remitente} (${m.fecha}): ${m.asunto} - ${m.cuerpo}`;
-                lista.appendChild(msg);
+            if (esAdministrador || m.remitente === usuarioActual.nombre || m.destinatario === "TODOS" || m.destinatario === "Administración") {
+                const tr = document.createElement('tr');
+                tr.style.borderBottom = '1px solid #ccc';
+                tr.innerHTML = `
+                    <td style="padding:10px;">${m.fecha}</td>
+                    <td>${m.remitente}</td>
+                    <td>${m.asunto}</td>
+                    <td>${m.cuerpo}</td>
+                    <td>${m.destinatario}</td>
+                    <td><button onclick="eliminarMensaje('${doc.id}')" style="background:red; color:white; border:none; padding:5px; cursor:pointer;">Eliminar</button></td>
+                `;
+                tbody.appendChild(tr);
             }
         });
     });
 };
+
+// Función de eliminación (Debe estar fuera de renderMensajeria para ser global)
+window.eliminarMensaje = async (id) => {
+    if (confirm("¿Eliminar este mensaje?")) {
+        await db.collection("mensajes").doc(id).delete();
+    }
+};
 // --- ARRANQUE ---
 document.body.onload = renderLogin;
+
 
