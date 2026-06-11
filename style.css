@@ -61,3 +61,8 @@ button:active { transform: scale(0.95); }
     border: 2px solid var(--cyan) !important;
     display: block !important;
 }
+.card-convergencia { background: #f4f7f6; padding: 20px; border-left: 5px solid #2c3e50; border-radius: 8px; }
+.input-clinical { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; }
+.btn-convergencia { background: #2c3e50; color: white; padding: 10px 20px; border: none; cursor: pointer; }
+.btn-cancelar { background: #e74c3c; color: white; padding: 10px 20px; border: none; cursor: pointer; }
+
