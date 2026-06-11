@@ -656,31 +656,45 @@ window.mostrarMiAsistencia = async (nombre) => {
     
     document.getElementById('lista-asistencia').innerHTML = html;
 };
+// BLOQUE DE MENSAJERIA
 window.renderMensajeria = (esAdministrador) => {
     const main = document.getElementById('main-view');
-    main.textContent = ''; // Limpieza total
+    main.innerHTML = ''; // Limpieza inicial una sola vez
 
-    // 1. Contenedor principal
+    // 1. Estructura fija (títulos y contenedor)
     const container = document.createElement('div');
     container.className = 'card-mensajeria';
+    container.innerHTML = `<h2>Redactar Comunicación</h2>`;
     
-    // 2. Formulario
+    // 2. Elementos de envío
     const inputAsunto = document.createElement('input');
     inputAsunto.placeholder = 'Asunto';
     inputAsunto.className = 'input-estilo';
-    
     const textarea = document.createElement('textarea');
-    textarea.placeholder = 'Cuerpo del mensaje...';
+    textarea.placeholder = 'Cuerpo...';
     textarea.className = 'input-estilo';
-    
     const btnEnviar = document.createElement('button');
     btnEnviar.textContent = 'Enviar Mensaje';
     btnEnviar.className = 'btn-enviar';
-    
-    // Lógica de Envío
+
+    // 3. Contenedor de la tabla (Fijo)
+    const tabla = document.createElement('table');
+    tabla.style.width = '100%';
+    tabla.style.borderCollapse = 'collapse';
+    tabla.innerHTML = `
+        <thead>
+            <tr style="background:#1b3a2a; color:white; text-align:left;">
+                <th style="padding:10px;">Fecha</th><th>Remitente</th><th>Asunto</th><th>Mensaje</th><th>Destinatario</th><th>Acción</th>
+            </tr>
+        </thead>
+        <tbody id="tabla-body"></tbody>`;
+
+    container.append(inputAsunto, textarea, btnEnviar, tabla);
+    main.appendChild(container);
+
+    // Lógica de envío
     btnEnviar.onclick = async () => {
         if (!inputAsunto.value || !textarea.value) return alert("Completa los campos");
-        
         await db.collection("mensajes").add({
             remitente: esAdministrador ? "Administración" : usuarioActual.nombre,
             destinatario: esAdministrador ? "TODOS" : "Administración",
@@ -688,37 +702,13 @@ window.renderMensajeria = (esAdministrador) => {
             cuerpo: textarea.value,
             fecha: new Date().toLocaleString()
         });
-        alert("Enviado");
-        inputAsunto.value = '';
-        textarea.value = '';
+        inputAsunto.value = ''; textarea.value = '';
     };
 
-    // 3. Tabla de Mensajes
-    const tabla = document.createElement('table');
-    tabla.style.width = '100%';
-    tabla.style.borderCollapse = 'collapse';
-    tabla.style.marginTop = '20px';
-    
-    tabla.innerHTML = `
-        <thead>
-            <tr style="background:#1b3a2a; color:white; text-align:left;">
-                <th style="padding:10px;">Fecha</th>
-                <th>Remitente</th>
-                <th>Asunto</th>
-                <th>Mensaje</th>
-                <th>Destinatario</th>
-                <th>Acción</th>
-            </tr>
-        </thead>
-        <tbody id="tabla-body"></tbody>`;
-
-    container.append(inputAsunto, textarea, btnEnviar, tabla);
-    main.appendChild(container);
+    // 4. Actualización de datos (Solo toca el tbody, no el resto)
     const tbody = document.getElementById('tabla-body');
-
-    // Carga de datos
     db.collection("mensajes").orderBy("fecha", "desc").onSnapshot(snap => {
-        tbody.innerHTML = '';
+        tbody.innerHTML = ''; // Limpiamos solo los registros, no la tabla
         snap.forEach(doc => {
             const m = doc.data();
             if (esAdministrador || m.remitente === usuarioActual.nombre || m.destinatario === "TODOS" || m.destinatario === "Administración") {
@@ -737,14 +727,6 @@ window.renderMensajeria = (esAdministrador) => {
         });
     });
 };
-
-// Función de eliminación (Debe estar fuera de renderMensajeria para ser global)
-window.eliminarMensaje = async (id) => {
-    if (confirm("¿Eliminar este mensaje?")) {
-        await db.collection("mensajes").doc(id).delete();
-    }
-};
 // --- ARRANQUE ---
 document.body.onload = renderLogin;
-
 
