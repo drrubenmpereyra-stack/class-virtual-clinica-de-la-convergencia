@@ -659,38 +659,46 @@ window.mostrarMiAsistencia = async (nombre) => {
 // BLOQUE DE MENSAJERIA
 window.renderMensajeria = (esAdministrador) => {
     const main = document.getElementById('main-view');
-    main.innerHTML = ''; // Limpieza inicial una sola vez
+    main.textContent = ''; 
 
-    // 1. Estructura fija (títulos y contenedor)
-    const container = document.createElement('div');
-    container.className = 'card-mensajeria';
-    container.innerHTML = `<h2>Redactar Comunicación</h2>`;
+    // Contenedor padre
+    const wrapper = document.createElement('div');
+    wrapper.className = 'card-mensajeria';
+
+    // Títulos y campos (Sin innerHTML)
+    const h2 = document.createElement('h2');
+    h2.textContent = 'Redactar Comunicación';
     
-    // 2. Elementos de envío
     const inputAsunto = document.createElement('input');
     inputAsunto.placeholder = 'Asunto';
     inputAsunto.className = 'input-estilo';
+    
     const textarea = document.createElement('textarea');
     textarea.placeholder = 'Cuerpo...';
     textarea.className = 'input-estilo';
+    
     const btnEnviar = document.createElement('button');
     btnEnviar.textContent = 'Enviar Mensaje';
     btnEnviar.className = 'btn-enviar';
 
-    // 3. Contenedor de la tabla (Fijo)
+    // Tabla (Estructura fija)
     const tabla = document.createElement('table');
     tabla.style.width = '100%';
-    tabla.style.borderCollapse = 'collapse';
-    tabla.innerHTML = `
-        <thead>
-            <tr style="background:#1b3a2a; color:white; text-align:left;">
-                <th style="padding:10px;">Fecha</th><th>Remitente</th><th>Asunto</th><th>Mensaje</th><th>Destinatario</th><th>Acción</th>
-            </tr>
-        </thead>
-        <tbody id="tabla-body"></tbody>`;
+    const thead = document.createElement('thead');
+    const trHead = document.createElement('tr');
+    ['Fecha', 'Remitente', 'Asunto', 'Mensaje', 'Destinatario', 'Acción'].forEach(txt => {
+        const th = document.createElement('th');
+        th.textContent = txt;
+        trHead.appendChild(th);
+    });
+    thead.appendChild(trHead);
+    tabla.appendChild(thead);
 
-    container.append(inputAsunto, textarea, btnEnviar, tabla);
-    main.appendChild(container);
+    const tbody = document.createElement('tbody');
+    tabla.appendChild(tbody);
+
+    wrapper.append(h2, inputAsunto, textarea, btnEnviar, tabla);
+    main.appendChild(wrapper);
 
     // Lógica de envío
     btnEnviar.onclick = async () => {
@@ -705,23 +713,29 @@ window.renderMensajeria = (esAdministrador) => {
         inputAsunto.value = ''; textarea.value = '';
     };
 
-    // 4. Actualización de datos (Solo toca el tbody, no el resto)
-    const tbody = document.getElementById('tabla-body');
+    // Actualización de datos (Solo toca el tbody mediante nodos)
     db.collection("mensajes").orderBy("fecha", "desc").onSnapshot(snap => {
-        tbody.innerHTML = ''; // Limpiamos solo los registros, no la tabla
+        tbody.textContent = ''; // Limpiamos registros anteriores sin destruir la tabla
         snap.forEach(doc => {
             const m = doc.data();
             if (esAdministrador || m.remitente === usuarioActual.nombre || m.destinatario === "TODOS" || m.destinatario === "Administración") {
                 const tr = document.createElement('tr');
-                tr.style.borderBottom = '1px solid #ccc';
-                tr.innerHTML = `
-                    <td style="padding:10px;">${m.fecha}</td>
-                    <td>${m.remitente}</td>
-                    <td>${m.asunto}</td>
-                    <td>${m.cuerpo}</td>
-                    <td>${m.destinatario}</td>
-                    <td><button onclick="eliminarMensaje('${doc.id}')" style="background:red; color:white; border:none; padding:5px; cursor:pointer;">Eliminar</button></td>
-                `;
+                const datos = [m.fecha, m.remitente, m.asunto, m.cuerpo, m.destinatario];
+                
+                datos.forEach(txt => {
+                    const td = document.createElement('td');
+                    td.textContent = txt;
+                    tr.appendChild(td);
+                });
+
+                // Botón de eliminar (Objeto real)
+                const tdAccion = document.createElement('td');
+                const btnEliminar = document.createElement('button');
+                btnEliminar.textContent = 'Eliminar';
+                btnEliminar.onclick = () => window.eliminarMensaje(doc.id);
+                tdAccion.appendChild(btnEliminar);
+                tr.appendChild(tdAccion);
+                
                 tbody.appendChild(tr);
             }
         });
