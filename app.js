@@ -662,37 +662,68 @@ window.iniciarModuloComunicacion = (esAdmin) => {
     const contenedor = document.createElement('div');
     contenedor.className = 'card-mensajeria';
 
-    // --- VISTA ADMINISTRADOR ---
+    // FORMULARIO ADMINISTRADOR
     if (esAdmin) {
         const titulo = document.createElement('h2');
-        titulo.textContent = 'Enviar Mensajes';
+        titulo.textContent = 'Enviar Mensaje';
         
-        const inputAsunto = document.createElement('input');
-        inputAsunto.placeholder = 'Asunto';
-        
-        const areaMensaje = document.createElement('textarea');
-        areaMensaje.placeholder = 'Mensaje...';
-        
-        const btnEnviar = document.createElement('button');
-        btnEnviar.textContent = 'Enviar';
-        
-        contenedor.append(titulo, inputAsunto, areaMensaje, btnEnviar);
+        const inputs = [
+            { label: 'Asunto:', id: 'asunto' },
+            { label: 'Mensaje:', id: 'cuerpo' }
+        ];
 
-        btnEnviar.onclick = async () => {
-            await db.collection("mensajes").add({
+        const elementos = {};
+        contenedor.appendChild(titulo);
+
+        inputs.forEach(item => {
+            const lbl = document.createElement('label');
+            lbl.textContent = item.label;
+            const input = item.id === 'asunto' ? document.createElement('input') : document.createElement('textarea');
+            input.id = item.id;
+            input.className = 'input-estilo';
+            elementos[item.id] = input;
+            contenedor.append(lbl, input);
+        });
+
+        // Emoticones
+        const divEmo = document.createElement('div');
+        ['😊', '📢', '⚠️', '✅', '📅'].forEach(e => {
+            const s = document.createElement('span');
+            s.textContent = e;
+            s.style.cursor = 'pointer';
+            s.onclick = () => elementos.cuerpo.value += e;
+            divEmo.appendChild(s);
+        });
+        contenedor.appendChild(divEmo);
+
+        const btn = document.createElement('button');
+        btn.textContent = 'Enviar';
+        btn.className = 'btn-enviar';
+        contenedor.appendChild(btn);
+
+        btn.onclick = async () => {
+            const data = {
                 remitente: "Administración",
                 destinatario: "TODOS",
-                asunto: inputAsunto.value,
-                cuerpo: areaMensaje.value,
+                asunto: elementos.asunto.value,
+                cuerpo: elementos.cuerpo.value,
                 fecha: new Date().toLocaleString(),
                 leido: false
-            });
-            inputAsunto.value = ''; areaMensaje.value = '';
+            };
+            await db.collection("mensajes").add(data);
+            alert("Enviado");
+            elementos.asunto.value = ''; elementos.cuerpo.value = '';
         };
     }
 
-    // --- TABLA DE MENSAJES (Común pero con columnas según rol) ---
+    // LISTADO (Común para ambos)
     const tabla = document.createElement('table');
+    const thead = document.createElement('thead');
+    thead.innerHTML = esAdmin 
+        ? '<tr><th>Fecha</th><th>Destinatario</th><th>Asunto</th><th>Mensaje</th><th>Acción</th></tr>'
+        : '<tr><th>Remitente</th><th>Fecha</th><th>Asunto</th><th>Mensaje</th><th>Estado</th></tr>';
+    tabla.appendChild(thead);
+    
     const tbody = document.createElement('tbody');
     tabla.appendChild(tbody);
     contenedor.appendChild(tabla);
@@ -705,27 +736,25 @@ window.iniciarModuloComunicacion = (esAdmin) => {
             const tr = document.createElement('tr');
             
             if (esAdmin) {
-                // Admin: Fecha, Destinatario, Asunto, Contenido, Botón Eliminar
-                [m.fecha, m.destinatario, m.asunto, m.cuerpo].forEach(txt => {
-                    const td = document.createElement('td'); td.textContent = txt; tr.appendChild(td);
+                [m.fecha, m.destinatario, m.asunto, m.cuerpo].forEach(v => {
+                    const td = document.createElement('td'); td.textContent = v; tr.appendChild(td);
                 });
-                const btnEli = document.createElement('button');
-                btnEli.textContent = 'Eliminar';
-                btnEli.onclick = () => db.collection("mensajes").doc(doc.id).delete();
-                const tdAcc = document.createElement('td'); tdAcc.appendChild(btnEli); tr.appendChild(tdAcc);
+                const b = document.createElement('button');
+                b.textContent = 'Eliminar';
+                b.onclick = () => db.collection("mensajes").doc(doc.id).delete();
+                const td = document.createElement('td'); td.appendChild(b); tr.appendChild(td);
             } else {
-                // Alumno: Remitente, Fecha, Asunto, Mensaje, Checkbox (Pendiente/Leído)
-                [m.remitente, m.fecha, m.asunto, m.cuerpo].forEach(txt => {
-                    const td = document.createElement('td'); td.textContent = txt; tr.appendChild(td);
+                [m.remitente, m.fecha, m.asunto, m.cuerpo].forEach(v => {
+                    const td = document.createElement('td'); td.textContent = v; tr.appendChild(td);
                 });
-                const check = document.createElement('input');
-                check.type = 'checkbox';
-                check.checked = m.leido || false;
-                check.onchange = (e) => db.collection("mensajes").doc(doc.id).update({ leido: e.target.checked });
-                const tdCheck = document.createElement('td'); 
-                tdCheck.textContent = m.leido ? "Leído" : "Pendiente";
-                tdCheck.prepend(check);
-                tr.appendChild(tdCheck);
+                const chk = document.createElement('input');
+                chk.type = 'checkbox';
+                chk.checked = m.leido;
+                chk.onchange = (e) => db.collection("mensajes").doc(doc.id).update({ leido: e.target.checked });
+                const td = document.createElement('td');
+                td.textContent = m.leido ? "Leído" : "Pendiente";
+                td.prepend(chk);
+                tr.appendChild(td);
             }
             tbody.appendChild(tr);
         });
@@ -735,4 +764,5 @@ window.iniciarModuloComunicacion = (esAdmin) => {
 
 // --- ARRANQUE ---
 document.body.onload = renderLogin;
+
 
