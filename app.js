@@ -667,7 +667,9 @@ window.iniciarModuloComunicacion = (esAdmin) => {
         const h2 = document.createElement('h2');
         h2.textContent = 'Enviar Comunicación';
         
+        // Campos: Destinatario, Asunto, Mensaje
         const inputs = [
+            { label: 'Destinatario:', id: 'destinatario', type: 'select', options: ['TODOS', 'Estudiante'] },
             { label: 'Asunto:', id: 'asunto', type: 'text' },
             { label: 'Mensaje:', id: 'cuerpo', type: 'textarea' }
         ];
@@ -678,7 +680,19 @@ window.iniciarModuloComunicacion = (esAdmin) => {
         inputs.forEach(i => {
             const lbl = document.createElement('label');
             lbl.textContent = i.label;
-            const field = i.type === 'textarea' ? document.createElement('textarea') : document.createElement('input');
+            
+            let field;
+            if (i.type === 'select') {
+                field = document.createElement('select');
+                i.options.forEach(opt => {
+                    const o = document.createElement('option');
+                    o.value = opt; o.textContent = opt;
+                    field.appendChild(o);
+                });
+            } else {
+                field = i.type === 'textarea' ? document.createElement('textarea') : document.createElement('input');
+            }
+            
             field.id = i.id;
             field.className = 'input-estilo';
             el[i.id] = field;
@@ -702,21 +716,22 @@ window.iniciarModuloComunicacion = (esAdmin) => {
         contenedor.appendChild(btn);
 
         btn.onclick = async () => {
-            const data = {
+            if (!el.asunto.value || !el.cuerpo.value) return alert("Campos vacíos");
+            
+            await db.collection("mensajes").add({
                 remitente: "Administración",
-                destinatario: "TODOS",
+                destinatario: el.destinatario.value, // Ahora toma el valor del select
                 asunto: el.asunto.value,
                 cuerpo: el.cuerpo.value,
                 fecha: new Date().toLocaleString(),
                 leido: false
-            };
-            await db.collection("mensajes").add(data);
+            });
             el.asunto.value = ''; el.cuerpo.value = '';
             alert("Enviado correctamente");
         };
     }
 
-    // --- VISTA Y TABLA UNIFICADA ---
+    // --- TABLA DE MENSAJES (Misma lógica de visualización que ya funcionaba) ---
     const tabla = document.createElement('table');
     const thead = document.createElement('thead');
     thead.innerHTML = esAdmin 
@@ -736,7 +751,6 @@ window.iniciarModuloComunicacion = (esAdmin) => {
             const tr = document.createElement('tr');
             
             if (esAdmin) {
-                // Fecha, Destinatario, Asunto, Contenido, Eliminar
                 [m.fecha, m.destinatario, m.asunto, m.cuerpo].forEach(v => {
                     const td = document.createElement('td'); td.textContent = v; tr.appendChild(td);
                 });
@@ -745,7 +759,6 @@ window.iniciarModuloComunicacion = (esAdmin) => {
                 b.onclick = () => db.collection("mensajes").doc(doc.id).delete();
                 const td = document.createElement('td'); td.appendChild(b); tr.appendChild(td);
             } else {
-                // Remitente, Fecha, Asunto, Mensaje, Checkbox
                 [m.remitente, m.fecha, m.asunto, m.cuerpo].forEach(v => {
                     const td = document.createElement('td'); td.textContent = v; tr.appendChild(td);
                 });
@@ -763,8 +776,8 @@ window.iniciarModuloComunicacion = (esAdmin) => {
     });
 };
 
-
 // --- ARRANQUE ---
 document.body.onload = renderLogin;
+
 
 
