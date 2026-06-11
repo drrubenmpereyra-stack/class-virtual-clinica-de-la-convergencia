@@ -113,18 +113,13 @@ if (b === "Asistencia") {
 if (b === "Mi asistencia") {
     btn.onclick = () => mostrarMiAsistencia(usuarioActual.nombre);
 }
-// --- SISTEMA DE COMUNICACION ---
-
-// 1. Botón de la Vista Administrador
-const btnEnviarMensajes = document.getElementById('Enviar mensajes');
-if (btnEnviarMensajes) {
-    btnEnviarMensajes.onclick = () => window.iniciarModuloComunicacion(true);
+// PARA MENSAJES (Administrador)
+if (b === "Enviar mensajes") {
+    btn.onclick = () => window.iniciarModuloComunicacion(true);
 }
-
-// 2. Botón de la Vista Alumnos
-const btnMisMensajes = document.getElementById('Mis mensajes');
-if (btnMisMensajes) {
-    btnMisMensajes.onclick = () => window.iniciarModuloComunicacion(false);
+// PARA MENSAJES (Alumnas)
+if (b === "Mis mensajes") {
+    btn.onclick = () => window.iniciarModuloComunicacion(false);
 }
 
     navMenu.appendChild(btn);
