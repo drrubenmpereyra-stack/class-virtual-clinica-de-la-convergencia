@@ -103,7 +103,7 @@ if (b === "Pagos") {
 }
 // PARA MIS PAGOS
 if (b === "Mis pagos") {
-    btn.onclick = () => mostrarMispagos(usuarioActual.nombre);
+    btn.onclick = () => mostrarMisPagos(usuarioActual.nombre);
 }
 
     navMenu.appendChild(btn);
