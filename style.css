@@ -65,4 +65,48 @@ button:active { transform: scale(0.95); }
 .input-clinical { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; }
 .btn-convergencia { background: #2c3e50; color: white; padding: 10px 20px; border: none; cursor: pointer; }
 .btn-cancelar { background: #e74c3c; color: white; padding: 10px 20px; border: none; cursor: pointer; }
+:root {
+    --color-ocre: #fdfbf7;
+    --color-azul-profundo: #1a2a3a;
+    --text-light: #ffffff;
+}
 
+body {
+    background-color: var(--color-ocre);
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+}
+
+/* Fondo con corteza cerebral tenue en gradiente */
+.chat-container {
+    background: linear-gradient(rgba(253, 251, 247, 0.85), rgba(253, 251, 247, 0.85)), 
+                url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48cGF0aCBkPSJNMCAwaDEwMHYxMDBIMHoiIGZpbGw9IiM2YzcyN2MiIGZpbGwtb3BhY2l0eT0iLjAzIi8+PC9zdmc+');
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.header-convergencia {
+    background-color: var(--color-azul-profundo);
+    color: var(--text-light);
+    padding: 15px;
+    text-align: center;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.chat-box {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+/* Burbujas de mensaje */
+.msg {
+    max-width: 70%;
+    padding: 10px 15px;
+    margin: 10px 0;
+    border-radius: 15px;
+}
+.msg-admin { background: var(--color-azul-profundo); color: white; align-self: flex-start; }
+.msg-alumno { background: #e0dcd5; color: #333; align-self: flex-end; }
