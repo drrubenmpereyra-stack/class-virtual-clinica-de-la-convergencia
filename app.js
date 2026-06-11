@@ -113,6 +113,19 @@ if (b === "Asistencia") {
 if (b === "Mi asistencia") {
     btn.onclick = () => mostrarMiAsistencia(usuarioActual.nombre);
 }
+// --- SISTEMA DE COMUNICACION ---
+
+// 1. Botón de la Vista Administrador
+const btnEnviarMensajes = document.getElementById('Enviar mensajes');
+if (btnEnviarMensajes) {
+    btnEnviarMensajes.onclick = () => window.iniciarModuloComunicacion(true);
+}
+
+// 2. Botón de la Vista Alumnos
+const btnMisMensajes = document.getElementById('Mis mensajes');
+if (btnMisMensajes) {
+    btnMisMensajes.onclick = () => window.iniciarModuloComunicacion(false);
+}
 
     navMenu.appendChild(btn);
 });
@@ -648,7 +661,89 @@ window.mostrarMiAsistencia = async (nombre) => {
     document.getElementById('lista-asistencia').innerHTML = html;
 };
 // SISTEMA DE MENSAJERIA
+window.iniciarModuloComunicacion = (esAdmin) => {
+    const vista = document.getElementById('main-view');
+    vista.textContent = ''; 
 
+    // Contenedor principal
+    const contenedor = document.createElement('div');
+    contenedor.className = 'card-mensajeria';
+
+    // -- FORMULARIO DE ENVÍO (Solo visible para Admin) --
+    if (esAdmin) {
+        const h2 = document.createElement('h2');
+        h2.textContent = 'Enviar Comunicación';
+        
+        const inputAsunto = document.createElement('input');
+        inputAsunto.placeholder = 'Asunto';
+        inputAsunto.className = 'input-estilo';
+        
+        const areaMensaje = document.createElement('textarea');
+        areaMensaje.placeholder = 'Mensaje (puedes usar emoticones aquí)';
+        areaMensaje.className = 'input-estilo';
+        
+        const btnEnviar = document.createElement('button');
+        btnEnviar.textContent = 'Enviar Mensaje';
+        btnEnviar.className = 'btn-enviar';
+
+        contenedor.append(h2, inputAsunto, areaMensaje, btnEnviar);
+
+        btnEnviar.onclick = async () => {
+            if (!inputAsunto.value || !areaMensaje.value) return alert("Completa los campos");
+            await db.collection("mensajes").add({
+                remitente: "Administración",
+                destinatario: "TODOS", // O lógica para destinatario específico
+                asunto: inputAsunto.value,
+                cuerpo: areaMensaje.value,
+                fecha: new Date().toLocaleString(),
+                leido: false // Estado inicial
+            });
+            inputAsunto.value = ''; areaMensaje.value = '';
+            alert("Mensaje enviado");
+        };
+    }
+
+    // -- LISTADO DE MENSAJES --
+    const tabla = document.createElement('table');
+    tabla.style.width = '100%';
+    const tbody = document.createElement('tbody');
+    tabla.appendChild(tbody);
+    contenedor.appendChild(tabla);
+    vista.appendChild(contenedor);
+
+    db.collection("mensajes").orderBy("fecha", "desc").onSnapshot(snap => {
+        tbody.textContent = '';
+        snap.forEach(doc => {
+            const m = doc.data();
+            const tr = document.createElement('tr');
+
+            if (esAdmin) {
+                // Vista Admin: Fecha, Destinatario, Asunto, Contenido, Eliminar
+                const campos = [m.fecha, m.destinatario, m.asunto, m.cuerpo];
+                campos.forEach(txt => { const td = document.createElement('td'); td.textContent = txt; tr.appendChild(td); });
+                
+                const btnEliminar = document.createElement('button');
+                btnEliminar.textContent = 'Eliminar';
+                btnEliminar.onclick = () => db.collection("mensajes").doc(doc.id).delete();
+                const tdAcc = document.createElement('td'); tdAcc.appendChild(btnEliminar); tr.appendChild(tdAcc);
+            } else {
+                // Vista Alumno: Remitente, Fecha, Asunto, Mensaje, Checkbox
+                const campos = [m.remitente, m.fecha, m.asunto, m.cuerpo];
+                campos.forEach(txt => { const td = document.createElement('td'); td.textContent = txt; tr.appendChild(td); });
+                
+                const check = document.createElement('input');
+                check.type = 'checkbox';
+                check.checked = m.leido || false;
+                check.onchange = (e) => db.collection("mensajes").doc(doc.id).update({ leido: e.target.checked });
+                const tdCheck = document.createElement('td'); 
+                tdCheck.textContent = m.leido ? "Leído" : "Pendiente";
+                tdCheck.prepend(check);
+                tr.appendChild(tdCheck);
+            }
+            tbody.appendChild(tr);
+        });
+    });
+};
 
 // --- ARRANQUE ---
 document.body.onload = renderLogin;
