@@ -113,14 +113,28 @@ if (b === "Asistencia") {
 if (b === "Mi asistencia") {
     btn.onclick = () => mostrarMiAsistencia(usuarioActual.nombre);
 }
-// PARA ENVIAR MENSAJES (vista adm)
-if (b === "Enviar mensajes") { // Ajusta este texto al exacto de tu lista
-    btn.onclick = () => mostrarDashboardMensajes();
+// BOTON ENVIAR MENSAJE (ADM, DISPARA EL CHAT)
+if (b === "Enviar mensajes") { 
+    btn.onclick = () => {
+        // En lugar de un formulario, mostramos una lista de alumnos para chatear
+        const main = document.getElementById('main-view');
+        main.innerHTML = `<h2>Seleccione Alumno para Chatear</h2><div id="lista-alumnos"></div>`;
+        const lista = document.getElementById('lista-alumnos');
+        
+        CONFIGURACION_USUARIOS.filter(u => u.rol === "alumno").forEach(u => {
+            const btnAlumno = document.createElement("button");
+            btnAlumno.textContent = u.nombre;
+            btnAlumno.className = "btn-convergencia";
+            btnAlumno.onclick = () => iniciarChat(u.nombre, "Administrador");
+            lista.appendChild(btnAlumno);
+        });
+    };
 }
-// PARA MIS MENSAJES (vista alumnos)
+// Si es Estudiante, entra directo a su chat con el Administrador
 if (b === "Mis mensajes") {
-    btn.onclick = () => mostrarMisMensajes(usuarioActual.nombre);
+    btn.onclick = () => iniciarChat(usuarioActual.nombre, usuarioActual.nombre);
 }
+
 
     navMenu.appendChild(btn);
 });
@@ -655,130 +669,52 @@ window.mostrarMiAsistencia = async (nombre) => {
     
     document.getElementById('lista-asistencia').innerHTML = html;
 };
-// --- MÓDULO DE MENSAJERÍA UNIFICADO ---
-// --- MÓDULO MENSAJERÍA UNIFICADO ---
+// --- LÓGICA DE CHAT EN TIEMPO REAL ---
 
-window.renderFormularioMensajes = () => {
-    // Usa tu array global para listar alumnos
-    const alumnos = CONFIGURACION_USUARIOS.filter(u => u.rol === "alumno");
-    let options = `<option value="TODOS">Enviar a TODOS</option>`;
-    alumnos.forEach(u => options += `<option value="${u.nombre}">${u.nombre}</option>`);
-
-    document.getElementById('main-view').innerHTML = `
-        <div class="card-convergencia">
-            <h2>Redactar Comunicación</h2>
-            <input id="inAsunto" placeholder="Asunto" class="input-clinical">
-            <select id="inDestinatario" class="input-clinical">${options}</select>
-            <div id="selector-emojis">
-                ${['💬', '🧠', '⚡', '📍', '✅', '⚠️', '📎'].map(e => `<button onclick="agregarEmoji('${e}')">${e}</button>`).join('')}
-            </div>
-            <textarea id="inCuerpo" placeholder="Cuerpo del mensaje..." rows="6" class="input-clinical"></textarea>
-            <button onclick="enviarMensaje()" class="btn-convergencia">Enviar</button>
-            <button onclick="mostrarDashboardMensajes()" class="btn-cancelar">Volver</button>
-        </div>`;
-};
-
-window.enviarMensaje = async () => {
-    await db.collection("mensajes").add({
-        asunto: document.getElementById('inAsunto').value,
-        destinatario: document.getElementById('inDestinatario').value,
-        cuerpo: document.getElementById('inCuerpo').value,
-        fecha: new Date().toLocaleDateString(),
-        remitente: "Administrador"
-    });
-    alert("Enviado");
-    mostrarDashboardMensajes();
-};
-
-window.mostrarDashboardMensajes = async () => {
+// Función para inicializar el chat
+window.iniciarChat = (chatId, nombreUsuario) => {
     const main = document.getElementById('main-view');
-    main.innerHTML = `<h2>Gestión de Comunicaciones</h2>
-                      <button onclick="renderFormularioMensajes()" class="btn-convergencia">+ Redactar</button>
-                      <div id="lista-mensajes">Cargando...</div>`;
-    
-    try {
-        const snapshot = await db.collection("mensajes").orderBy("fecha", "desc").get();
-        let html = `<table class="tabla-clinica"><thead><tr><th>Fecha</th><th>De</th><th>Para</th><th>Asunto</th><th>Acción</th></tr></thead><tbody>`;
-        
-        snapshot.forEach(doc => {
-            const m = doc.data();
-            // CORRECCIÓN: Si m.cuerpo es undefined o null, usamos "Sin contenido"
-            const cuerpoSeguro = (m.cuerpo || "Sin contenido");
-            // Escapamos comillas solo si el cuerpo existe
-            const cuerpoEscapado = cuerpoSeguro.replace(/'/g, "\\'");
-            
-            html += `<tr>
-                <td>${m.fecha || 'N/A'}</td>
-                <td>${m.remitente || 'Alumno'}</td>
-                <td>${m.destinatario || 'TODOS'}</td>
-                <td>${m.asunto || 'Sin asunto'}</td>
-                <td>
-                    <button onclick="verCuerpo('${cuerpoEscapado}')">Leer</button>
-                    <button onclick="eliminarMensaje('${doc.id}')">Borrar</button>
-                </td>
-            </tr>`;
+    main.innerHTML = `
+        <div class="header-convergencia">Chat: ${nombreUsuario}</div>
+        <div id="mensajes-log" class="chat-box"></div>
+        <div style="padding:10px;">
+            <input id="inMsg" placeholder="Escribe un mensaje...">
+            <button onclick="enviarMensajeChat('${chatId}', '${nombreUsuario}')">Enviar</button>
+        </div>`;
+
+    // Escucha en tiempo real (Firebase)
+    db.collection("mensajes")
+        .where("chatId", "==", chatId)
+        .orderBy("fecha", "asc")
+        .onSnapshot(snapshot => {
+            const log = document.getElementById('mensajes-log');
+            log.innerHTML = "";
+            snapshot.forEach(doc => {
+                const m = doc.data();
+                const clase = m.remitente === "Administrador" ? "msg-admin" : "msg-alumno";
+                log.innerHTML += `<div class="msg ${clase}">${m.cuerpo}</div>`;
+            });
+            log.scrollTop = log.scrollHeight;
         });
-        
-        html += `</tbody></table><br><button onclick="mostrarDashboard()" class="btn-cancelar">Volver</button>`;
-        document.getElementById('lista-mensajes').innerHTML = html;
-    } catch (e) {
-        console.error("Error al renderizar tabla:", e);
-        document.getElementById('lista-mensajes').innerHTML = "Error al cargar mensajes: " + e.message;
-    }
 };
 
-window.mostrarMisMensajes = async (nombre) => {
-    const main = document.getElementById('main-view');
-    main.innerHTML = `<h2>Mis Mensajes</h2><button onclick="renderFormularioMensajeAlumno('${nombre}')" class="btn-convergencia">Enviar al Admin</button><div id="lista-mensajes">Cargando...</div>`;
-    const snapshot = await db.collection("mensajes").get();
-    let html = `<table class="tabla-clinica"><thead><tr><th>Fecha</th><th>Asunto</th><th>Cuerpo</th><th>Acción</th></tr></thead><tbody>`;
-    snapshot.forEach(doc => {
-        const m = doc.data();
-        if (m.destinatario === "TODOS" || m.destinatario === nombre || m.remitente === nombre) {
-            html += `<tr><td>${m.fecha}</td><td>${m.asunto}</td>
-            <td><button onclick="verCuerpo('${m.cuerpo.replace(/'/g, "\\'")}')">Leer</button></td>
-            <td><button onclick="eliminarMensaje('${doc.id}')">Borrar</button></td></tr>`;
-        }
-    });
-    html += `</tbody></table><br><button onclick="mostrarDashboard()" class="btn-cancelar">Volver</button>`;
-    document.getElementById('lista-mensajes').innerHTML = html;
-};
+// Función para enviar
+window.enviarMensajeChat = async (chatId, remitente) => {
+    const input = document.getElementById('inMsg');
+    if (!input.value) return;
 
-window.renderFormularioMensajeAlumno = (nombre) => {
-    document.getElementById('main-view').innerHTML = `
-        <div class="card-convergencia">
-            <h2>Enviar al Administrador</h2>
-            <input id="inAsunto" placeholder="Asunto" class="input-clinical">
-            <textarea id="inCuerpo" placeholder="Escribe..." rows="6" class="input-clinical"></textarea>
-            <button onclick="enviarMensajeAlumno('${nombre}')" class="btn-convergencia">Enviar</button>
-            <button onclick="mostrarMisMensajes('${nombre}')" class="btn-cancelar">Volver</button>
-        </div>`;
-};
-
-window.enviarMensajeAlumno = async (nombre) => {
     await db.collection("mensajes").add({
-        asunto: document.getElementById('inAsunto').value,
-        cuerpo: document.getElementById('inCuerpo').value,
-        destinatario: "Administrador",
-        remitente: nombre,
-        fecha: new Date().toLocaleDateString()
+        chatId: chatId,
+        cuerpo: input.value,
+        remitente: remitente,
+        fecha: new Date()
     });
-    alert("Enviado");
-    mostrarMisMensajes(nombre);
+    input.value = "";
 };
 
-window.verCuerpo = (cuerpo) => alert("Mensaje: " + cuerpo);
-window.eliminarMensaje = async (id) => {
-    if (confirm("¿Borrar?")) {
-        await db.collection("mensajes").doc(id).delete();
-        usuarioActual.rol === "admin" ? mostrarDashboardMensajes() : mostrarMisMensajes(usuarioActual.nombre);
-    }
-};
-window.agregarEmoji = (e) => document.getElementById('inCuerpo').value += e;
 
 
 // --- ARRANQUE ---
 document.body.onload = renderLogin;
-
 
 
