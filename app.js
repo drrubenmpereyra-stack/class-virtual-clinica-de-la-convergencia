@@ -113,26 +113,9 @@ if (b === "Asistencia") {
 if (b === "Mi asistencia") {
     btn.onclick = () => mostrarMiAsistencia(usuarioActual.nombre);
 }
-// BOTON ENVIAR MENSAJE (ADM, DISPARA EL CHAT)
+// PARA ENVIAR MENSAJES (vista Adm)
 if (b === "Enviar mensajes") { 
-    btn.onclick = () => {
-        // En lugar de un formulario, mostramos una lista de alumnos para chatear
-        const main = document.getElementById('main-view');
-        main.innerHTML = `<h2>Seleccione Alumno para Chatear</h2><div id="lista-alumnos"></div>`;
-        const lista = document.getElementById('lista-alumnos');
-        
-        CONFIGURACION_USUARIOS.filter(u => u.rol === "alumno").forEach(u => {
-            const btnAlumno = document.createElement("button");
-            btnAlumno.textContent = u.nombre;
-            btnAlumno.className = "btn-convergencia";
-            btnAlumno.onclick = () => iniciarChat(u.nombre, "Administrador");
-            lista.appendChild(btnAlumno);
-        });
-    };
-}
-// Si es Estudiante, entra directo a su chat con el Administrador
-if (b === "Mis mensajes") {
-    btn.onclick = () => iniciarChat(usuarioActual.nombre, usuarioActual.nombre);
+    btn.onclick = () => renderFormularioAdmin();
 }
 
 
@@ -669,50 +652,61 @@ window.mostrarMiAsistencia = async (nombre) => {
     
     document.getElementById('lista-asistencia').innerHTML = html;
 };
-// --- LÓGICA DE CHAT EN TIEMPO REAL ---
-
-// Función para inicializar el chat
-window.iniciarChat = (chatId, nombreUsuario) => {
+// Renderizado del formulario
+window.renderFormularioAdmin = () => {
     const main = document.getElementById('main-view');
     main.innerHTML = `
-        <div class="header-convergencia">Chat: ${nombreUsuario}</div>
-        <div id="mensajes-log" class="chat-box"></div>
-        <div style="padding:10px;">
-            <input id="inMsg" placeholder="Escribe un mensaje...">
-            <button onclick="enviarMensajeChat('${chatId}', '${nombreUsuario}')">Enviar</button>
+        <div class="card-mensajeria">
+            <h2>Redactar Comunicación</h2>
+            <input id="inAsunto" placeholder="Asunto" class="input-estilo">
+            <select id="inDestinatario" class="input-estilo">
+                <option value="TODOS">Enviar a TODOS</option>
+                ${CONFIGURACION_USUARIOS.filter(u => u.rol === "alumno")
+                  .map(u => `<option value="${u.nombre}">${u.nombre}</option>`).join('')}
+            </select>
+            <div id="emojis" style="margin-bottom:10px;">
+                ${['💬', '🧠', '⚡', '📍', '✅'].map(e => `<button onclick="document.getElementById('inCuerpo').value += '${e}'">${e}</button>`).join('')}
+            </div>
+            <textarea id="inCuerpo" placeholder="Cuerpo del mensaje..." rows="6" class="input-estilo"></textarea>
+            <button onclick="enviarMensajeAdmin()" class="btn-enviar">Enviar Mensaje</button>
         </div>`;
-
-    // Escucha en tiempo real (Firebase)
-    db.collection("mensajes")
-        .where("chatId", "==", chatId)
-        .orderBy("fecha", "asc")
-        .onSnapshot(snapshot => {
-            const log = document.getElementById('mensajes-log');
-            log.innerHTML = "";
-            snapshot.forEach(doc => {
-                const m = doc.data();
-                const clase = m.remitente === "Administrador" ? "msg-admin" : "msg-alumno";
-                log.innerHTML += `<div class="msg ${clase}">${m.cuerpo}</div>`;
-            });
-            log.scrollTop = log.scrollHeight;
-        });
 };
 
-// Función para enviar
-window.enviarMensajeChat = async (chatId, remitente) => {
-    const input = document.getElementById('inMsg');
-    if (!input.value) return;
+// Guardar y redireccionar
+window.enviarMensajeAdmin = async () => {
+    const asunto = document.getElementById('inAsunto').value;
+    const destinatario = document.getElementById('inDestinatario').value;
+    const cuerpo = document.getElementById('inCuerpo').value;
 
     await db.collection("mensajes").add({
-        chatId: chatId,
-        cuerpo: input.value,
-        remitente: remitente,
-        fecha: new Date()
+        remitente: "Administración",
+        asunto,
+        destinatario,
+        cuerpo,
+        fecha: new Date().toLocaleString()
     });
-    input.value = "";
+    
+    // Al finalizar, mostramos el historial
+    mostrarHistorialMensajes();
 };
 
-
+// Historial de mensajes (Tabla)
+window.mostrarHistorialMensajes = async () => {
+    const main = document.getElementById('main-view');
+    main.innerHTML = `<h2>Historial de Comunicaciones</h2><div id="lista-mensajes">Cargando...</div>`;
+    
+    const snapshot = await db.collection("mensajes").orderBy("fecha", "desc").get();
+    let html = `<table class="tabla-clinica" style="width:100%; border-collapse: collapse;">
+                <thead><tr><th>Fecha</th><th>Remitente</th><th>Asunto</th><th>Destinatario</th></tr></thead><tbody>`;
+    
+    snapshot.forEach(doc => {
+        const m = doc.data();
+        html += `<tr><td>${m.fecha}</td><td>${m.remitente}</td><td>${m.asunto}</td><td>${m.destinatario}</td></tr>`;
+    });
+    
+    html += `</tbody></table>`;
+    document.getElementById('lista-mensajes').innerHTML = html;
+};
 
 // --- ARRANQUE ---
 document.body.onload = renderLogin;
