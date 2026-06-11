@@ -661,20 +661,22 @@ window.renderFormularioMensajes = async () => {
     
     snapshot.forEach(doc => {
         const u = doc.data();
-        // Cambia 'TU_NOMBRE_ADMIN' por cómo apareces en tu colección
-        if (u.nombre !== 'TU_NOMBRE_ADMIN') { 
+        if (u.nombre !== 'Dr. Rubén M. Pereyra') { 
             options += `<option value="${u.nombre}">${u.nombre}</option>`;
         }
     });
 
     document.getElementById('main-view').innerHTML = `
-        <div class="card">
-            <h2>Enviar Mensaje</h2>
+        <div class="card-convergencia">
+            <h2>Redactar Comunicación</h2>
             <input id="inAsunto" placeholder="Asunto">
             <select id="inDestinatario">${options}</select>
-            <textarea id="inCuerpo" placeholder="Escribe tu mensaje..." rows="5"></textarea>
-            <button onclick="enviarMensaje()" class="btn-green">Enviar Mensaje</button>
-            <button onclick="mostrarDashboardMensajes()" class="btn-red">Volver</button>
+            <div id="selector-emojis">
+                ${['💬', '🧠', '⚡', '📍', '✅', '⚠️', '📎'].map(e => `<button onclick="agregarEmoji('${e}')">${e}</button>`).join('')}
+            </div>
+            <textarea id="inCuerpo" placeholder="Escribe tu mensaje..." rows="6"></textarea>
+            <button onclick="enviarMensaje()">Enviar</button>
+            <button onclick="mostrarDashboardMensajes()">Volver</button>
         </div>`;
 };
 window.enviarMensaje = async () => {
@@ -692,25 +694,27 @@ window.enviarMensaje = async () => {
 };
 window.mostrarDashboardMensajes = async () => {
     const main = document.getElementById('main-view');
-    main.innerHTML = `<h2>Mensajes (Administración)</h2>
-                      <button onclick="renderFormularioMensajes()" class="btn-gold">+ Redactar Nuevo</button>
+    main.innerHTML = `<h2>Gestión de Comunicaciones</h2>
+                      <button onclick="renderFormularioMensajes()">+ Redactar</button>
                       <div id="lista-mensajes">Cargando...</div>`;
     
     const snapshot = await db.collection("mensajes").get();
-    let html = `<table class="tabla-clinica"><thead><tr><th>Remitente</th><th>Destinatario</th><th>Asunto</th><th>Acción</th></tr></thead><tbody>`;
+    let html = `<table class="tabla-clinica"><thead><tr><th>Remitente</th><th>Asunto</th><th>Acción</th></tr></thead><tbody>`;
     
     snapshot.forEach(doc => {
         const m = doc.data();
         const quienEnvia = m.remitente ? `Alumno: ${m.remitente}` : 'Administrador';
         html += `<tr>
             <td>${quienEnvia}</td>
-            <td>${m.destinatario}</td>
             <td>${m.asunto}</td>
-            <td><button onclick="eliminarMensaje('${doc.id}')" class="btn-red">Borrar</button></td>
+            <td>
+                <button onclick="verCuerpo('${m.cuerpo.replace(/'/g, "\\'")}')">Leer</button>
+                <button onclick="eliminarMensaje('${doc.id}')">Borrar</button>
+            </td>
         </tr>`;
     });
     
-    html += `</tbody></table><br><button onclick="mostrarDashboard()" class="btn-red">Volver al Menú</button>`;
+    html += `</tbody></table><br><button onclick="mostrarDashboard()">Volver al Menú</button>`;
     document.getElementById('lista-mensajes').innerHTML = html;
 };
 window.mostrarMisMensajes = async (nombre) => {
@@ -760,6 +764,35 @@ window.enviarMensajeAlumno = async (nombre) => {
     alert("Mensaje enviado al administrador");
     mostrarMisMensajes(nombre);
 };
+// --- FUNCIONES NUEVAS DE MENSAJERÍA ---
+
+// 1. Eliminar mensaje (con detección de rol para recarga correcta)
+window.eliminarMensaje = async (id) => {
+    if (confirm("¿Seguro que deseas eliminar este mensaje?")) {
+        await db.collection("mensajes").doc(id).delete();
+        // Identifica si eres admin o alumno para recargar la vista correspondiente
+        if (usuarioActual.rol === "admin") {
+            mostrarDashboardMensajes();
+        } else {
+            mostrarMisMensajes(usuarioActual.nombre);
+        }
+    }
+};
+
+// 2. Ver cuerpo del mensaje (soluciona la falta de lectura)
+window.verCuerpo = (cuerpo) => {
+    alert("Contenido del mensaje:\n\n" + cuerpo);
+};
+
+// 3. Agregar Emojis al texto
+window.agregarEmoji = (emoji) => {
+    const textarea = document.getElementById('inCuerpo');
+    if (textarea) {
+        textarea.value += emoji;
+    }
+};
+
+// --- FIN BLOQUE DE MENSAJERÍA ---
 // --- ARRANQUE ---
 document.body.onload = renderLogin;
 
