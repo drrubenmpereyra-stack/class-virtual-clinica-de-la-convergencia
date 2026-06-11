@@ -113,11 +113,10 @@ if (b === "Asistencia") {
 if (b === "Mi asistencia") {
     btn.onclick = () => mostrarMiAsistencia(usuarioActual.nombre);
 }
-// PARA MENSAJES (Administrador)
 if (b === "Enviar mensajes") {
     btn.onclick = () => window.iniciarModuloComunicacion(true);
 }
-// PARA MENSAJES (Alumnas)
+
 if (b === "Mis mensajes") {
     btn.onclick = () => window.iniciarModuloComunicacion(false);
 }
@@ -660,47 +659,40 @@ window.iniciarModuloComunicacion = (esAdmin) => {
     const vista = document.getElementById('main-view');
     vista.textContent = ''; 
 
-    // Contenedor principal
     const contenedor = document.createElement('div');
     contenedor.className = 'card-mensajeria';
 
-    // -- FORMULARIO DE ENVÍO (Solo visible para Admin) --
+    // --- VISTA ADMINISTRADOR ---
     if (esAdmin) {
-        const h2 = document.createElement('h2');
-        h2.textContent = 'Enviar Comunicación';
+        const titulo = document.createElement('h2');
+        titulo.textContent = 'Enviar Mensajes';
         
         const inputAsunto = document.createElement('input');
         inputAsunto.placeholder = 'Asunto';
-        inputAsunto.className = 'input-estilo';
         
         const areaMensaje = document.createElement('textarea');
-        areaMensaje.placeholder = 'Mensaje (puedes usar emoticones aquí)';
-        areaMensaje.className = 'input-estilo';
+        areaMensaje.placeholder = 'Mensaje...';
         
         const btnEnviar = document.createElement('button');
-        btnEnviar.textContent = 'Enviar Mensaje';
-        btnEnviar.className = 'btn-enviar';
-
-        contenedor.append(h2, inputAsunto, areaMensaje, btnEnviar);
+        btnEnviar.textContent = 'Enviar';
+        
+        contenedor.append(titulo, inputAsunto, areaMensaje, btnEnviar);
 
         btnEnviar.onclick = async () => {
-            if (!inputAsunto.value || !areaMensaje.value) return alert("Completa los campos");
             await db.collection("mensajes").add({
                 remitente: "Administración",
-                destinatario: "TODOS", // O lógica para destinatario específico
+                destinatario: "TODOS",
                 asunto: inputAsunto.value,
                 cuerpo: areaMensaje.value,
                 fecha: new Date().toLocaleString(),
-                leido: false // Estado inicial
+                leido: false
             });
             inputAsunto.value = ''; areaMensaje.value = '';
-            alert("Mensaje enviado");
         };
     }
 
-    // -- LISTADO DE MENSAJES --
+    // --- TABLA DE MENSAJES (Común pero con columnas según rol) ---
     const tabla = document.createElement('table');
-    tabla.style.width = '100%';
     const tbody = document.createElement('tbody');
     tabla.appendChild(tbody);
     contenedor.appendChild(tabla);
@@ -711,21 +703,21 @@ window.iniciarModuloComunicacion = (esAdmin) => {
         snap.forEach(doc => {
             const m = doc.data();
             const tr = document.createElement('tr');
-
+            
             if (esAdmin) {
-                // Vista Admin: Fecha, Destinatario, Asunto, Contenido, Eliminar
-                const campos = [m.fecha, m.destinatario, m.asunto, m.cuerpo];
-                campos.forEach(txt => { const td = document.createElement('td'); td.textContent = txt; tr.appendChild(td); });
-                
-                const btnEliminar = document.createElement('button');
-                btnEliminar.textContent = 'Eliminar';
-                btnEliminar.onclick = () => db.collection("mensajes").doc(doc.id).delete();
-                const tdAcc = document.createElement('td'); tdAcc.appendChild(btnEliminar); tr.appendChild(tdAcc);
+                // Admin: Fecha, Destinatario, Asunto, Contenido, Botón Eliminar
+                [m.fecha, m.destinatario, m.asunto, m.cuerpo].forEach(txt => {
+                    const td = document.createElement('td'); td.textContent = txt; tr.appendChild(td);
+                });
+                const btnEli = document.createElement('button');
+                btnEli.textContent = 'Eliminar';
+                btnEli.onclick = () => db.collection("mensajes").doc(doc.id).delete();
+                const tdAcc = document.createElement('td'); tdAcc.appendChild(btnEli); tr.appendChild(tdAcc);
             } else {
-                // Vista Alumno: Remitente, Fecha, Asunto, Mensaje, Checkbox
-                const campos = [m.remitente, m.fecha, m.asunto, m.cuerpo];
-                campos.forEach(txt => { const td = document.createElement('td'); td.textContent = txt; tr.appendChild(td); });
-                
+                // Alumno: Remitente, Fecha, Asunto, Mensaje, Checkbox (Pendiente/Leído)
+                [m.remitente, m.fecha, m.asunto, m.cuerpo].forEach(txt => {
+                    const td = document.createElement('td'); td.textContent = txt; tr.appendChild(td);
+                });
                 const check = document.createElement('input');
                 check.type = 'checkbox';
                 check.checked = m.leido || false;
@@ -739,6 +731,7 @@ window.iniciarModuloComunicacion = (esAdmin) => {
         });
     });
 };
+
 
 // --- ARRANQUE ---
 document.body.onload = renderLogin;
