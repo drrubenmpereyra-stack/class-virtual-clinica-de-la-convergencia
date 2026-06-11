@@ -102,8 +102,8 @@ if (b === "Pagos") {
     btn.onclick = () => mostrarDashboardPagos();
 }
 // PARA MIS PAGOS
-if (b === "Mis Pagos") {
-    btn.onclick = () => mostrarMisPagos(usuarioActual.nombre);
+if (b === "Mis pagos") {
+    btn.onclick = () => mostrarMispagos(usuarioActual.nombre);
 }
 
     navMenu.appendChild(btn);
