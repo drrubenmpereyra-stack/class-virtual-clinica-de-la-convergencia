@@ -113,11 +113,11 @@ if (b === "Asistencia") {
 if (b === "Mi asistencia") {
     btn.onclick = () => mostrarMiAsistencia(usuarioActual.nombre);
 }
-// PARA MENSAJES (vista administrador)
-if (b === "Enviar mensajes") {
+// PARA ENVIAR MENSAJES (vista adm)
+if (b === "Enviar mensajes") { // Ajusta este texto al exacto de tu lista
     btn.onclick = () => mostrarDashboardMensajes();
 }
-// PARA MENSAJES (Vista alumnos)
+// PARA MIS MENSAJES (vista alumnos)
 if (b === "Mis mensajes") {
     btn.onclick = () => mostrarMisMensajes(usuarioActual.nombre);
 }
@@ -655,146 +655,106 @@ window.mostrarMiAsistencia = async (nombre) => {
     
     document.getElementById('lista-asistencia').innerHTML = html;
 };
-window.renderFormularioMensajes = async () => {
-    const snapshot = await db.collection("usuarios").get();
+// --- MÓDULO DE MENSAJERÍA UNIFICADO ---
+// --- MÓDULO MENSAJERÍA UNIFICADO ---
+
+window.renderFormularioMensajes = () => {
+    const alumnos = CONFIGURACION_USUARIOS.filter(u => u.rol === "alumno");
     let options = `<option value="TODOS">Enviar a TODOS</option>`;
-    
-    snapshot.forEach(doc => {
-        const u = doc.data();
-        if (u.nombre !== 'Dr. Rubén M. Pereyra') { 
-            options += `<option value="${u.nombre}">${u.nombre}</option>`;
-        }
-    });
+    alumnos.forEach(u => options += `<option value="${u.nombre}">${u.nombre}</option>`);
 
     document.getElementById('main-view').innerHTML = `
         <div class="card-convergencia">
             <h2>Redactar Comunicación</h2>
-            <input id="inAsunto" placeholder="Asunto">
-            <select id="inDestinatario">${options}</select>
-            <div id="selector-emojis">
-                ${['💬', '🧠', '⚡', '📍', '✅', '⚠️', '📎'].map(e => `<button onclick="agregarEmoji('${e}')">${e}</button>`).join('')}
-            </div>
-            <textarea id="inCuerpo" placeholder="Escribe tu mensaje..." rows="6"></textarea>
-            <button onclick="enviarMensaje()">Enviar</button>
-            <button onclick="mostrarDashboardMensajes()">Volver</button>
+            <input id="inAsunto" placeholder="Asunto" class="input-clinical">
+            <select id="inDestinatario" class="input-clinical">${options}</select>
+            <div id="selector-emojis">${['💬', '🧠', '⚡', '📍', '✅', '⚠️', '📎'].map(e => `<button onclick="agregarEmoji('${e}')">${e}</button>`).join('')}</div>
+            <textarea id="inCuerpo" placeholder="Cuerpo del mensaje..." rows="6" class="input-clinical"></textarea>
+            <button onclick="enviarMensaje()" class="btn-convergencia">Enviar</button>
+            <button onclick="mostrarDashboardMensajes()" class="btn-cancelar">Volver</button>
         </div>`;
 };
+
 window.enviarMensaje = async () => {
-    const data = {
+    await db.collection("mensajes").add({
         asunto: document.getElementById('inAsunto').value,
         destinatario: document.getElementById('inDestinatario').value,
         cuerpo: document.getElementById('inCuerpo').value,
         fecha: new Date().toLocaleDateString(),
-        leido: false 
-    };
-    
-    await db.collection("mensajes").add(data);
-    alert("Mensaje enviado");
+        remitente: "Administrador"
+    });
+    alert("Enviado");
     mostrarDashboardMensajes();
 };
+
 window.mostrarDashboardMensajes = async () => {
     const main = document.getElementById('main-view');
-    main.innerHTML = `<h2>Gestión de Comunicaciones</h2>
-                      <button onclick="renderFormularioMensajes()">+ Redactar</button>
-                      <div id="lista-mensajes">Cargando...</div>`;
-    
-    const snapshot = await db.collection("mensajes").get();
-    let html = `<table class="tabla-clinica"><thead><tr><th>Remitente</th><th>Asunto</th><th>Acción</th></tr></thead><tbody>`;
-    
+    main.innerHTML = `<h2>Gestión de Comunicaciones</h2><button onclick="renderFormularioMensajes()" class="btn-convergencia">+ Redactar</button><div id="lista-mensajes">Cargando...</div>`;
+    const snapshot = await db.collection("mensajes").orderBy("fecha", "desc").get();
+    let html = `<table class="tabla-clinica"><thead><tr><th>Fecha</th><th>De</th><th>Para</th><th>Asunto</th><th>Acción</th></tr></thead><tbody>`;
     snapshot.forEach(doc => {
         const m = doc.data();
-        const quienEnvia = m.remitente ? `Alumno: ${m.remitente}` : 'Administrador';
-        html += `<tr>
-            <td>${quienEnvia}</td>
-            <td>${m.asunto}</td>
-            <td>
-                <button onclick="verCuerpo('${m.cuerpo.replace(/'/g, "\\'")}')">Leer</button>
-                <button onclick="eliminarMensaje('${doc.id}')">Borrar</button>
-            </td>
-        </tr>`;
+        html += `<tr><td>${m.fecha}</td><td>${m.remitente}</td><td>${m.destinatario}</td><td>${m.asunto}</td>
+        <td><button onclick="verCuerpo('${m.cuerpo.replace(/'/g, "\\'")}')">Leer</button>
+        <button onclick="eliminarMensaje('${doc.id}')">Borrar</button></td></tr>`;
     });
-    
-    html += `</tbody></table><br><button onclick="mostrarDashboard()">Volver al Menú</button>`;
+    html += `</tbody></table><br><button onclick="mostrarDashboard()" class="btn-cancelar">Volver</button>`;
     document.getElementById('lista-mensajes').innerHTML = html;
 };
+
 window.mostrarMisMensajes = async (nombre) => {
     const main = document.getElementById('main-view');
-    main.innerHTML = `<h2>Mis Mensajes</h2>
-                      <button onclick="renderFormularioMensajeAlumno('${nombre}')" class="btn-gold">Enviar al Administrador</button>
-                      <div id="lista-mensajes">Cargando...</div>`;
-    
-    // Traemos mensajes donde el destinatario es "TODOS" o el nombre del alumno, o enviados por él
-    const snapshot = await db.collection("mensajes")
-                             .where("destinatario", "in", ["TODOS", nombre, "Administrador"])
-                             .get();
-    
-    let html = `<table class="tabla-clinica"><thead><tr><th>De/Para</th><th>Asunto</th><th>Cuerpo</th></tr></thead><tbody>`;
-    
+    main.innerHTML = `<h2>Mis Mensajes</h2><button onclick="renderFormularioMensajeAlumno('${nombre}')" class="btn-convergencia">Enviar al Admin</button><div id="lista-mensajes">Cargando...</div>`;
+    const snapshot = await db.collection("mensajes").get();
+    let html = `<table class="tabla-clinica"><thead><tr><th>Fecha</th><th>Asunto</th><th>Cuerpo</th><th>Acción</th></tr></thead><tbody>`;
     snapshot.forEach(doc => {
         const m = doc.data();
-        // Filtramos para mostrar solo los que le corresponden al alumno
         if (m.destinatario === "TODOS" || m.destinatario === nombre || m.remitente === nombre) {
-            html += `<tr><td>${m.remitente || 'Admin'}</td><td>${m.asunto}</td><td>${m.cuerpo}</td></tr>`;
+            html += `<tr><td>${m.fecha}</td><td>${m.asunto}</td>
+            <td><button onclick="verCuerpo('${m.cuerpo.replace(/'/g, "\\'")}')">Leer</button></td>
+            <td><button onclick="eliminarMensaje('${doc.id}')">Borrar</button></td></tr>`;
         }
     });
-    
-    html += `</tbody></table><br><button onclick="mostrarDashboard()" class="btn-red">Volver</button>`;
+    html += `</tbody></table><br><button onclick="mostrarDashboard()" class="btn-cancelar">Volver</button>`;
     document.getElementById('lista-mensajes').innerHTML = html;
 };
+
 window.renderFormularioMensajeAlumno = (nombre) => {
     document.getElementById('main-view').innerHTML = `
-        <div class="card">
-            <h2>Nuevo Mensaje al Administrador</h2>
-            <input id="inAsunto" placeholder="Asunto">
-            <textarea id="inCuerpo" placeholder="Escribe tu mensaje..." rows="5"></textarea>
-            <button onclick="enviarMensajeAlumno('${nombre}')" class="btn-green">Enviar</button>
-            <button onclick="mostrarMisMensajes('${nombre}')" class="btn-red">Volver</button>
+        <div class="card-convergencia">
+            <h2>Enviar al Administrador</h2>
+            <input id="inAsunto" placeholder="Asunto" class="input-clinical">
+            <textarea id="inCuerpo" placeholder="Escribe..." rows="6" class="input-clinical"></textarea>
+            <button onclick="enviarMensajeAlumno('${nombre}')" class="btn-convergencia">Enviar</button>
+            <button onclick="mostrarMisMensajes('${nombre}')" class="btn-cancelar">Volver</button>
         </div>`;
 };
+
 window.enviarMensajeAlumno = async (nombre) => {
-    const data = {
+    await db.collection("mensajes").add({
         asunto: document.getElementById('inAsunto').value,
         cuerpo: document.getElementById('inCuerpo').value,
         destinatario: "Administrador",
-        remitente: nombre, // Importante para identificar al alumno
+        remitente: nombre,
         fecha: new Date().toLocaleDateString()
-    };
-    
-    await db.collection("mensajes").add(data);
-    alert("Mensaje enviado al administrador");
+    });
+    alert("Enviado");
     mostrarMisMensajes(nombre);
 };
-// --- FUNCIONES NUEVAS DE MENSAJERÍA ---
 
-// 1. Eliminar mensaje (con detección de rol para recarga correcta)
+window.verCuerpo = (cuerpo) => alert("Mensaje: " + cuerpo);
 window.eliminarMensaje = async (id) => {
-    if (confirm("¿Seguro que deseas eliminar este mensaje?")) {
+    if (confirm("¿Borrar?")) {
         await db.collection("mensajes").doc(id).delete();
-        // Identifica si eres admin o alumno para recargar la vista correspondiente
-        if (usuarioActual.rol === "admin") {
-            mostrarDashboardMensajes();
-        } else {
-            mostrarMisMensajes(usuarioActual.nombre);
-        }
+        usuarioActual.rol === "admin" ? mostrarDashboardMensajes() : mostrarMisMensajes(usuarioActual.nombre);
     }
 };
+window.agregarEmoji = (e) => document.getElementById('inCuerpo').value += e;
 
-// 2. Ver cuerpo del mensaje (soluciona la falta de lectura)
-window.verCuerpo = (cuerpo) => {
-    alert("Contenido del mensaje:\n\n" + cuerpo);
-};
 
-// 3. Agregar Emojis al texto
-window.agregarEmoji = (emoji) => {
-    const textarea = document.getElementById('inCuerpo');
-    if (textarea) {
-        textarea.value += emoji;
-    }
-};
-
-// --- FIN BLOQUE DE MENSAJERÍA ---
 // --- ARRANQUE ---
 document.body.onload = renderLogin;
+
 
 
 
