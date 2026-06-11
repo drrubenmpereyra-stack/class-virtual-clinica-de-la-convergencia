@@ -113,6 +113,14 @@ if (b === "Asistencia") {
 if (b === "Mi asistencia") {
     btn.onclick = () => mostrarMiAsistencia(usuarioActual.nombre);
 }
+// PARA MENSAJES (vista administrador)
+if (b === "Enviar mensajes") {
+    btn.onclick = () => mostrarDashboardMensajes();
+}
+// PARA MENSAJES (Vista alumnos)
+if (b === "Mis mensajes") {
+    btn.onclick = () => mostrarMisMensajes(usuarioActual.nombre);
+}
 
     navMenu.appendChild(btn);
 });
@@ -646,6 +654,111 @@ window.mostrarMiAsistencia = async (nombre) => {
              <button onclick="mostrarDashboard()" class="btn-red">Volver</button>`;
     
     document.getElementById('lista-asistencia').innerHTML = html;
+};
+window.renderFormularioMensajes = async () => {
+    const snapshot = await db.collection("usuarios").get();
+    let options = `<option value="TODOS">Enviar a TODOS</option>`;
+    
+    snapshot.forEach(doc => {
+        const u = doc.data();
+        // Cambia 'TU_NOMBRE_ADMIN' por cómo apareces en tu colección
+        if (u.nombre !== 'TU_NOMBRE_ADMIN') { 
+            options += `<option value="${u.nombre}">${u.nombre}</option>`;
+        }
+    });
+
+    document.getElementById('main-view').innerHTML = `
+        <div class="card">
+            <h2>Enviar Mensaje</h2>
+            <input id="inAsunto" placeholder="Asunto">
+            <select id="inDestinatario">${options}</select>
+            <textarea id="inCuerpo" placeholder="Escribe tu mensaje..." rows="5"></textarea>
+            <button onclick="enviarMensaje()" class="btn-green">Enviar Mensaje</button>
+            <button onclick="mostrarDashboardMensajes()" class="btn-red">Volver</button>
+        </div>`;
+};
+window.enviarMensaje = async () => {
+    const data = {
+        asunto: document.getElementById('inAsunto').value,
+        destinatario: document.getElementById('inDestinatario').value,
+        cuerpo: document.getElementById('inCuerpo').value,
+        fecha: new Date().toLocaleDateString(),
+        leido: false 
+    };
+    
+    await db.collection("mensajes").add(data);
+    alert("Mensaje enviado");
+    mostrarDashboardMensajes();
+};
+window.mostrarDashboardMensajes = async () => {
+    const main = document.getElementById('main-view');
+    main.innerHTML = `<h2>Mensajes (Administración)</h2>
+                      <button onclick="renderFormularioMensajes()" class="btn-gold">+ Redactar Nuevo</button>
+                      <div id="lista-mensajes">Cargando...</div>`;
+    
+    const snapshot = await db.collection("mensajes").get();
+    let html = `<table class="tabla-clinica"><thead><tr><th>Remitente</th><th>Destinatario</th><th>Asunto</th><th>Acción</th></tr></thead><tbody>`;
+    
+    snapshot.forEach(doc => {
+        const m = doc.data();
+        const quienEnvia = m.remitente ? `Alumno: ${m.remitente}` : 'Administrador';
+        html += `<tr>
+            <td>${quienEnvia}</td>
+            <td>${m.destinatario}</td>
+            <td>${m.asunto}</td>
+            <td><button onclick="eliminarMensaje('${doc.id}')" class="btn-red">Borrar</button></td>
+        </tr>`;
+    });
+    
+    html += `</tbody></table><br><button onclick="mostrarDashboard()" class="btn-red">Volver al Menú</button>`;
+    document.getElementById('lista-mensajes').innerHTML = html;
+};
+window.mostrarMisMensajes = async (nombre) => {
+    const main = document.getElementById('main-view');
+    main.innerHTML = `<h2>Mis Mensajes</h2>
+                      <button onclick="renderFormularioMensajeAlumno('${nombre}')" class="btn-gold">Enviar al Administrador</button>
+                      <div id="lista-mensajes">Cargando...</div>`;
+    
+    // Traemos mensajes donde el destinatario es "TODOS" o el nombre del alumno, o enviados por él
+    const snapshot = await db.collection("mensajes")
+                             .where("destinatario", "in", ["TODOS", nombre, "Administrador"])
+                             .get();
+    
+    let html = `<table class="tabla-clinica"><thead><tr><th>De/Para</th><th>Asunto</th><th>Cuerpo</th></tr></thead><tbody>`;
+    
+    snapshot.forEach(doc => {
+        const m = doc.data();
+        // Filtramos para mostrar solo los que le corresponden al alumno
+        if (m.destinatario === "TODOS" || m.destinatario === nombre || m.remitente === nombre) {
+            html += `<tr><td>${m.remitente || 'Admin'}</td><td>${m.asunto}</td><td>${m.cuerpo}</td></tr>`;
+        }
+    });
+    
+    html += `</tbody></table><br><button onclick="mostrarDashboard()" class="btn-red">Volver</button>`;
+    document.getElementById('lista-mensajes').innerHTML = html;
+};
+window.renderFormularioMensajeAlumno = (nombre) => {
+    document.getElementById('main-view').innerHTML = `
+        <div class="card">
+            <h2>Nuevo Mensaje al Administrador</h2>
+            <input id="inAsunto" placeholder="Asunto">
+            <textarea id="inCuerpo" placeholder="Escribe tu mensaje..." rows="5"></textarea>
+            <button onclick="enviarMensajeAlumno('${nombre}')" class="btn-green">Enviar</button>
+            <button onclick="mostrarMisMensajes('${nombre}')" class="btn-red">Volver</button>
+        </div>`;
+};
+window.enviarMensajeAlumno = async (nombre) => {
+    const data = {
+        asunto: document.getElementById('inAsunto').value,
+        cuerpo: document.getElementById('inCuerpo').value,
+        destinatario: "Administrador",
+        remitente: nombre, // Importante para identificar al alumno
+        fecha: new Date().toLocaleDateString()
+    };
+    
+    await db.collection("mensajes").add(data);
+    alert("Mensaje enviado al administrador");
+    mostrarMisMensajes(nombre);
 };
 // --- ARRANQUE ---
 document.body.onload = renderLogin;
