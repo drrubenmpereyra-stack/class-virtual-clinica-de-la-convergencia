@@ -662,36 +662,36 @@ window.iniciarModuloComunicacion = (esAdmin) => {
     const contenedor = document.createElement('div');
     contenedor.className = 'card-mensajeria';
 
-    // FORMULARIO ADMINISTRADOR
+    // --- FORMULARIO ADMINISTRADOR ---
     if (esAdmin) {
-        const titulo = document.createElement('h2');
-        titulo.textContent = 'Enviar Mensaje';
+        const h2 = document.createElement('h2');
+        h2.textContent = 'Enviar Comunicación';
         
         const inputs = [
-            { label: 'Asunto:', id: 'asunto' },
-            { label: 'Mensaje:', id: 'cuerpo' }
+            { label: 'Asunto:', id: 'asunto', type: 'text' },
+            { label: 'Mensaje:', id: 'cuerpo', type: 'textarea' }
         ];
 
-        const elementos = {};
-        contenedor.appendChild(titulo);
+        const el = {};
+        contenedor.appendChild(h2);
 
-        inputs.forEach(item => {
+        inputs.forEach(i => {
             const lbl = document.createElement('label');
-            lbl.textContent = item.label;
-            const input = item.id === 'asunto' ? document.createElement('input') : document.createElement('textarea');
-            input.id = item.id;
-            input.className = 'input-estilo';
-            elementos[item.id] = input;
-            contenedor.append(lbl, input);
+            lbl.textContent = i.label;
+            const field = i.type === 'textarea' ? document.createElement('textarea') : document.createElement('input');
+            field.id = i.id;
+            field.className = 'input-estilo';
+            el[i.id] = field;
+            contenedor.append(lbl, field);
         });
 
-        // Emoticones
+        // Emojis integrados
         const divEmo = document.createElement('div');
         ['😊', '📢', '⚠️', '✅', '📅'].forEach(e => {
             const s = document.createElement('span');
             s.textContent = e;
             s.style.cursor = 'pointer';
-            s.onclick = () => elementos.cuerpo.value += e;
+            s.onclick = () => el.cuerpo.value += e;
             divEmo.appendChild(s);
         });
         contenedor.appendChild(divEmo);
@@ -705,18 +705,18 @@ window.iniciarModuloComunicacion = (esAdmin) => {
             const data = {
                 remitente: "Administración",
                 destinatario: "TODOS",
-                asunto: elementos.asunto.value,
-                cuerpo: elementos.cuerpo.value,
+                asunto: el.asunto.value,
+                cuerpo: el.cuerpo.value,
                 fecha: new Date().toLocaleString(),
                 leido: false
             };
             await db.collection("mensajes").add(data);
-            alert("Enviado");
-            elementos.asunto.value = ''; elementos.cuerpo.value = '';
+            el.asunto.value = ''; el.cuerpo.value = '';
+            alert("Enviado correctamente");
         };
     }
 
-    // LISTADO (Común para ambos)
+    // --- VISTA Y TABLA UNIFICADA ---
     const tabla = document.createElement('table');
     const thead = document.createElement('thead');
     thead.innerHTML = esAdmin 
@@ -736,6 +736,7 @@ window.iniciarModuloComunicacion = (esAdmin) => {
             const tr = document.createElement('tr');
             
             if (esAdmin) {
+                // Fecha, Destinatario, Asunto, Contenido, Eliminar
                 [m.fecha, m.destinatario, m.asunto, m.cuerpo].forEach(v => {
                     const td = document.createElement('td'); td.textContent = v; tr.appendChild(td);
                 });
@@ -744,6 +745,7 @@ window.iniciarModuloComunicacion = (esAdmin) => {
                 b.onclick = () => db.collection("mensajes").doc(doc.id).delete();
                 const td = document.createElement('td'); td.appendChild(b); tr.appendChild(td);
             } else {
+                // Remitente, Fecha, Asunto, Mensaje, Checkbox
                 [m.remitente, m.fecha, m.asunto, m.cuerpo].forEach(v => {
                     const td = document.createElement('td'); td.textContent = v; tr.appendChild(td);
                 });
