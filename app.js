@@ -113,16 +113,7 @@ if (b === "Asistencia") {
 if (b === "Mi asistencia") {
     btn.onclick = () => mostrarMiAsistencia(usuarioActual.nombre);
 }
-// MENSAJES
-// Para Administración
-if (b === "Enviar mensajes") {
-    btn.onclick = () => renderMensajeria(true);
-}
 
-// Para Estudiantes
-if (b === "Mis mensajes") {
-    btn.onclick = () => renderMensajeria(false);
-}
     navMenu.appendChild(btn);
 });
 
@@ -657,66 +648,7 @@ window.mostrarMiAsistencia = async (nombre) => {
     document.getElementById('lista-asistencia').innerHTML = html;
 };
 // SISTEMA DE MENSAJERIA
-window.renderMensajeria = (esAdministrador) => {
-    const main = document.getElementById('main-view');
-    main.textContent = ''; // Limpieza limpia
 
-    // 1. Contenedor
-    const container = document.createElement('div');
-    container.className = 'card-mensajeria';
-    
-    // 2. Formulario
-    const inputAsunto = document.createElement('input');
-    inputAsunto.placeholder = 'Asunto';
-    inputAsunto.className = 'input-estilo';
-    
-    const textarea = document.createElement('textarea');
-    textarea.placeholder = 'Cuerpo del mensaje...';
-    textarea.className = 'input-estilo';
-    
-    const btnEnviar = document.createElement('button');
-    btnEnviar.textContent = 'Enviar Mensaje';
-    btnEnviar.className = 'btn-enviar';
-    
-    // 3. Lógica de Envío Unificada
-    btnEnviar.onclick = async () => {
-        if (!inputAsunto.value || !textarea.value) return alert("Completa los campos");
-        
-        await db.collection("mensajes").add({
-            remitente: esAdministrador ? "Administración" : usuarioActual.nombre,
-            destinatario: esAdministrador ? "TODOS" : "Administración", // Ajustable
-            asunto: inputAsunto.value,
-            cuerpo: textarea.value,
-            fecha: new Date().toLocaleString()
-        });
-        alert("Enviado");
-        inputAsunto.value = '';
-        textarea.value = '';
-    };
-
-    // 4. Lista de mensajes (Refresco constante)
-    const lista = document.createElement('div');
-    
-    container.append(inputAsunto, textarea, btnEnviar, lista);
-    main.appendChild(container);
-
-    // Carga de datos
-    db.collection("mensajes").orderBy("fecha", "desc").onSnapshot(snap => {
-        lista.textContent = '';
-        snap.forEach(doc => {
-            const m = doc.data();
-            // Filtro lógico: Admin ve todo, Alumno ve lo suyo
-            if (esAdministrador || m.remitente === usuarioActual.nombre || m.destinatario === "TODOS") {
-                const msg = document.createElement('div');
-                msg.style.borderBottom = '1px solid #ccc';
-                msg.style.padding = '10px';
-                // Mostrando Remitente, Fecha, Asunto y el CUERPO del mensaje
-                msg.textContent = `${m.remitente} (${m.fecha}) - Asunto: ${m.asunto} | Mensaje: ${m.cuerpo}`;
-                lista.appendChild(msg);
-            }
-        });
-    });
-};
 
 // --- ARRANQUE ---
 document.body.onload = renderLogin;
