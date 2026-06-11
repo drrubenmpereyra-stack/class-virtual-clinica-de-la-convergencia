@@ -659,6 +659,7 @@ window.mostrarMiAsistencia = async (nombre) => {
 // --- MÓDULO MENSAJERÍA UNIFICADO ---
 
 window.renderFormularioMensajes = () => {
+    // Usa tu array global para listar alumnos
     const alumnos = CONFIGURACION_USUARIOS.filter(u => u.rol === "alumno");
     let options = `<option value="TODOS">Enviar a TODOS</option>`;
     alumnos.forEach(u => options += `<option value="${u.nombre}">${u.nombre}</option>`);
@@ -668,7 +669,9 @@ window.renderFormularioMensajes = () => {
             <h2>Redactar Comunicación</h2>
             <input id="inAsunto" placeholder="Asunto" class="input-clinical">
             <select id="inDestinatario" class="input-clinical">${options}</select>
-            <div id="selector-emojis">${['💬', '🧠', '⚡', '📍', '✅', '⚠️', '📎'].map(e => `<button onclick="agregarEmoji('${e}')">${e}</button>`).join('')}</div>
+            <div id="selector-emojis">
+                ${['💬', '🧠', '⚡', '📍', '✅', '⚠️', '📎'].map(e => `<button onclick="agregarEmoji('${e}')">${e}</button>`).join('')}
+            </div>
             <textarea id="inCuerpo" placeholder="Cuerpo del mensaje..." rows="6" class="input-clinical"></textarea>
             <button onclick="enviarMensaje()" class="btn-convergencia">Enviar</button>
             <button onclick="mostrarDashboardMensajes()" class="btn-cancelar">Volver</button>
@@ -689,15 +692,24 @@ window.enviarMensaje = async () => {
 
 window.mostrarDashboardMensajes = async () => {
     const main = document.getElementById('main-view');
-    main.innerHTML = `<h2>Gestión de Comunicaciones</h2><button onclick="renderFormularioMensajes()" class="btn-convergencia">+ Redactar</button><div id="lista-mensajes">Cargando...</div>`;
+    main.innerHTML = `<h2>Gestión de Comunicaciones</h2>
+                      <button onclick="renderFormularioMensajes()" class="btn-convergencia">+ Redactar</button>
+                      <div id="lista-mensajes">Cargando...</div>`;
+    
+    // Consulta directa a tu base de datos
     const snapshot = await db.collection("mensajes").orderBy("fecha", "desc").get();
+    
     let html = `<table class="tabla-clinica"><thead><tr><th>Fecha</th><th>De</th><th>Para</th><th>Asunto</th><th>Acción</th></tr></thead><tbody>`;
+    
     snapshot.forEach(doc => {
         const m = doc.data();
-        html += `<tr><td>${m.fecha}</td><td>${m.remitente}</td><td>${m.destinatario}</td><td>${m.asunto}</td>
-        <td><button onclick="verCuerpo('${m.cuerpo.replace(/'/g, "\\'")}')">Leer</button>
-        <button onclick="eliminarMensaje('${doc.id}')">Borrar</button></td></tr>`;
+        html += `<tr><td>${m.fecha || ''}</td><td>${m.remitente || 'Alumno'}</td><td>${m.destinatario}</td><td>${m.asunto}</td>
+        <td>
+            <button onclick="verCuerpo('${m.cuerpo.replace(/'/g, "\\'")}')">Leer</button>
+            <button onclick="eliminarMensaje('${doc.id}')">Borrar</button>
+        </td></tr>`;
     });
+    
     html += `</tbody></table><br><button onclick="mostrarDashboard()" class="btn-cancelar">Volver</button>`;
     document.getElementById('lista-mensajes').innerHTML = html;
 };
@@ -754,7 +766,6 @@ window.agregarEmoji = (e) => document.getElementById('inCuerpo').value += e;
 
 // --- ARRANQUE ---
 document.body.onload = renderLogin;
-
 
 
 
