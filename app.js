@@ -745,42 +745,49 @@ window.renderVistaEstudiante = async () => {
     const main = document.getElementById('main-view');
     main.innerHTML = ''; // Limpieza total
 
-    // Contenedor principal
-    const divContenedor = document.createElement('div');
-    divContenedor.className = 'card-mensajeria';
-    
-    const titulo = document.createElement('h2');
-    titulo.textContent = 'Mis Mensajes';
-    divContenedor.appendChild(titulo);
-    
-    const lista = document.createElement('div');
-    lista.id = 'lista-mensajes-estudiante';
-    divContenedor.appendChild(lista);
+    // 1. Contenedor principal
+    const div = document.createElement('div');
+    div.className = 'card-mensajeria';
+    div.innerHTML = '<h2>Mis Mensajes</h2><div id="lista-mensajes-estudiante"></div>';
+    main.appendChild(div);
 
-    main.appendChild(divContenedor);
+    // 2. FORMULARIO DE RESPUESTA (Aquí está el botón que te falta)
+    const formDiv = document.createElement('div');
+    formDiv.style.marginTop = '20px';
+    formDiv.innerHTML = `
+        <input id="inAsunto" placeholder="Asunto" class="input-estilo">
+        <textarea id="inCuerpo" placeholder="Tu mensaje..." class="input-estilo"></textarea>
+        <button id="btnEnviar" class="btn-enviar">Enviar al Administrador</button>
+    `;
+    div.appendChild(formDiv);
 
-    // Si el usuario es el administrador, puede enviar mensajes (cambia esto si quieres que el alumno responda)
-    if (usuarioActual.rol === 'admin') {
-        const btn = document.createElement('button');
-        btn.textContent = 'Enviar Nuevo Mensaje';
-        btn.className = 'btn-enviar';
-        btn.style.display = 'block';
-        btn.style.margin = '20px auto';
-        btn.onclick = () => window.renderFormularioAdmin();
-        divContenedor.appendChild(btn);
-    }
+    // 3. EVENTO DEL BOTÓN (Directo al nodo)
+    document.getElementById('btnEnviar').onclick = async () => {
+        const asunto = document.getElementById('inAsunto').value;
+        const cuerpo = document.getElementById('inCuerpo').value;
+        if(!asunto || !cuerpo) return alert("Completa los campos");
+        
+        await db.collection("mensajes").add({
+            remitente: usuarioActual.nombre, // Asegúrate de que esto exista
+            destinatario: "Administración",
+            asunto: asunto,
+            cuerpo: cuerpo,
+            fecha: new Date().toLocaleString()
+        });
+        alert("Enviado");
+        document.getElementById('inAsunto').value = '';
+        document.getElementById('inCuerpo').value = '';
+    };
 
-    // Carga de mensajes (Lectura)
+    // 4. LECTURA DE MENSAJES (Filtrado)
+    const lista = document.getElementById('lista-mensajes-estudiante');
     db.collection("mensajes").orderBy("fecha", "desc").onSnapshot(snapshot => {
         lista.innerHTML = "";
         snapshot.forEach(doc => {
             const m = doc.data();
-            if (m.destinatario === "TODOS" || m.destinatario === usuarioActual.nombre) {
-                const fila = document.createElement('div');
-                fila.style.borderBottom = '1px solid #ccc';
-                fila.style.padding = '10px';
-                fila.innerHTML = `<strong>${m.asunto}</strong><br>${m.cuerpo}`;
-                lista.appendChild(fila);
+            if (m.destinatario === "Administración" || m.destinatario === "TODOS" || m.destinatario === usuarioActual.nombre) {
+                lista.innerHTML += `<div style="border-bottom:1px solid #ccc; padding:10px;">
+                    <strong>${m.remitente}:</strong> ${m.asunto}<br>${m.cuerpo}</div>`;
             }
         });
     });
