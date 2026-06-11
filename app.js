@@ -743,53 +743,44 @@ window.eliminarMensaje = async (id) => {
 };
 window.renderVistaEstudiante = async () => {
     const main = document.getElementById('main-view');
-    main.innerHTML = ''; // Limpieza total
+    // Limpieza directa
+    main.innerHTML = ''; 
 
-    // 1. Contenedor principal
-    const div = document.createElement('div');
-    div.className = 'card-mensajeria';
-    div.innerHTML = '<h2>Mis Mensajes</h2><div id="lista-mensajes-estudiante"></div>';
-    main.appendChild(div);
+    // Creamos un contenedor genérico
+    const cont = document.createElement('div');
+    cont.id = 'contenedor-estudiante';
+    main.appendChild(cont);
 
-    // 2. FORMULARIO DE RESPUESTA (Aquí está el botón que te falta)
-    const formDiv = document.createElement('div');
-    formDiv.style.marginTop = '20px';
-    formDiv.innerHTML = `
-        <input id="inAsunto" placeholder="Asunto" class="input-estilo">
-        <textarea id="inCuerpo" placeholder="Tu mensaje..." class="input-estilo"></textarea>
-        <button id="btnEnviar" class="btn-enviar">Enviar al Administrador</button>
+    // Inyectamos el HTML de forma plana para que el navegador no se confunda
+    cont.innerHTML = `
+        <div class="card-mensajeria">
+            <h2>Mis Mensajes</h2>
+            <div id="lista-mensajes-estudiante"></div>
+            <hr>
+            <input id="inAsunto" placeholder="Asunto" style="width:100%; display:block; margin-bottom:10px;">
+            <textarea id="inCuerpo" placeholder="Tu mensaje..." style="width:100%; display:block; margin-bottom:10px;"></textarea>
+            <button id="btnEnviar" style="padding:10px; background:green; color:white; border:none; cursor:pointer;">Enviar Mensaje</button>
+        </div>
     `;
-    div.appendChild(formDiv);
 
-    // 3. EVENTO DEL BOTÓN (Directo al nodo)
-    document.getElementById('btnEnviar').onclick = async () => {
+    // Asignamos el evento SIN usar onclick en el HTML
+    document.getElementById('btnEnviar').addEventListener('click', async () => {
         const asunto = document.getElementById('inAsunto').value;
         const cuerpo = document.getElementById('inCuerpo').value;
-        if(!asunto || !cuerpo) return alert("Completa los campos");
         
+        if(!asunto || !cuerpo) {
+            alert("Completa todo");
+            return;
+        }
+
         await db.collection("mensajes").add({
-            remitente: usuarioActual.nombre, // Asegúrate de que esto exista
+            remitente: usuarioActual.nombre,
             destinatario: "Administración",
             asunto: asunto,
             cuerpo: cuerpo,
             fecha: new Date().toLocaleString()
         });
         alert("Enviado");
-        document.getElementById('inAsunto').value = '';
-        document.getElementById('inCuerpo').value = '';
-    };
-
-    // 4. LECTURA DE MENSAJES (Filtrado)
-    const lista = document.getElementById('lista-mensajes-estudiante');
-    db.collection("mensajes").orderBy("fecha", "desc").onSnapshot(snapshot => {
-        lista.innerHTML = "";
-        snapshot.forEach(doc => {
-            const m = doc.data();
-            if (m.destinatario === "Administración" || m.destinatario === "TODOS" || m.destinatario === usuarioActual.nombre) {
-                lista.innerHTML += `<div style="border-bottom:1px solid #ccc; padding:10px;">
-                    <strong>${m.remitente}:</strong> ${m.asunto}<br>${m.cuerpo}</div>`;
-            }
-        });
     });
 };
 // --- ARRANQUE ---
