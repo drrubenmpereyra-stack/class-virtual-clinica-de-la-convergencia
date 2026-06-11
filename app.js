@@ -117,7 +117,10 @@ if (b === "Mi asistencia") {
 if (b === "Enviar mensajes") { 
     btn.onclick = () => renderFormularioAdmin();
 }
-
+// PARA MIS MENSAJES (vista estudiante)
+if (b === "Mis mensajes") {
+    btn.onclick = () => renderVistaEstudiante();
+}
 
     navMenu.appendChild(btn);
 });
@@ -696,18 +699,82 @@ window.mostrarHistorialMensajes = async () => {
     main.innerHTML = `<h2>Historial de Comunicaciones</h2><div id="lista-mensajes">Cargando...</div>`;
     
     const snapshot = await db.collection("mensajes").orderBy("fecha", "desc").get();
-    let html = `<table class="tabla-clinica" style="width:100%; border-collapse: collapse;">
-                <thead><tr><th>Fecha</th><th>Remitente</th><th>Asunto</th><th>Destinatario</th></tr></thead><tbody>`;
+    
+    let html = `
+        <table class="tabla-clinica" style="width:100%; border-collapse: collapse; margin-top:20px;">
+            <thead>
+                <tr style="background:#1b3a2a; color:white;">
+                    <th style="padding:10px;">Fecha</th>
+                    <th>Remitente</th>
+                    <th>Asunto</th>
+                    <th>Destinatario</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>`;
     
     snapshot.forEach(doc => {
         const m = doc.data();
-        html += `<tr><td>${m.fecha}</td><td>${m.remitente}</td><td>${m.asunto}</td><td>${m.destinatario}</td></tr>`;
+        html += `
+            <tr style="border-bottom:1px solid #ddd;">
+                <td style="padding:10px;">${m.fecha}</td>
+                <td>${m.remitente}</td>
+                <td>${m.asunto}</td>
+                <td>${m.destinatario}</td>
+                <td>
+                    <button onclick="eliminarMensaje('${doc.id}')" style="background:#d32f2f; color:white; border:none; padding:5px 10px; cursor:pointer; border-radius:3px;">
+                        Eliminar
+                    </button>
+                </td>
+            </tr>`;
     });
     
     html += `</tbody></table>`;
     document.getElementById('lista-mensajes').innerHTML = html;
 };
 
+// Función para ejecutar la eliminación
+window.eliminarMensaje = async (id) => {
+    if (confirm("¿Está seguro de que desea eliminar este mensaje?")) {
+        await db.collection("mensajes").doc(id).delete();
+        // Recargamos el historial para que desaparezca de la pantalla
+        mostrarHistorialMensajes();
+    }
+};
+window.renderVistaEstudiante = async () => {
+    const main = document.getElementById('main-view');
+    const alumnoNombre = usuarioActual.nombre; // Asumiendo que esta variable guarda el nombre del alumno logueado
+
+    main.innerHTML = `
+        <div class="card-mensajeria">
+            <h2>Bandeja de Entrada: ${alumnoNombre}</h2>
+            <div id="lista-mensajes-estudiante">Cargando comunicaciones...</div>
+        </div>`;
+
+    // Filtramos mensajes donde el destinatario es el alumno O es para TODOS
+    db.collection("mensajes")
+        .where("destinatario", "in", [alumnoNombre, "TODOS"])
+        .orderBy("fecha", "desc")
+        .onSnapshot(snapshot => {
+            const container = document.getElementById('lista-mensajes-estudiante');
+            let html = `<table style="width:100%; border-collapse: collapse;">
+                        <thead><tr style="background:#1b3a2a; color:white;">
+                            <th style="padding:10px;">Fecha</th><th>Asunto</th><th>Mensaje</th>
+                        </tr></thead><tbody>`;
+            
+            snapshot.forEach(doc => {
+                const m = doc.data();
+                html += `<tr>
+                            <td style="padding:10px; border-bottom:1px solid #ccc;">${m.fecha}</td>
+                            <td style="padding:10px; border-bottom:1px solid #ccc;">${m.asunto}</td>
+                            <td style="padding:10px; border-bottom:1px solid #ccc;">${m.cuerpo}</td>
+                         </tr>`;
+            });
+            
+            html += `</tbody></table>`;
+            container.innerHTML = snapshot.empty ? "No hay mensajes nuevos." : html;
+        });
+};
 // --- ARRANQUE ---
 document.body.onload = renderLogin;
 
