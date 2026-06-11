@@ -113,6 +113,7 @@ if (b === "Asistencia") {
 if (b === "Mi asistencia") {
     btn.onclick = () => mostrarMiAsistencia(usuarioActual.nombre);
 }
+// MENSAJES
 // Para Administración
 if (b === "Enviar mensajes") {
     btn.onclick = () => renderMensajeria(true);
@@ -122,7 +123,6 @@ if (b === "Enviar mensajes") {
 if (b === "Mis mensajes") {
     btn.onclick = () => renderMensajeria(false);
 }
-
     navMenu.appendChild(btn);
 });
 
@@ -656,91 +656,68 @@ window.mostrarMiAsistencia = async (nombre) => {
     
     document.getElementById('lista-asistencia').innerHTML = html;
 };
-// BLOQUE DE MENSAJERIA
+// SISTEMA DE MENSAJERIA
 window.renderMensajeria = (esAdministrador) => {
     const main = document.getElementById('main-view');
-    main.textContent = ''; 
+    main.textContent = ''; // Limpieza limpia
 
-    // Contenedor padre
-    const wrapper = document.createElement('div');
-    wrapper.className = 'card-mensajeria';
-
-    // Títulos y campos (Sin innerHTML)
-    const h2 = document.createElement('h2');
-    h2.textContent = 'Redactar Comunicación';
+    // 1. Contenedor
+    const container = document.createElement('div');
+    container.className = 'card-mensajeria';
     
+    // 2. Formulario
     const inputAsunto = document.createElement('input');
     inputAsunto.placeholder = 'Asunto';
     inputAsunto.className = 'input-estilo';
     
     const textarea = document.createElement('textarea');
-    textarea.placeholder = 'Cuerpo...';
+    textarea.placeholder = 'Cuerpo del mensaje...';
     textarea.className = 'input-estilo';
     
     const btnEnviar = document.createElement('button');
     btnEnviar.textContent = 'Enviar Mensaje';
     btnEnviar.className = 'btn-enviar';
-
-    // Tabla (Estructura fija)
-    const tabla = document.createElement('table');
-    tabla.style.width = '100%';
-    const thead = document.createElement('thead');
-    const trHead = document.createElement('tr');
-    ['Fecha', 'Remitente', 'Asunto', 'Mensaje', 'Destinatario', 'Acción'].forEach(txt => {
-        const th = document.createElement('th');
-        th.textContent = txt;
-        trHead.appendChild(th);
-    });
-    thead.appendChild(trHead);
-    tabla.appendChild(thead);
-
-    const tbody = document.createElement('tbody');
-    tabla.appendChild(tbody);
-
-    wrapper.append(h2, inputAsunto, textarea, btnEnviar, tabla);
-    main.appendChild(wrapper);
-
-    // Lógica de envío
+    
+    // 3. Lógica de Envío Unificada
     btnEnviar.onclick = async () => {
         if (!inputAsunto.value || !textarea.value) return alert("Completa los campos");
+        
         await db.collection("mensajes").add({
             remitente: esAdministrador ? "Administración" : usuarioActual.nombre,
-            destinatario: esAdministrador ? "TODOS" : "Administración",
+            destinatario: esAdministrador ? "TODOS" : "Administración", // Ajustable
             asunto: inputAsunto.value,
             cuerpo: textarea.value,
             fecha: new Date().toLocaleString()
         });
-        inputAsunto.value = ''; textarea.value = '';
+        alert("Enviado");
+        inputAsunto.value = '';
+        textarea.value = '';
     };
 
-    // Actualización de datos (Solo toca el tbody mediante nodos)
+    // 4. Lista de mensajes (Refresco constante)
+    const lista = document.createElement('div');
+    
+    container.append(inputAsunto, textarea, btnEnviar, lista);
+    main.appendChild(container);
+
+    // Carga de datos
     db.collection("mensajes").orderBy("fecha", "desc").onSnapshot(snap => {
-        tbody.textContent = ''; // Limpiamos registros anteriores sin destruir la tabla
+        lista.textContent = '';
         snap.forEach(doc => {
             const m = doc.data();
-            if (esAdministrador || m.remitente === usuarioActual.nombre || m.destinatario === "TODOS" || m.destinatario === "Administración") {
-                const tr = document.createElement('tr');
-                const datos = [m.fecha, m.remitente, m.asunto, m.cuerpo, m.destinatario];
-                
-                datos.forEach(txt => {
-                    const td = document.createElement('td');
-                    td.textContent = txt;
-                    tr.appendChild(td);
-                });
-
-                // Botón de eliminar (Objeto real)
-                const tdAccion = document.createElement('td');
-                const btnEliminar = document.createElement('button');
-                btnEliminar.textContent = 'Eliminar';
-                btnEliminar.onclick = () => window.eliminarMensaje(doc.id);
-                tdAccion.appendChild(btnEliminar);
-                tr.appendChild(tdAccion);
-                
-                tbody.appendChild(tr);
+            // Filtro lógico: Admin ve todo, Alumno ve lo suyo
+            if (esAdministrador || m.remitente === usuarioActual.nombre || m.destinatario === "TODOS") {
+                const msg = document.createElement('div');
+                msg.style.borderBottom = '1px solid #ccc';
+                msg.style.padding = '10px';
+                // Mostrando Remitente, Fecha, Asunto y el CUERPO del mensaje
+                msg.textContent = `${m.remitente} (${m.fecha}) - Asunto: ${m.asunto} | Mensaje: ${m.cuerpo}`;
+                lista.appendChild(msg);
             }
         });
     });
 };
+
 // --- ARRANQUE ---
 document.body.onload = renderLogin;
 
