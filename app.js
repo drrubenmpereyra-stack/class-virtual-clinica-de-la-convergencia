@@ -109,6 +109,10 @@ if (b === "Mis pagos") {
 if (b === "Asistencia") {
     btn.onclick = () => mostrarDashboardAsistencia();
 }
+// PARA ASISTENCIA (vista alumno)
+if (b === "Mi asistencia") {
+    btn.onclick = () => mostrarMiAsistencia(usuarioActual.nombre);
+}
 
     navMenu.appendChild(btn);
 });
@@ -549,7 +553,8 @@ window.mostrarMisPagos = async (nombre) => {
     html += `</tbody></table>`;
     document.getElementById('lista-pagos').innerHTML = html;
 };
-// 1. Formulario de carga con selector de fecha
+// ASISTENCIA EN VISTA ADMINISTRADOR
+// 1. Formulario sin fecha
 window.renderFormularioAsistencia = () => {
     document.getElementById('main-view').innerHTML = `
         <div class="card">
@@ -561,35 +566,25 @@ window.renderFormularioAsistencia = () => {
                 <option value="Ausente">Ausente</option>
                 <option value="Justificado">Justificado</option>
             </select>
-            <label>Fecha:</label>
-            <input type="date" id="inFecha">
-            <br><br>
             <button onclick="guardarAsistencia()" class="btn-green">Guardar Asistencia</button>
             <button onclick="mostrarDashboardAsistencia()" class="btn-red">Volver</button>
         </div>`;
 };
 
-// 2. Lógica para guardar en Firestore
+// 2. Guardado simple
 window.guardarAsistencia = async () => {
-    const fechaInput = document.getElementById('inFecha').value;
-    if (!fechaInput) {
-        alert("Por favor selecciona una fecha");
-        return;
-    }
-
     const data = {
         nombreEstudiante: document.getElementById('inNombreEstudiante').value.trim(),
         encuentro: document.getElementById('inEncuentro').value,
-        estado: document.getElementById('inEstado').value,
-        fecha: fechaInput
+        estado: document.getElementById('inEstado').value
     };
     
     await db.collection("asistencia").add(data);
-    alert("Asistencia registrada exitosamente");
+    alert("Asistencia registrada");
     mostrarDashboardAsistencia();
 };
 
-// 3. Vista de lista (Dashboard)
+// 3. Tabla sin columna de fecha
 window.mostrarDashboardAsistencia = async () => {
     const main = document.getElementById('main-view');
     main.innerHTML = `
@@ -599,7 +594,7 @@ window.mostrarDashboardAsistencia = async () => {
     
     const snapshot = await db.collection("asistencia").get();
     let html = `<table class="tabla-clinica">
-        <thead><tr><th>Estudiante</th><th>Encuentro</th><th>Estado</th><th>Fecha</th><th>Acción</th></tr></thead>
+        <thead><tr><th>Estudiante</th><th>Encuentro</th><th>Estado</th><th>Acción</th></tr></thead>
         <tbody>`;
     
     snapshot.forEach(doc => {
@@ -608,22 +603,49 @@ window.mostrarDashboardAsistencia = async () => {
             <td>${a.nombreEstudiante}</td>
             <td>Encuentro ${a.encuentro}</td>
             <td>${a.estado}</td>
-            <td>${a.fecha}</td>
             <td><button onclick="eliminarAsistencia('${doc.id}')" class="btn-red">Eliminar</button></td>
         </tr>`;
     });
     
     html += `</tbody></table><br>
-             <button onclick="mostrarDashboard()" class="btn-red">Volver al Menú Principal</button>`;
+             <button onclick="mostrarDashboard()" class="btn-red">Volver al Menú</button>`;
     document.getElementById('lista-asistencia').innerHTML = html;
 };
 
-// 4. Lógica de eliminación
+// 4. Eliminación
 window.eliminarAsistencia = async (id) => {
-    if (confirm("¿Seguro que deseas eliminar este registro?")) {
-        await db.collection("asistencia").doc(id).delete();
-        mostrarDashboardAsistencia();
-    }
+    await db.collection("asistencia").doc(id).delete();
+    mostrarDashboardAsistencia();
+};
+window.mostrarMiAsistencia = async (nombre) => {
+    const main = document.getElementById('main-view');
+    main.innerHTML = `<h2>Mi Asistencia</h2><div id="lista-asistencia">Cargando...</div>`;
+
+    // Filtramos la colección "asistencia" por el nombre del usuario logueado
+    const snapshot = await db.collection("asistencia")
+                             .where("nombreEstudiante", "==", nombre)
+                             .get();
+    
+    let html = `<table class="tabla-clinica">
+        <thead><tr><th>Encuentro</th><th>Estado</th></tr></thead>
+        <tbody>`;
+    
+    let hayRegistros = false;
+    snapshot.forEach(doc => {
+        hayRegistros = true;
+        const a = doc.data();
+        html += `<tr>
+            <td>Encuentro ${a.encuentro}</td>
+            <td>${a.estado}</td>
+        </tr>`;
+    });
+    
+    if (!hayRegistros) html += `<tr><td colspan="2">No se encontraron registros de asistencia.</td></tr>`;
+    
+    html += `</tbody></table><br>
+             <button onclick="mostrarDashboard()" class="btn-red">Volver</button>`;
+    
+    document.getElementById('lista-asistencia').innerHTML = html;
 };
 // --- ARRANQUE ---
 document.body.onload = renderLogin;
