@@ -105,6 +105,10 @@ if (b === "Pagos") {
 if (b === "Mis pagos") {
     btn.onclick = () => mostrarMisPagos(usuarioActual.nombre);
 }
+// PARA ASISTENCIA (vista adm)
+if (b === "Asistencia") {
+    btn.onclick = () => mostrarDashboardAsistencia();
+}
 
     navMenu.appendChild(btn);
 });
@@ -544,6 +548,53 @@ window.mostrarMisPagos = async (nombre) => {
     
     html += `</tbody></table>`;
     document.getElementById('lista-pagos').innerHTML = html;
+};
+window.renderFormularioAsistencia = () => {
+    document.getElementById('main-view').innerHTML = `
+        <div class="card">
+            <h2>Registrar Asistencia</h2>
+            <input id="inNombreEstudiante" placeholder="Nombre del Estudiante">
+            <select id="inEncuentro">${[...Array(10)].map((_, i) => `<option value="${i+1}">Encuentro ${i+1}</option>`).join('')}</select>
+            <select id="inEstado">
+                <option value="Presente">Presente</option>
+                <option value="Ausente">Ausente</option>
+                <option value="Justificado">Justificado</option>
+            </select>
+            <button onclick="guardarAsistencia()" class="btn-green">Guardar Asistencia</button>
+            <button onclick="mostrarDashboardAsistencia()" class="btn-red">Volver</button>
+        </div>`;
+};
+window.guardarAsistencia = async () => {
+    const data = {
+        nombreEstudiante: document.getElementById('inNombreEstudiante').value.trim(),
+        encuentro: document.getElementById('inEncuentro').value,
+        estado: document.getElementById('inEstado').value,
+        fecha: new Date().toLocaleDateString()
+    };
+    await db.collection("asistencia").add(data);
+    alert("Asistencia registrada");
+    mostrarDashboardAsistencia();
+};
+window.mostrarDashboardAsistencia = async () => {
+    const main = document.getElementById('main-view');
+    main.innerHTML = `<h2>Control de Asistencia</h2><button onclick="renderFormularioAsistencia()" class="btn-gold">+ Nueva Asistencia</button><div id="lista-asistencia">Cargando...</div>`;
+    
+    const snapshot = await db.collection("asistencia").get();
+    let html = `<table class="tabla-clinica"><thead><tr><th>Estudiante</th><th>Encuentro</th><th>Estado</th><th>Fecha</th><th>Acción</th></tr></thead><tbody>`;
+    
+    snapshot.forEach(doc => {
+        const a = doc.data();
+        html += `<tr><td>${a.nombreEstudiante}</td><td>Encuentro ${a.encuentro}</td><td>${a.estado}</td><td>${a.fecha}</td>
+                 <td><button onclick="eliminarAsistencia('${doc.id}')" class="btn-red">Eliminar</button></td></tr>`;
+    });
+    
+    html += `</tbody></table>`;
+    document.getElementById('lista-asistencia').innerHTML = html;
+};
+
+window.eliminarAsistencia = async (id) => {
+    await db.collection("asistencia").doc(id).delete();
+    mostrarDashboardAsistencia();
 };
 // --- ARRANQUE ---
 document.body.onload = renderLogin;
