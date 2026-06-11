@@ -743,44 +743,68 @@ window.eliminarMensaje = async (id) => {
 };
 window.renderVistaEstudiante = async () => {
     const main = document.getElementById('main-view');
-    // Limpieza directa
-    main.innerHTML = ''; 
+    main.textContent = ''; // Limpieza segura
 
-    // Creamos un contenedor genérico
-    const cont = document.createElement('div');
-    cont.id = 'contenedor-estudiante';
-    main.appendChild(cont);
+    // Contenedor principal
+    const card = document.createElement('div');
+    card.className = 'card-mensajeria';
+    
+    const titulo = document.createElement('h2');
+    titulo.textContent = 'Mis Mensajes';
+    card.appendChild(titulo);
 
-    // Inyectamos el HTML de forma plana para que el navegador no se confunda
-    cont.innerHTML = `
-        <div class="card-mensajeria">
-            <h2>Mis Mensajes</h2>
-            <div id="lista-mensajes-estudiante"></div>
-            <hr>
-            <input id="inAsunto" placeholder="Asunto" style="width:100%; display:block; margin-bottom:10px;">
-            <textarea id="inCuerpo" placeholder="Tu mensaje..." style="width:100%; display:block; margin-bottom:10px;"></textarea>
-            <button id="btnEnviar" style="padding:10px; background:green; color:white; border:none; cursor:pointer;">Enviar Mensaje</button>
-        </div>
-    `;
+    // Contenedor de mensajes (Lista)
+    const lista = document.createElement('div');
+    lista.id = 'lista-mensajes-estudiante';
+    card.appendChild(lista);
 
-    // Asignamos el evento SIN usar onclick en el HTML
-    document.getElementById('btnEnviar').addEventListener('click', async () => {
-        const asunto = document.getElementById('inAsunto').value;
-        const cuerpo = document.getElementById('inCuerpo').value;
+    // Formulario de Envío
+    const inputAsunto = document.createElement('input');
+    inputAsunto.placeholder = 'Asunto';
+    inputAsunto.className = 'input-estilo';
+    
+    const inputCuerpo = document.createElement('textarea');
+    inputCuerpo.placeholder = 'Tu mensaje...';
+    inputCuerpo.className = 'input-estilo';
+    
+    const btnEnviar = document.createElement('button');
+    btnEnviar.textContent = 'Enviar al Administrador';
+    btnEnviar.className = 'btn-enviar';
+
+    // ASIGNACIÓN DE EVENTO (Aquí no se rompe)
+    btnEnviar.onclick = async () => {
+        if(!inputAsunto.value || !inputCuerpo.value) return alert("Completa los campos");
         
-        if(!asunto || !cuerpo) {
-            alert("Completa todo");
-            return;
-        }
-
         await db.collection("mensajes").add({
             remitente: usuarioActual.nombre,
             destinatario: "Administración",
-            asunto: asunto,
-            cuerpo: cuerpo,
+            asunto: inputAsunto.value,
+            cuerpo: inputCuerpo.value,
             fecha: new Date().toLocaleString()
         });
+        inputAsunto.value = '';
+        inputCuerpo.value = '';
         alert("Enviado");
+    };
+
+    card.appendChild(inputAsunto);
+    card.appendChild(inputCuerpo);
+    card.appendChild(btnEnviar);
+    main.appendChild(card);
+
+    // LECTURA (Usando Nodos, no innerHTML)
+    db.collection("mensajes").orderBy("fecha", "desc").onSnapshot(snapshot => {
+        lista.textContent = ''; // Limpiamos la lista al llegar datos nuevos
+        snapshot.forEach(doc => {
+            const m = doc.data();
+            if (m.destinatario === "Administración" || m.destinatario === "TODOS" || m.destinatario === usuarioActual.nombre) {
+                const divMsg = document.createElement('div');
+                divMsg.style.borderBottom = '1px solid #ccc';
+                divMsg.style.padding = '10px';
+                divMsg.textContent = `${m.remitente}: ${m.asunto} - ${m.cuerpo}`;
+                lista.appendChild(divMsg);
+            }
+        });
     });
 };
 // --- ARRANQUE ---
