@@ -482,16 +482,34 @@ window.guardarPago = async () => {
 window.mostrarListaPagos = async () => {
     const main = document.getElementById('main-view');
     main.innerHTML = `<h2>Historial de Pagos</h2><div id="lista-pagos">Cargando...</div>`;
+    
     const snapshot = await db.collection("pagos").get();
     let html = `<table class="tabla-clinica">
-        <thead><tr><th>Estudiante</th><th>Encuentro</th><th>Monto</th><th>Estado</th><th>Medio</th></tr></thead>
+        <thead><tr><th>Estudiante</th><th>Encuentro</th><th>Monto</th><th>Estado</th><th>Medio</th><th>Acciones</th></tr></thead>
         <tbody>`;
+    
     snapshot.forEach(doc => {
         const p = doc.data();
-        html += `<tr><td>${p.nombreEstudiante}</td><td>Encuentro ${p.encuentro}</td><td>$${p.monto}</td><td>${p.estado}</td><td>${p.medio}</td></tr>`;
+        html += `<tr>
+            <td>${p.nombreEstudiante}</td>
+            <td>Encuentro ${p.encuentro}</td>
+            <td>$${p.monto}</td>
+            <td>${p.estado}</td>
+            <td>${p.medio}</td>
+            <td><button onclick="eliminarPago('${doc.id}')" class="btn-red">Eliminar</button></td>
+        </tr>`;
     });
+    
     html += `</tbody></table><br><button onclick="mostrarDashboardPagos()" class="btn-red">Volver al Dashboard</button>`;
     document.getElementById('lista-pagos').innerHTML = html;
+};
+window.eliminarPago = async (id) => {
+    if (confirm("¿Estás seguro de que deseas eliminar este registro de pago?")) {
+        await db.collection("pagos").doc(id).delete();
+        alert("Pago eliminado");
+        // Recargamos la lista para ver el cambio
+        mostrarListaPagos();
+    }
 };
 // --- ARRANQUE ---
 document.body.onload = renderLogin;
