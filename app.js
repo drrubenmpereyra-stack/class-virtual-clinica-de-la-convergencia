@@ -113,13 +113,14 @@ if (b === "Asistencia") {
 if (b === "Mi asistencia") {
     btn.onclick = () => mostrarMiAsistencia(usuarioActual.nombre);
 }
-// PARA ENVIAR MENSAJES (vista Adm)
-if (b === "Enviar mensajes") { 
-    btn.onclick = () => renderFormularioAdmin();
+// Para Administración
+if (b === "Enviar mensajes") {
+    btn.onclick = () => renderMensajeria(true);
 }
-// PARA MIS MENSAJES (vista estudiante)
+
+// Para Estudiantes
 if (b === "Mis mensajes") {
-    btn.onclick = () => renderVistaEstudiante();
+    btn.onclick = () => renderMensajeria(false);
 }
 
     navMenu.appendChild(btn);
@@ -655,157 +656,64 @@ window.mostrarMiAsistencia = async (nombre) => {
     
     document.getElementById('lista-asistencia').innerHTML = html;
 };
-// Renderizado del formulario
-window.renderFormularioAdmin = () => {
+window.renderMensajeria = (esAdministrador) => {
     const main = document.getElementById('main-view');
-    main.innerHTML = `
-        <div class="card-mensajeria">
-            <h2>Redactar Comunicación</h2>
-            <input id="inAsunto" placeholder="Asunto" class="input-estilo">
-            <select id="inDestinatario" class="input-estilo">
-                <option value="TODOS">Enviar a TODOS</option>
-                ${CONFIGURACION_USUARIOS.filter(u => u.rol === "alumno")
-                  .map(u => `<option value="${u.nombre}">${u.nombre}</option>`).join('')}
-            </select>
-            <div id="emojis" style="margin-bottom:10px;">
-                ${['💬', '🧠', '⚡', '📍', '✅'].map(e => `<button onclick="document.getElementById('inCuerpo').value += '${e}'">${e}</button>`).join('')}
-            </div>
-            <textarea id="inCuerpo" placeholder="Cuerpo del mensaje..." rows="6" class="input-estilo"></textarea>
-            <button onclick="enviarMensajeAdmin()" class="btn-enviar">Enviar Mensaje</button>
-        </div>`;
-};
+    main.textContent = ''; // Limpieza limpia
 
-// Guardar y redireccionar
-window.enviarMensajeAdmin = async () => {
-    const asunto = document.getElementById('inAsunto').value;
-    const destinatario = document.getElementById('inDestinatario').value;
-    const cuerpo = document.getElementById('inCuerpo').value;
-
-    await db.collection("mensajes").add({
-        remitente: "Administración",
-        asunto,
-        destinatario,
-        cuerpo,
-        fecha: new Date().toLocaleString()
-    });
+    // 1. Contenedor
+    const container = document.createElement('div');
+    container.className = 'card-mensajeria';
     
-    // Al finalizar, mostramos el historial
-    mostrarHistorialMensajes();
-};
-
-// Historial de mensajes (Tabla)
-window.mostrarHistorialMensajes = async () => {
-    const main = document.getElementById('main-view');
-    main.innerHTML = `<h2>Historial de Comunicaciones</h2><div id="lista-mensajes">Cargando...</div>`;
-    
-    const snapshot = await db.collection("mensajes").orderBy("fecha", "desc").get();
-    
-    let html = `
-        <table class="tabla-clinica" style="width:100%; border-collapse: collapse; margin-top:20px;">
-            <thead>
-                <tr style="background:#1b3a2a; color:white;">
-                    <th style="padding:10px;">Fecha</th>
-                    <th>Remitente</th>
-                    <th>Asunto</th>
-                    <th>Destinatario</th>
-                    <th>Acción</th>
-                </tr>
-            </thead>
-            <tbody>`;
-    
-    snapshot.forEach(doc => {
-        const m = doc.data();
-        html += `
-            <tr style="border-bottom:1px solid #ddd;">
-                <td style="padding:10px;">${m.fecha}</td>
-                <td>${m.remitente}</td>
-                <td>${m.asunto}</td>
-                <td>${m.destinatario}</td>
-                <td>
-                    <button onclick="eliminarMensaje('${doc.id}')" style="background:#d32f2f; color:white; border:none; padding:5px 10px; cursor:pointer; border-radius:3px;">
-                        Eliminar
-                    </button>
-                </td>
-            </tr>`;
-    });
-    
-    html += `</tbody></table>`;
-    document.getElementById('lista-mensajes').innerHTML = html;
-};
-
-// Función para ejecutar la eliminación
-window.eliminarMensaje = async (id) => {
-    if (confirm("¿Está seguro de que desea eliminar este mensaje?")) {
-        await db.collection("mensajes").doc(id).delete();
-        // Recargamos el historial para que desaparezca de la pantalla
-        mostrarHistorialMensajes();
-    }
-};
-window.renderVistaEstudiante = async () => {
-    const main = document.getElementById('main-view');
-    main.textContent = ''; // Limpieza segura
-
-    // Contenedor principal
-    const card = document.createElement('div');
-    card.className = 'card-mensajeria';
-    
-    const titulo = document.createElement('h2');
-    titulo.textContent = 'Mis Mensajes';
-    card.appendChild(titulo);
-
-    // Contenedor de mensajes (Lista)
-    const lista = document.createElement('div');
-    lista.id = 'lista-mensajes-estudiante';
-    card.appendChild(lista);
-
-    // Formulario de Envío
+    // 2. Formulario
     const inputAsunto = document.createElement('input');
     inputAsunto.placeholder = 'Asunto';
     inputAsunto.className = 'input-estilo';
     
-    const inputCuerpo = document.createElement('textarea');
-    inputCuerpo.placeholder = 'Tu mensaje...';
-    inputCuerpo.className = 'input-estilo';
+    const textarea = document.createElement('textarea');
+    textarea.placeholder = 'Cuerpo del mensaje...';
+    textarea.className = 'input-estilo';
     
     const btnEnviar = document.createElement('button');
-    btnEnviar.textContent = 'Enviar al Administrador';
+    btnEnviar.textContent = 'Enviar Mensaje';
     btnEnviar.className = 'btn-enviar';
-
-    // ASIGNACIÓN DE EVENTO (Aquí no se rompe)
+    
+    // 3. Lógica de Envío Unificada
     btnEnviar.onclick = async () => {
-        if(!inputAsunto.value || !inputCuerpo.value) return alert("Completa los campos");
+        if (!inputAsunto.value || !textarea.value) return alert("Completa los campos");
         
         await db.collection("mensajes").add({
-            remitente: usuarioActual.nombre,
-            destinatario: "Administración",
+            remitente: esAdministrador ? "Administración" : usuarioActual.nombre,
+            destinatario: esAdministrador ? "TODOS" : "Administración", // Ajustable
             asunto: inputAsunto.value,
-            cuerpo: inputCuerpo.value,
+            cuerpo: textarea.value,
             fecha: new Date().toLocaleString()
         });
-        inputAsunto.value = '';
-        inputCuerpo.value = '';
         alert("Enviado");
+        inputAsunto.value = '';
+        textarea.value = '';
     };
 
-    card.appendChild(inputAsunto);
-    card.appendChild(inputCuerpo);
-    card.appendChild(btnEnviar);
-    main.appendChild(card);
+    // 4. Lista de mensajes (Refresco constante)
+    const lista = document.createElement('div');
+    
+    container.append(inputAsunto, textarea, btnEnviar, lista);
+    main.appendChild(container);
 
-    // LECTURA (Usando Nodos, no innerHTML)
-    db.collection("mensajes").orderBy("fecha", "desc").onSnapshot(snapshot => {
-        lista.textContent = ''; // Limpiamos la lista al llegar datos nuevos
-        snapshot.forEach(doc => {
+    // Carga de datos
+    db.collection("mensajes").orderBy("fecha", "desc").onSnapshot(snap => {
+        lista.textContent = '';
+        snap.forEach(doc => {
             const m = doc.data();
-            if (m.destinatario === "Administración" || m.destinatario === "TODOS" || m.destinatario === usuarioActual.nombre) {
-                const divMsg = document.createElement('div');
-                divMsg.style.borderBottom = '1px solid #ccc';
-                divMsg.style.padding = '10px';
-                divMsg.textContent = `${m.remitente}: ${m.asunto} - ${m.cuerpo}`;
-                lista.appendChild(divMsg);
+            // Filtro lógico: Admin ve todo, Alumno ve lo suyo
+            if (esAdministrador || m.remitente === usuarioActual.nombre || m.destinatario === "TODOS") {
+                const msg = document.createElement('div');
+                msg.style.borderBottom = '1px solid #ccc';
+                msg.textContent = `${m.remitente} (${m.fecha}): ${m.asunto} - ${m.cuerpo}`;
+                lista.appendChild(msg);
             }
         });
     });
 };
 // --- ARRANQUE ---
 document.body.onload = renderLogin;
+
