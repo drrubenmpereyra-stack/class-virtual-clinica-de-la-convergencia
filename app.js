@@ -743,39 +743,46 @@ window.eliminarMensaje = async (id) => {
 };
 window.renderVistaEstudiante = async () => {
     const main = document.getElementById('main-view');
-    const alumnoNombre = usuarioActual.nombre; 
+    main.innerHTML = ''; // Limpieza total
 
-    main.innerHTML = `
-        <div class="card-mensajeria">
-            <h2>Bandeja de Entrada: ${alumnoNombre}</h2>
-            <div id="lista-mensajes-estudiante" style="margin-top: 20px;">Cargando...</div>
-        </div>`;
+    // Contenedor principal
+    const divContenedor = document.createElement('div');
+    divContenedor.className = 'card-mensajeria';
+    
+    const titulo = document.createElement('h2');
+    titulo.textContent = 'Mis Mensajes';
+    divContenedor.appendChild(titulo);
+    
+    const lista = document.createElement('div');
+    lista.id = 'lista-mensajes-estudiante';
+    divContenedor.appendChild(lista);
 
-    // Leemos TODA la colección y filtramos en el cliente.
-    // Esto es más lento que el 'where', pero GARANTIZA que los mensajes aparezcan.
+    main.appendChild(divContenedor);
+
+    // Si el usuario es el administrador, puede enviar mensajes (cambia esto si quieres que el alumno responda)
+    if (usuarioActual.rol === 'admin') {
+        const btn = document.createElement('button');
+        btn.textContent = 'Enviar Nuevo Mensaje';
+        btn.className = 'btn-enviar';
+        btn.style.display = 'block';
+        btn.style.margin = '20px auto';
+        btn.onclick = () => window.renderFormularioAdmin();
+        divContenedor.appendChild(btn);
+    }
+
+    // Carga de mensajes (Lectura)
     db.collection("mensajes").orderBy("fecha", "desc").onSnapshot(snapshot => {
-        const container = document.getElementById('lista-mensajes-estudiante');
-        let html = `<table style="width:100%; border-collapse: collapse;">
-                    <thead><tr style="background:#1b3a2a; color:white;">
-                        <th style="padding:10px;">Fecha</th><th>Asunto</th><th>Mensaje</th>
-                    </tr></thead><tbody>`;
-        
-        let hayMensajes = false;
+        lista.innerHTML = "";
         snapshot.forEach(doc => {
             const m = doc.data();
-            // Filtramos en JS: si es para todos O si es para este alumno
-            if (m.destinatario === "TODOS" || m.destinatario === alumnoNombre) {
-                html += `<tr>
-                            <td style="padding:10px; border-bottom:1px solid #ccc;">${m.fecha || ''}</td>
-                            <td style="padding:10px; border-bottom:1px solid #ccc;">${m.asunto || 'Sin asunto'}</td>
-                            <td style="padding:10px; border-bottom:1px solid #ccc;">${m.cuerpo || ''}</td>
-                         </tr>`;
-                hayMensajes = true;
+            if (m.destinatario === "TODOS" || m.destinatario === usuarioActual.nombre) {
+                const fila = document.createElement('div');
+                fila.style.borderBottom = '1px solid #ccc';
+                fila.style.padding = '10px';
+                fila.innerHTML = `<strong>${m.asunto}</strong><br>${m.cuerpo}`;
+                lista.appendChild(fila);
             }
         });
-        
-        html += `</tbody></table>`;
-        container.innerHTML = hayMensajes ? html : "No hay mensajes para ti.";
     });
 };
 // --- ARRANQUE ---
