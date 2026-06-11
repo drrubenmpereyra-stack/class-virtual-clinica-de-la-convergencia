@@ -101,6 +101,10 @@ if (b === "Participantes") {
 if (b === "Pagos") {
     btn.onclick = () => mostrarDashboardPagos();
 }
+// PARA MIS PAGOS
+if (b === "Mis Pagos") {
+    btn.onclick = () => mostrarMisPagos(usuarioActual.nombre);
+}
 
     navMenu.appendChild(btn);
 });
@@ -510,6 +514,36 @@ window.eliminarPago = async (id) => {
         // Recargamos la lista para ver el cambio
         mostrarListaPagos();
     }
+};
+window.mostrarMisPagos = async (nombre) => {
+    const main = document.getElementById('main-view');
+    main.innerHTML = `<h2>Mis Pagos</h2><div id="lista-pagos">Cargando...</div>`;
+
+    // Filtramos los pagos por nombre del alumno
+    const snapshot = await db.collection("pagos")
+                             .where("nombreEstudiante", "==", nombre)
+                             .get();
+    
+    let html = `<table class="tabla-clinica">
+        <thead><tr><th>Encuentro</th><th>Monto</th><th>Estado</th><th>Medio</th></tr></thead>
+        <tbody>`;
+    
+    let hayPagos = false;
+    snapshot.forEach(doc => {
+        hayPagos = true;
+        const p = doc.data();
+        html += `<tr>
+            <td>Encuentro ${p.encuentro}</td>
+            <td>$${p.monto}</td>
+            <td>${p.estado}</td>
+            <td>${p.medio}</td>
+        </tr>`;
+    });
+    
+    if (!hayPagos) html += `<tr><td colspan="4">No se encontraron registros de pago.</td></tr>`;
+    
+    html += `</tbody></table>`;
+    document.getElementById('lista-pagos').innerHTML = html;
 };
 // --- ARRANQUE ---
 document.body.onload = renderLogin;
