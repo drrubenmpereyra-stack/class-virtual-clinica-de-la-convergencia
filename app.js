@@ -743,39 +743,40 @@ window.eliminarMensaje = async (id) => {
 };
 window.renderVistaEstudiante = async () => {
     const main = document.getElementById('main-view');
-    const alumnoNombre = usuarioActual.nombre; // Asumiendo que esta variable guarda el nombre del alumno logueado
+    const alumnoNombre = usuarioActual.nombre; 
 
     main.innerHTML = `
         <div class="card-mensajeria">
             <h2>Bandeja de Entrada: ${alumnoNombre}</h2>
-            <div id="lista-mensajes-estudiante">Cargando comunicaciones...</div>
+            <div id="lista-mensajes-estudiante" style="margin-top: 20px;">Cargando...</div>
         </div>`;
 
-    // Filtramos mensajes donde el destinatario es el alumno O es para TODOS
-    db.collection("mensajes")
-        .where("destinatario", "in", [alumnoNombre, "TODOS"])
-        .orderBy("fecha", "desc")
-        .onSnapshot(snapshot => {
-            const container = document.getElementById('lista-mensajes-estudiante');
-            let html = `<table style="width:100%; border-collapse: collapse;">
-                        <thead><tr style="background:#1b3a2a; color:white;">
-                            <th style="padding:10px;">Fecha</th><th>Asunto</th><th>Mensaje</th>
-                        </tr></thead><tbody>`;
-            
-            snapshot.forEach(doc => {
-                const m = doc.data();
+    // Leemos TODA la colección y filtramos en el cliente.
+    // Esto es más lento que el 'where', pero GARANTIZA que los mensajes aparezcan.
+    db.collection("mensajes").orderBy("fecha", "desc").onSnapshot(snapshot => {
+        const container = document.getElementById('lista-mensajes-estudiante');
+        let html = `<table style="width:100%; border-collapse: collapse;">
+                    <thead><tr style="background:#1b3a2a; color:white;">
+                        <th style="padding:10px;">Fecha</th><th>Asunto</th><th>Mensaje</th>
+                    </tr></thead><tbody>`;
+        
+        let hayMensajes = false;
+        snapshot.forEach(doc => {
+            const m = doc.data();
+            // Filtramos en JS: si es para todos O si es para este alumno
+            if (m.destinatario === "TODOS" || m.destinatario === alumnoNombre) {
                 html += `<tr>
-                            <td style="padding:10px; border-bottom:1px solid #ccc;">${m.fecha}</td>
-                            <td style="padding:10px; border-bottom:1px solid #ccc;">${m.asunto}</td>
-                            <td style="padding:10px; border-bottom:1px solid #ccc;">${m.cuerpo}</td>
+                            <td style="padding:10px; border-bottom:1px solid #ccc;">${m.fecha || ''}</td>
+                            <td style="padding:10px; border-bottom:1px solid #ccc;">${m.asunto || 'Sin asunto'}</td>
+                            <td style="padding:10px; border-bottom:1px solid #ccc;">${m.cuerpo || ''}</td>
                          </tr>`;
-            });
-            
-            html += `</tbody></table>`;
-            container.innerHTML = snapshot.empty ? "No hay mensajes nuevos." : html;
+                hayMensajes = true;
+            }
         });
+        
+        html += `</tbody></table>`;
+        container.innerHTML = hayMensajes ? html : "No hay mensajes para ti.";
+    });
 };
 // --- ARRANQUE ---
 document.body.onload = renderLogin;
-
-
