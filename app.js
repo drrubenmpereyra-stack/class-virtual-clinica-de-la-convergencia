@@ -707,24 +707,18 @@ window.iniciarModuloComunicacion = async (esAdmin) => {
         optTodos.value = "TODOS"; optTodos.textContent = "TODOS";
         selectDest.appendChild(optTodos);
 
-        // --- CARGA CORREGIDA CON EL CAMPO 'nombre' ---
-        try {
-            const snap = await db.collection("participantes").get();
+        // Bloque de carga que ya confirmamos es correcto
+        db.collection("participantes").get().then((snap) => {
             snap.forEach(doc => {
                 const u = doc.data();
-                // Usamos 'nombre' tal como lo confirmó la consola
-                const nombreMostrar = u.nombre; 
-                
-                if (nombreMostrar) {
+                if (u.nombre) {
                     const opt = document.createElement('option');
-                    opt.value = nombreMostrar;
-                    opt.textContent = nombreMostrar;
+                    opt.value = u.nombre;
+                    opt.textContent = u.nombre;
                     selectDest.appendChild(opt);
                 }
             });
-        } catch (e) {
-            console.error("Error al cargar participantes:", e);
-        }
+        }).catch(e => console.error("Error al cargar participantes:", e));
 
         const inputAsunto = document.createElement('input');
         inputAsunto.placeholder = 'Asunto';
@@ -799,6 +793,7 @@ window.iniciarModuloComunicacion = async (esAdmin) => {
 
 // --- ARRANQUE ---
 document.body.onload = renderLogin;
+
 
 
 
