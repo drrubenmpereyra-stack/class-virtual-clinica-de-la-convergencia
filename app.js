@@ -126,7 +126,6 @@ if (b === "Actividades recreativas") {
     btn.onclick = () => window.iniciarModuloActividades();
 }
 
-// ... otros botones posteriores ...
 
     navMenu.appendChild(btn);
 });
@@ -803,59 +802,57 @@ window.iniciarModuloActividades = () => {
     vista.textContent = ''; 
 
     const contenedor = document.createElement('div');
-    contenedor.className = 'card-actividades';
-    contenedor.style.cssText = "padding: 20px; text-align: center; color: #fff;";
+    contenedor.style.cssText = "padding: 20px; text-align: center; color: #fff; font-family: sans-serif;";
+
+    // Botón Salir
+    const btnSalir = document.createElement('button');
+    btnSalir.textContent = "⬅ Volver al Panel Principal";
+    btnSalir.style.cssText = "background: #d32f2f; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 20px;";
+    btnSalir.onclick = () => mostrarDashboard(); // Aquí llamamos a tu función principal
+    contenedor.appendChild(btnSalir);
 
     const h2 = document.createElement('h2');
     h2.textContent = 'Actividades Recreativas - Clínica de la Convergencia';
+    h2.style.color = "#2e7d32";
     contenedor.appendChild(h2);
 
     const grid = document.createElement('div');
-    grid.style.cssText = "display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px;";
+    grid.style.cssText = "display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-top: 20px;";
     
-    // Mapeo de actividades con las imágenes correspondientes
     const actividades = [
         { nombre: 'Pacman', link: 'https://drrubenmpereyra-stack.github.io/Pacman-convergencia/', img: 'Pacman.jpg' },
         { nombre: 'Tetris', link: 'https://drrubenmpereyra-stack.github.io/Teris-converencia/', img: 'Tetris.jpg' },
         { nombre: 'Ruleta', link: 'https://drrubenmpereyra-stack.github.io/Ruleta-convergencia/', img: 'Ruleta.jpg' },
-        { nombre: 'Batalla', link: 'https://drrubenmpereyra-stack.github.io/Batalla-naval-convergencia/', img: 'Batalla.jpg' },
-        { nombre: 'Tejedor', link: 'https://drrubenmpereyra-stack.github.io/tejedor-de-circuitos/', img: 'Tejedor.jpg' },
-        { nombre: 'Detectives', link: 'https://drrubenmpereyra-stack.github.io/Detectives-de-la-mente/', img: 'Detectives.jpg' },
-        { nombre: 'Cartografo', link: 'https://drrubenmpereyra-stack.github.io/Cartografo-del-sujeto/', img: 'Cartografo.jpg' },
+        { nombre: 'Batalla Naval', link: 'https://drrubenmpereyra-stack.github.io/Batalla-naval-convergencia/', img: 'Batalla.jpg' },
+        { nombre: 'Tejedor de Circuitos', link: 'https://drrubenmpereyra-stack.github.io/tejedor-de-circuitos/', img: 'Tejedor.jpg' },
+        { nombre: 'Detectives de la Mente', link: 'https://drrubenmpereyra-stack.github.io/Detectives-de-la-mente/', img: 'Detectives.jpg' },
+        { nombre: 'Cartógrafo del Sujeto', link: 'https://drrubenmpereyra-stack.github.io/Cartografo-del-sujeto/', img: 'Cartografo.jpg' },
         { nombre: 'Triage', link: 'https://drrubenmpereyra-stack.github.io/Trige-de-la-convergencia/', img: 'Triage.jpg' }
     ];
 
     actividades.forEach(act => {
         const card = document.createElement('div');
-        card.style.cssText = "border: 2px solid #2e7d32; border-radius: 12px; overflow: hidden; cursor: pointer; transition: transform 0.2s;";
-        
-        card.innerHTML = `
-            <img src="${act.img}" style="width: 100%; display: block;">
-            <div style="padding: 10px; background: #1a1a1a;">${act.nombre}</div>
-        `;
-        
-        card.onmouseover = () => card.style.transform = "scale(1.05)";
-        card.onmouseout = () => card.style.transform = "scale(1)";
-        card.onclick = () => cargarIframe(act.link);
+        card.style.cssText = "border: 2px solid #2e7d32; border-radius: 15px; overflow: hidden; cursor: pointer; background: #1a1a1a;";
+        card.innerHTML = `<img src="${act.img}" style="width: 100%;"><div style="padding: 10px; color: #4caf50;">${act.nombre}</div>`;
+        card.onclick = () => cargarIframe(act.link, act.nombre);
         grid.appendChild(card);
     });
 
     contenedor.appendChild(grid);
     vista.appendChild(contenedor);
 
-    const divIframe = document.createElement('div');
-    divIframe.id = 'visor-actividad';
-    divIframe.style.cssText = "margin-top: 30px; width: 100%; height: 700px;";
-    vista.appendChild(divIframe);
+    const divVisor = document.createElement('div');
+    divVisor.id = 'visor-juego';
+    divVisor.style.cssText = "margin-top: 30px; display: none; width: 100%;";
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = "width: 100%; height: 700px; border: 4px solid #2e7d32; border-radius: 10px;";
+    divVisor.appendChild(iframe);
+    vista.appendChild(divVisor);
 
-    function cargarIframe(url) {
-        divIframe.textContent = '';
-        const iframe = document.createElement('iframe');
+    function cargarIframe(url, nombre) {
+        divVisor.style.display = 'block';
         iframe.src = url;
-        iframe.style.cssText = "width: 100%; height: 100%; border: 4px solid #2e7d32; border-radius: 10px; background: #fff;";
-        divIframe.appendChild(iframe);
-        // Desplazamiento suave hacia el juego
-        divIframe.scrollIntoView({ behavior: 'smooth' });
+        divVisor.scrollIntoView({ behavior: 'smooth' });
     }
 };
 
