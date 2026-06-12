@@ -654,63 +654,56 @@ window.mostrarMiAsistencia = async (nombre) => {
     
     document.getElementById('lista-asistencia').innerHTML = html;
 };
+//MODULO DE COMUNICACION
 window.iniciarModuloComunicacion = async (esAdmin) => {
     const vista = document.getElementById('main-view');
     vista.textContent = ''; 
 
     const contenedor = document.createElement('div');
     contenedor.className = 'card-mensajeria';
-    contenedor.style.border = '2px solid #2e7d32'; // Borde verde para el contenedor
-    contenedor.style.padding = '20px';
-    contenedor.style.borderRadius = '8px';
+    contenedor.style.cssText = "border: 2px solid #2e7d32; padding: 20px; border-radius: 8px;";
 
-    // --- FORMULARIO ADMINISTRADOR ---
     if (esAdmin) {
         const h2 = document.createElement('h2');
         h2.textContent = 'Enviar Comunicación';
         contenedor.appendChild(h2);
 
-        // Destinatario
         const lblDest = document.createElement('label');
         lblDest.textContent = 'Destinatario: ';
         const selectDest = document.createElement('select');
-        selectDest.style.border = '1px solid #000'; // Borde marcado
-        selectDest.style.display = 'block';
-        selectDest.style.marginBottom = '10px';
+        selectDest.style.cssText = "border: 1px solid #000; display: block; margin-bottom: 10px; width: 100%;";
 
         const optTodos = document.createElement('option');
         optTodos.value = "TODOS"; optTodos.textContent = "TODOS";
         selectDest.appendChild(optTodos);
 
-        // Carga de alumnos desde la base de datos
-        const snap = await db.collection("usuarios").get();
-        snap.forEach(doc => {
-            const u = doc.data();
-            // AJUSTA ESTA LÍNEA CON EL NOMBRE DEL CAMPO REAL (ej: u.nombre)
-            const nombreMostrar = u.nombre || ""; 
-            if (nombreMostrar) {
-                const opt = document.createElement('option');
-                opt.value = nombreMostrar;
-                opt.textContent = nombreMostrar;
-                selectDest.appendChild(opt);
-            }
-        });
+        // --- CARGA DINÁMICA ---
+        try {
+            // CAMBIA "usuarios" por el nombre real de tu colección si no es esa
+            const snap = await db.collection("usuarios").get(); 
+            snap.forEach(doc => {
+                const u = doc.data();
+                // CAMBIA "nombre" por el campo exacto que ves en tu Firebase (ej: nombre_completo)
+                const nombreMostrar = u.nombre || ""; 
+                if (nombreMostrar) {
+                    const opt = document.createElement('option');
+                    opt.value = nombreMostrar;
+                    opt.textContent = nombreMostrar;
+                    selectDest.appendChild(opt);
+                }
+            });
+        } catch (e) {
+            console.error("Error al cargar usuarios:", e);
+        }
 
-        // Asunto y Mensaje
         const inputAsunto = document.createElement('input');
         inputAsunto.placeholder = 'Asunto';
-        inputAsunto.style.border = '1px solid #000';
-        inputAsunto.style.display = 'block';
-        inputAsunto.style.width = '100%';
+        inputAsunto.style.cssText = "border: 1px solid #000; display: block; width: 100%; margin-bottom: 10px;";
         
         const areaMensaje = document.createElement('textarea');
         areaMensaje.placeholder = 'Mensaje...';
-        areaMensaje.style.border = '1px solid #000';
-        areaMensaje.style.display = 'block';
-        areaMensaje.style.width = '100%';
-        areaMensaje.style.marginTop = '10px';
+        areaMensaje.style.cssText = "border: 1px solid #000; display: block; width: 100%; height: 80px;";
 
-        // Emojis
         const divEmo = document.createElement('div');
         ['😊', '📢', '⚠️', '✅', '📅'].forEach(e => {
             const s = document.createElement('span');
@@ -740,11 +733,8 @@ window.iniciarModuloComunicacion = async (esAdmin) => {
         };
     }
 
-    // --- TABLA DE MENSAJES (Común) ---
     const tabla = document.createElement('table');
-    tabla.style.width = '100%';
-    tabla.style.borderCollapse = 'collapse';
-    tabla.style.marginTop = '20px';
+    tabla.style.cssText = "width: 100%; border-collapse: collapse; margin-top: 20px;";
     tabla.innerHTML = esAdmin 
         ? '<tr><th>Fecha</th><th>Destinatario</th><th>Asunto</th><th>Mensaje</th><th>Acción</th></tr>'
         : '<tr><th>Remitente</th><th>Fecha</th><th>Asunto</th><th>Mensaje</th><th>Estado</th></tr>';
@@ -759,10 +749,9 @@ window.iniciarModuloComunicacion = async (esAdmin) => {
         snap.forEach(doc => {
             const m = doc.data();
             const tr = document.createElement('tr');
-            
             if (esAdmin) {
                 [m.fecha, m.destinatario, m.asunto, m.cuerpo].forEach(v => {
-                    const td = document.createElement('td'); td.textContent = v; tr.appendChild(td);
+                    const td = document.createElement('td'); td.style.border = "1px solid #ccc"; td.textContent = v; tr.appendChild(td);
                 });
                 const b = document.createElement('button');
                 b.textContent = 'Eliminar';
@@ -770,7 +759,7 @@ window.iniciarModuloComunicacion = async (esAdmin) => {
                 const td = document.createElement('td'); td.appendChild(b); tr.appendChild(td);
             } else {
                 [m.remitente, m.fecha, m.asunto, m.cuerpo].forEach(v => {
-                    const td = document.createElement('td'); td.textContent = v; tr.appendChild(td);
+                    const td = document.createElement('td'); td.style.border = "1px solid #ccc"; td.textContent = v; tr.appendChild(td);
                 });
                 const chk = document.createElement('input');
                 chk.type = 'checkbox';
