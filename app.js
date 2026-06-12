@@ -129,6 +129,10 @@ if (b === "Actividades recreativas") {
 if (b === "Mis Test") {
     btn.onclick = () => window.iniciarModuloTest();
 }
+// PARA AUDITORIA TEST
+if (b === "Auditoria Test") {
+    btn.onclick = () => auditoriaTest();
+}
 
     navMenu.appendChild(btn);
 });
@@ -906,6 +910,74 @@ window.iniciarModuloTest = () => {
     
     contenedor.appendChild(grid);
     vista.appendChild(contenedor);
+};
+window.auditoriaTest = async () => {
+    const vista = document.getElementById('main-view');
+    vista.textContent = 'Cargando registros...';
+
+    // 1. Obtener datos de Firestore
+    const snapshot = await db.collection("resultados").orderBy("fecha", "desc").get();
+    
+    // 2. Construir la vista
+    vista.innerHTML = `
+        <div style="padding: 20px; color: #fff; font-family: sans-serif;">
+            <button onclick="mostrarDashboard()" style="background:#d32f2f; color:white; border:none; padding:10px 20px; border-radius:5px; cursor:pointer; margin-bottom:20px;">⬅ Volver</button>
+            <h2 style="color:#D4AF37; text-transform:uppercase; letter-spacing:2px;">Auditoría de Resultados</h2>
+            <div style="max-width: 800px; margin: 0 auto; border: 1px solid #334155; border-radius: 6px; overflow: hidden;">
+                <table style="width: 100%; border-collapse: collapse; background: #050508;">
+                    <thead>
+                        <tr style="background: #1e293b; color: #D4AF37;">
+                            <th style="padding:15px; border-bottom:1px solid #334155;">Estudiante</th>
+                            <th style="padding:15px; border-bottom:1px solid #334155;">Test</th>
+                            <th style="padding:15px; border-bottom:1px solid #334155;">Nota</th>
+                            <th style="padding:15px; border-bottom:1px solid #334155;">Verificado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-resultados"></tbody>
+                </table>
+            </div>
+        </div>
+    `;
+
+    const tbody = document.getElementById('tabla-resultados');
+
+    // 3. Renderizar filas
+    snapshot.forEach(doc => {
+        const data = doc.data();
+        const tr = document.createElement('tr');
+        tr.style.borderBottom = "1px solid #334155";
+        
+        tr.innerHTML = `
+            <td style="padding:12px; text-align:center;">${data.alumno}</td>
+            <td style="padding:12px; text-align:center;">${data.test_numero}</td>
+            <td style="padding:12px; text-align:center;">${data.nota}</td>
+            <td style="padding:12px; text-align:center;">
+                <input type="checkbox" ${data.verificado ? 'checked' : ''} 
+                       onchange="marcarVerificado('${doc.id}', '${data.test_numero}', '${data.alumno}', this.checked)">
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+};window.marcarVerificado = async (id, test, alumno, esVerificado) => {
+    if (!esVerificado) return; // Solo lógica si marca el checkbox
+
+    try {
+        // 1. Actualizar estado en la tabla original
+        await db.collection("resultados").doc(id).update({ verificado: true });
+        
+        // 2. Crear documento en la nueva colección (o documento específico)
+        const nombreDoc = `Resultados ${test} de ${alumno}`;
+        await db.collection("resultados_aprobados").doc(nombreDoc).set({
+            alumno: alumno,
+            test: test,
+            fecha_verificacion: new Date().toLocaleString(),
+            aprobado: true
+        });
+
+        alert("Registro verificado y exportado con éxito.");
+    } catch (e) {
+        console.error("Error al auditar:", e);
+    }
 };
 
 
