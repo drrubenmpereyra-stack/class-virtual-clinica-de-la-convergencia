@@ -654,23 +654,23 @@ window.mostrarMiAsistencia = async (nombre) => {
     
     document.getElementById('lista-asistencia').innerHTML = html;
 };
-// SISTEMA DE MENSAJERIA
 window.iniciarModuloComunicacion = async (esAdmin) => {
     const vista = document.getElementById('main-view');
     vista.textContent = ''; 
 
     const contenedor = document.createElement('div');
     contenedor.className = 'card-mensajeria';
-    contenedor.style.border = '2px solid #2e7d32'; // Borde verde para identificar el bloque
+    contenedor.style.border = '2px solid #2e7d32'; // Borde verde para el contenedor
     contenedor.style.padding = '20px';
     contenedor.style.borderRadius = '8px';
 
+    // --- FORMULARIO ADMINISTRADOR ---
     if (esAdmin) {
         const h2 = document.createElement('h2');
         h2.textContent = 'Enviar Comunicación';
         contenedor.appendChild(h2);
 
-        // --- DESTINATARIO DINÁMICO ---
+        // Destinatario
         const lblDest = document.createElement('label');
         lblDest.textContent = 'Destinatario: ';
         const selectDest = document.createElement('select');
@@ -678,43 +678,53 @@ window.iniciarModuloComunicacion = async (esAdmin) => {
         selectDest.style.display = 'block';
         selectDest.style.marginBottom = '10px';
 
-        // Opción predeterminada
         const optTodos = document.createElement('option');
         optTodos.value = "TODOS"; optTodos.textContent = "TODOS";
         selectDest.appendChild(optTodos);
 
-        // Carga dinámica de alumnos desde tu DB
-        // Ajusta "usuarios" y "rol" según tu estructura real
-        const snap = await db.collection("usuarios").where("rol", "==", "alumno").get();
+        // Carga de alumnos desde la base de datos
+        const snap = await db.collection("usuarios").get();
         snap.forEach(doc => {
             const u = doc.data();
-            const opt = document.createElement('option');
-            opt.value = u.nombre; 
-            opt.textContent = u.nombre;
-            selectDest.appendChild(opt);
+            // AJUSTA ESTA LÍNEA CON EL NOMBRE DEL CAMPO REAL (ej: u.nombre)
+            const nombreMostrar = u.nombre || ""; 
+            if (nombreMostrar) {
+                const opt = document.createElement('option');
+                opt.value = nombreMostrar;
+                opt.textContent = nombreMostrar;
+                selectDest.appendChild(opt);
+            }
         });
 
-        // --- ASUNTO Y MENSAJE ---
+        // Asunto y Mensaje
         const inputAsunto = document.createElement('input');
         inputAsunto.placeholder = 'Asunto';
-        inputAsunto.style.border = '1px solid #000'; // Borde marcado
+        inputAsunto.style.border = '1px solid #000';
         inputAsunto.style.display = 'block';
         inputAsunto.style.width = '100%';
         
         const areaMensaje = document.createElement('textarea');
         areaMensaje.placeholder = 'Mensaje...';
-        areaMensaje.style.border = '1px solid #000'; // Borde marcado
+        areaMensaje.style.border = '1px solid #000';
         areaMensaje.style.display = 'block';
         areaMensaje.style.width = '100%';
         areaMensaje.style.marginTop = '10px';
 
-        contenedor.append(lblDest, selectDest, inputAsunto, areaMensaje);
+        // Emojis
+        const divEmo = document.createElement('div');
+        ['😊', '📢', '⚠️', '✅', '📅'].forEach(e => {
+            const s = document.createElement('span');
+            s.textContent = e;
+            s.style.cursor = 'pointer';
+            s.onclick = () => areaMensaje.value += e;
+            divEmo.appendChild(s);
+        });
 
-        // Botón
         const btn = document.createElement('button');
-        btn.textContent = 'Enviar Mensaje';
+        btn.textContent = 'Enviar';
         btn.style.marginTop = '10px';
-        contenedor.appendChild(btn);
+
+        contenedor.append(lblDest, selectDest, inputAsunto, areaMensaje, divEmo, btn);
 
         btn.onclick = async () => {
             await db.collection("mensajes").add({
@@ -725,16 +735,16 @@ window.iniciarModuloComunicacion = async (esAdmin) => {
                 fecha: new Date().toLocaleString(),
                 leido: false
             });
-            alert("Enviado a " + selectDest.value);
+            inputAsunto.value = ''; areaMensaje.value = '';
+            alert("Mensaje enviado a: " + selectDest.value);
         };
     }
 
-    // --- TABLA DE MENSAJES ---
+    // --- TABLA DE MENSAJES (Común) ---
     const tabla = document.createElement('table');
     tabla.style.width = '100%';
     tabla.style.borderCollapse = 'collapse';
     tabla.style.marginTop = '20px';
-    // Estilo para que la tabla sea legible
     tabla.innerHTML = esAdmin 
         ? '<tr><th>Fecha</th><th>Destinatario</th><th>Asunto</th><th>Mensaje</th><th>Acción</th></tr>'
         : '<tr><th>Remitente</th><th>Fecha</th><th>Asunto</th><th>Mensaje</th><th>Estado</th></tr>';
@@ -744,7 +754,36 @@ window.iniciarModuloComunicacion = async (esAdmin) => {
     contenedor.appendChild(tabla);
     vista.appendChild(contenedor);
 
-    // ... [El resto de la lógica de onSnapshot sigue igual] ...
+    db.collection("mensajes").orderBy("fecha", "desc").onSnapshot(snap => {
+        tbody.textContent = '';
+        snap.forEach(doc => {
+            const m = doc.data();
+            const tr = document.createElement('tr');
+            
+            if (esAdmin) {
+                [m.fecha, m.destinatario, m.asunto, m.cuerpo].forEach(v => {
+                    const td = document.createElement('td'); td.textContent = v; tr.appendChild(td);
+                });
+                const b = document.createElement('button');
+                b.textContent = 'Eliminar';
+                b.onclick = () => db.collection("mensajes").doc(doc.id).delete();
+                const td = document.createElement('td'); td.appendChild(b); tr.appendChild(td);
+            } else {
+                [m.remitente, m.fecha, m.asunto, m.cuerpo].forEach(v => {
+                    const td = document.createElement('td'); td.textContent = v; tr.appendChild(td);
+                });
+                const chk = document.createElement('input');
+                chk.type = 'checkbox';
+                chk.checked = m.leido;
+                chk.onchange = (e) => db.collection("mensajes").doc(doc.id).update({ leido: e.target.checked });
+                const td = document.createElement('td');
+                td.textContent = m.leido ? "Leído" : "Pendiente";
+                td.prepend(chk);
+                tr.appendChild(td);
+            }
+            tbody.appendChild(tr);
+        });
+    });
 };
 
 // --- ARRANQUE ---
