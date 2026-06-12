@@ -27,11 +27,11 @@ const MAPA_BOTONES = {
     "Calificaciones": "btn-green", "Auditoria Test": "btn-green", "Auditoria Taller": "btn-green", 
     "Analíticos": "btn-orange", "Visado analíticos": "btn-orange", "Emitir diplomas": "btn-orange", "Central de diplomas": "btn-orange",
     "Actividades recreativas": "btn-blue", "Enviar mensajes": "btn-blue",
-    "Mis Test": "btn-sky", "Evaluación Talleres": "btn-sky", "Mis pagos": "btn-sky", "Mi asistencia": "btn-sky", "Mi analítico": "btn-sky", "Mi diploma": "btn-sky", "Mis mensajes": "btn-sky", 
+    "Mis Test": "btn-sky", "Mis Talleres": "btn-sky", "Mis pagos": "btn-sky", "Mi asistencia": "btn-sky", "Mi analítico": "btn-sky", "Mi diploma": "btn-sky", "Mis mensajes": "btn-sky", 
 };
 
 const LISTA_ADMIN = ["Encuentros", "Talleres", "Biblioteca", "Actividades recreativas", "Participantes", "Pagos", "Asistencia", "Calificaciones", "Analíticos", "Visado analíticos", "Emitir diplomas", "Herramientas", "Auditoria Test", "Auditoria Taller", "Central de diplomas", "Enviar mensajes", ];
-const LISTA_ALUMNO = ["Encuentros", "Talleres", "Biblioteca", "Actividades recreativas", "Mis Test", "Evaluación Talleres", "Mis pagos", "Mi asistencia", "Mi analítico", "Mi diploma", "Mis mensajes", "Autoevaluación"];
+const LISTA_ALUMNO = ["Encuentros", "Talleres", "Biblioteca", "Actividades recreativas", "Mis Test", "Mis Talleres", "Mis pagos", "Mi asistencia", "Mi analítico", "Mi diploma", "Mis mensajes", "Autoevaluación"];
 
 let usuarioActual = null;
 
@@ -132,6 +132,10 @@ if (b === "Mis Test") {
 // PARA AUDITORIA TEST
 if (b === "Auditoria Test") {
     btn.onclick = () => auditoriaTest();
+}
+// PARA MIS TALLERES (alumnos)
+if (b === "Mis Talleres") {
+    btn.onclick = () => gestionarTalleres();
 }
 
     navMenu.appendChild(btn);
@@ -1004,7 +1008,7 @@ window.eliminarRegistro = async (id, test, alumno) => {
     }
 };
 // DESARROLLO PARA TALLERES (ALUMNOS)
-window.mostrarTalleres = () => {
+window.gestionarTalleres = () => {
     const vista = document.getElementById('main-view');
     const talleres = [
         { titulo: "Cartografía de la Intersubjetividad", url: "https://drrubenmpereyra-stack.github.io/Taller/", img: "Taller1.jpg" },
