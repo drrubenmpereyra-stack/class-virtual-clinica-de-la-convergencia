@@ -897,7 +897,28 @@ window.iniciarModuloTest = () => {
     iframe.style.cssText = "width: 100%; height: 800px; border: 3px solid #D4AF37; border-radius: 10px; background: #000;";
     divVisor.appendChild(iframe);
     vista.appendChild(divVisor);
-}; // <--- AQUÍ CIERRA BIEN LA FUNCIÓN
+}; 
+function cargarIframeTest(url, nombre) {
+    const divVisor = document.getElementById('visor-test');
+    const iframe = divVisor.querySelector('iframe');
+    
+    divVisor.style.display = 'block';
+    iframe.src = url;
+    
+    iframe.onload = () => {
+        const nombreUsuario = (window.usuarioActual && window.usuarioActual.nombre) 
+                              ? window.usuarioActual.nombre 
+                              : "Alumno Anónimo";
+                              
+        iframe.contentWindow.postMessage({
+            tipo: 'SET_USER',
+            nombre: nombreUsuario
+        }, "*");
+        console.log("Nombre enviado al iframe:", nombreUsuario);
+    };
+    
+    divVisor.scrollIntoView({ behavior: 'smooth' });
+}// <--- AQUÍ CIERRA BIEN LA FUNCIÓN
 
 // 2. EL RECEPTOR VA FUERA, EN EL NIVEL PRINCIPAL
 window.addEventListener("message", (event) => {
@@ -918,7 +939,6 @@ window.addEventListener("message", (event) => {
 
 // 3. ARRANQUE
 document.body.onload = renderLogin;
-
 
 
 
