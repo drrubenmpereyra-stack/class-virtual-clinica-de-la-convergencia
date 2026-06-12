@@ -561,100 +561,6 @@ window.mostrarMisPagos = async (nombre) => {
     document.getElementById('lista-pagos').innerHTML = html;
 };
 // ASISTENCIA EN VISTA ADMINISTRADOR
-// 1. Formulario sin fecha
-window.renderFormularioAsistencia = () => {
-    document.getElementById('main-view').innerHTML = `
-        <div class="card">
-            <h2>Registrar Asistencia</h2>
-            <input id="inNombreEstudiante" placeholder="Nombre del Estudiante">
-            <select id="inEncuentro">${[...Array(10)].map((_, i) => `<option value="${i+1}">Encuentro ${i+1}</option>`).join('')}</select>
-            <select id="inEstado">
-                <option value="Presente">Presente</option>
-                <option value="Ausente">Ausente</option>
-                <option value="Justificado">Justificado</option>
-            </select>
-            <button onclick="guardarAsistencia()" class="btn-green">Guardar Asistencia</button>
-            <button onclick="mostrarDashboardAsistencia()" class="btn-red">Volver</button>
-        </div>`;
-};
-
-// 2. Guardado simple
-window.guardarAsistencia = async () => {
-    const data = {
-        nombreEstudiante: document.getElementById('inNombreEstudiante').value.trim(),
-        encuentro: document.getElementById('inEncuentro').value,
-        estado: document.getElementById('inEstado').value
-    };
-    
-    await db.collection("asistencia").add(data);
-    alert("Asistencia registrada");
-    mostrarDashboardAsistencia();
-};
-
-// 3. Tabla sin columna de fecha
-window.mostrarDashboardAsistencia = async () => {
-    const main = document.getElementById('main-view');
-    main.innerHTML = `
-        <h2>Control de Asistencia</h2>
-        <button onclick="renderFormularioAsistencia()" class="btn-gold">+ Nueva Asistencia</button>
-        <div id="lista-asistencia">Cargando...</div>`;
-    
-    const snapshot = await db.collection("asistencia").get();
-    let html = `<table class="tabla-clinica">
-        <thead><tr><th>Estudiante</th><th>Encuentro</th><th>Estado</th><th>Acción</th></tr></thead>
-        <tbody>`;
-    
-    snapshot.forEach(doc => {
-        const a = doc.data();
-        html += `<tr>
-            <td>${a.nombreEstudiante}</td>
-            <td>Encuentro ${a.encuentro}</td>
-            <td>${a.estado}</td>
-            <td><button onclick="eliminarAsistencia('${doc.id}')" class="btn-red">Eliminar</button></td>
-        </tr>`;
-    });
-    
-    html += `</tbody></table><br>
-             <button onclick="mostrarDashboard()" class="btn-red">Volver al Menú</button>`;
-    document.getElementById('lista-asistencia').innerHTML = html;
-};
-
-// 4. Eliminación
-window.eliminarAsistencia = async (id) => {
-    await db.collection("asistencia").doc(id).delete();
-    mostrarDashboardAsistencia();
-};
-window.mostrarMiAsistencia = async (nombre) => {
-    const main = document.getElementById('main-view');
-    main.innerHTML = `<h2>Mi Asistencia</h2><div id="lista-asistencia">Cargando...</div>`;
-
-    // Filtramos la colección "asistencia" por el nombre del usuario logueado
-    const snapshot = await db.collection("asistencia")
-                             .where("nombreEstudiante", "==", nombre)
-                             .get();
-    
-    let html = `<table class="tabla-clinica">
-        <thead><tr><th>Encuentro</th><th>Estado</th></tr></thead>
-        <tbody>`;
-    
-    let hayRegistros = false;
-    snapshot.forEach(doc => {
-        hayRegistros = true;
-        const a = doc.data();
-        html += `<tr>
-            <td>Encuentro ${a.encuentro}</td>
-            <td>${a.estado}</td>
-        </tr>`;
-    });
-    
-    if (!hayRegistros) html += `<tr><td colspan="2">No se encontraron registros de asistencia.</td></tr>`;
-    
-    html += `</tbody></table><br>
-             <button onclick="mostrarDashboard()" class="btn-red">Volver</button>`;
-    
-    document.getElementById('lista-asistencia').innerHTML = html;
-};
-//MODULO DE COMUNICACION
 window.iniciarModuloComunicacion = async (esAdmin) => {
     const vista = document.getElementById('main-view');
     vista.textContent = ''; 
@@ -677,23 +583,26 @@ window.iniciarModuloComunicacion = async (esAdmin) => {
         optTodos.value = "TODOS"; optTodos.textContent = "TODOS";
         selectDest.appendChild(optTodos);
 
-        // --- CARGA DINÁMICA ---
+        // --- CARGA DINÁMICA CORREGIDA ---
         try {
-            // CAMBIA "usuarios" por el nombre real de tu colección si no es esa
-            const snap = await db.collection("usuarios").get(); 
-            snap.forEach(doc => {
+            const snap = await db.collection("usuarios").get();
+            snap.forEach((doc) => {
                 const u = doc.data();
-                // CAMBIA "nombre" por el campo exacto que ves en tu Firebase (ej: nombre_completo)
-                const nombreMostrar = u.nombre || ""; 
-                if (nombreMostrar) {
-                    const opt = document.createElement('option');
-                    opt.value = nombreMostrar;
-                    opt.textContent = nombreMostrar;
-                    selectDest.appendChild(opt);
+                // Verificamos si 'u' existe antes de intentar leer propiedades
+                if (u) {
+                    // CAMBIA 'nombre' SI EL CAMPO EN TU DB SE LLAMA DE OTRA FORMA
+                    const nombreMostrar = u.nombre || u.nombre_completo || ""; 
+                    
+                    if (nombreMostrar) {
+                        const opt = document.createElement('option');
+                        opt.value = nombreMostrar;
+                        opt.textContent = nombreMostrar;
+                        selectDest.appendChild(opt);
+                    }
                 }
             });
         } catch (e) {
-            console.error("Error al cargar usuarios:", e);
+            console.error("Error al cargar la base de datos:", e);
         }
 
         const inputAsunto = document.createElement('input');
@@ -720,6 +629,130 @@ window.iniciarModuloComunicacion = async (esAdmin) => {
         contenedor.append(lblDest, selectDest, inputAsunto, areaMensaje, divEmo, btn);
 
         btn.onclick = async () => {
+            if (!inputAsunto.value || !areaMensaje.value) return alert("Completa los campos");
+            await db.collection("mensajes").add({
+                remitente: "Administración",
+                destinatario: selectDest.value,
+                asunto: inputAsunto.value,
+                cuerpo: areaMensaje.value,
+                fecha: new Date().toLocaleString(),
+                leido: false
+            });
+            inputAsunto.value = ''; areaMensaje.value = '';
+            alert("Mensaje enviado a: " + selectDest.value);
+        };
+    }
+
+    const tabla = document.createElement('table');
+    tabla.style.cssText = "width: 100%; border-collapse: collapse; margin-top: 20px;";
+    tabla.innerHTML = esAdmin 
+        ? '<tr><th>Fecha</th><th>Destinatario</th><th>Asunto</th><th>Mensaje</th><th>Acción</th></tr>'
+        : '<tr><th>Remitente</th><th>Fecha</th><th>Asunto</th><th>Mensaje</th><th>Estado</th></tr>';
+    
+    const tbody = document.createElement('tbody');
+    tabla.appendChild(tbody);
+    contenedor.appendChild(tabla);
+    vista.appendChild(contenedor);
+
+    db.collection("mensajes").orderBy("fecha", "desc").onSnapshot(snap => {
+        tbody.textContent = '';
+        snap.forEach(doc => {
+            const m = doc.data();
+            const tr = document.createElement('tr');
+            if (esAdmin) {
+                [m.fecha, m.destinatario, m.asunto, m.cuerpo].forEach(v => {
+                    const td = document.createElement('td'); td.style.border = "1px solid #ccc"; td.textContent = v; tr.appendChild(td);
+                });
+                const b = document.createElement('button');
+                b.textContent = 'Eliminar';
+                b.onclick = () => db.collection("mensajes").doc(doc.id).delete();
+                const td = document.createElement('td'); td.appendChild(b); tr.appendChild(td);
+            } else {
+                [m.remitente, m.fecha, m.asunto, m.cuerpo].forEach(v => {
+                    const td = document.createElement('td'); td.style.border = "1px solid #ccc"; td.textContent = v; tr.appendChild(td);
+                });
+                const chk = document.createElement('input');
+                chk.type = 'checkbox';
+                chk.checked = m.leido;
+                chk.onchange = (e) => db.collection("mensajes").doc(doc.id).update({ leido: e.target.checked });
+                const td = document.createElement('td');
+                td.textContent = m.leido ? "Leído" : "Pendiente";
+                td.prepend(chk);
+                tr.appendChild(td);
+            }
+            tbody.appendChild(tr);
+        });
+    });
+};
+window.iniciarModuloComunicacion = async (esAdmin) => {
+    const vista = document.getElementById('main-view');
+    vista.textContent = ''; 
+
+    const contenedor = document.createElement('div');
+    contenedor.className = 'card-mensajeria';
+    contenedor.style.cssText = "border: 2px solid #2e7d32; padding: 20px; border-radius: 8px;";
+
+    if (esAdmin) {
+        const h2 = document.createElement('h2');
+        h2.textContent = 'Enviar Comunicación';
+        contenedor.appendChild(h2);
+
+        const lblDest = document.createElement('label');
+        lblDest.textContent = 'Destinatario: ';
+        const selectDest = document.createElement('select');
+        selectDest.style.cssText = "border: 1px solid #000; display: block; margin-bottom: 10px; width: 100%;";
+
+        const optTodos = document.createElement('option');
+        optTodos.value = "TODOS"; optTodos.textContent = "TODOS";
+        selectDest.appendChild(optTodos);
+
+        // --- CARGA DINÁMICA CORREGIDA ---
+        try {
+            const snap = await db.collection("usuarios").get();
+            snap.forEach((doc) => {
+                const u = doc.data();
+                // Verificamos si 'u' existe antes de intentar leer propiedades
+                if (u) {
+                    // CAMBIA 'nombre' SI EL CAMPO EN TU DB SE LLAMA DE OTRA FORMA
+                    const nombreMostrar = u.nombre || u.nombre_completo || ""; 
+                    
+                    if (nombreMostrar) {
+                        const opt = document.createElement('option');
+                        opt.value = nombreMostrar;
+                        opt.textContent = nombreMostrar;
+                        selectDest.appendChild(opt);
+                    }
+                }
+            });
+        } catch (e) {
+            console.error("Error al cargar la base de datos:", e);
+        }
+
+        const inputAsunto = document.createElement('input');
+        inputAsunto.placeholder = 'Asunto';
+        inputAsunto.style.cssText = "border: 1px solid #000; display: block; width: 100%; margin-bottom: 10px;";
+        
+        const areaMensaje = document.createElement('textarea');
+        areaMensaje.placeholder = 'Mensaje...';
+        areaMensaje.style.cssText = "border: 1px solid #000; display: block; width: 100%; height: 80px;";
+
+        const divEmo = document.createElement('div');
+        ['😊', '📢', '⚠️', '✅', '📅'].forEach(e => {
+            const s = document.createElement('span');
+            s.textContent = e;
+            s.style.cursor = 'pointer';
+            s.onclick = () => areaMensaje.value += e;
+            divEmo.appendChild(s);
+        });
+
+        const btn = document.createElement('button');
+        btn.textContent = 'Enviar';
+        btn.style.marginTop = '10px';
+
+        contenedor.append(lblDest, selectDest, inputAsunto, areaMensaje, divEmo, btn);
+
+        btn.onclick = async () => {
+            if (!inputAsunto.value || !areaMensaje.value) return alert("Completa los campos");
             await db.collection("mensajes").add({
                 remitente: "Administración",
                 destinatario: selectDest.value,
