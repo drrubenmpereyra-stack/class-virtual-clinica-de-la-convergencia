@@ -1003,9 +1003,34 @@ window.eliminarRegistro = async (id, test, alumno) => {
         alert("Hubo un error al intentar eliminar el registro.");
     }
 };
+// DESARROLLO PARA TALLERES (ALUMNOS)
+window.mostrarTalleres = () => {
+    const vista = document.getElementById('main-view');
+    const talleres = [
+        { titulo: "Cartografía de la Intersubjetividad", url: "https://drrubenmpereyra-stack.github.io/Taller/", img: "Taller1.jpg" },
+        { titulo: "Memorias traumáticas y el a posteriori", url: "https://drrubenmpereyra-stack.github.io/Taller-2/", img: "Taller2.jpg" },
+        { titulo: "Circuitos de recompensa y patologías del deseo", url: "https://drrubenmpereyra-stack.github.io/Taller-3/", img: "Taller3.jpg" },
+        { titulo: "El marcador somático en la transferencia", url: "https://drrubenmpereyra-stack.github.io/Taller-4/", img: "Taller4.jpg" },
+        { titulo: "Neurobiología de la repetición", url: "https://drrubenmpereyra-stack.github.io/Taller-5/", img: "Taller5.jpg" }
+    ];
 
-
-
+    let contenido = `
+        <div style="padding: 20px; color: #fff; font-family: sans-serif;">
+            <button onclick="mostrarDashboard()" style="background: #d32f2f; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 20px;">⬅ Volver al Panel</button>
+            <h2 style="color: #D4AF37; text-align: center; margin-bottom: 30px;">Mis Talleres de Convergencia</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                ${talleres.map(t => `
+                    <div style="background: #0f172a; border: 1px solid #D4AF37; border-radius: 8px; overflow: hidden; text-align: center; padding: 15px;">
+                        <img src="${t.img}" style="width: 100%; border-radius: 4px; margin-bottom: 10px;">
+                        <h4 style="margin: 10px 0; color: #fff;">${t.titulo}</h4>
+                        <a href="${t.url}" target="_blank" style="display: block; background: #D4AF37; color: #000; padding: 10px; text-decoration: none; border-radius: 4px; font-weight: bold;">Acceder al Taller</a>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+    vista.innerHTML = contenido;
+};
 
 // 3. ARRANQUE
 document.body.onload = renderLogin;
