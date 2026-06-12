@@ -882,11 +882,11 @@ window.iniciarModuloTest = () => {
     
     // Lista de datos para los tests
     const tests = [
-        { nombre: "Cuestionario 1", img: "Test1.png", url: "https://drrubenmpereyra-stack.github.io/Cuestionario-1/" },
-        { nombre: "Cuestionario 2", img: "Test2.png", url: "https://drrubenmpereyra-stack.github.io/Cuestionario-2/" },
-        { nombre: "Cuestionario 3", img: "Test3.png", url: "https://drrubenmpereyra-stack.github.io/Cuestionario-3_1/" },
-        { nombre: "Cuestionario 4", img: "Test4.png", url: "https://drrubenmpereyra-stack.github.io/Cuestionario-4/" },
-        { nombre: "Cuestionario 5", img: "Test5.png", url: "https://drrubenmpereyra-stack.github.io/Cuestionario-5/" }
+        { nombre: "Test 1", img: "Test1.png", url: "https://drrubenmpereyra-stack.github.io/Cuestionario-1/" },
+        { nombre: "Test 2", img: "Test2.png", url: "https://drrubenmpereyra-stack.github.io/Cuestionario-2/" },
+        { nombre: "Test 3", img: "Test3.png", url: "https://drrubenmpereyra-stack.github.io/Cuestionario-3_1/" },
+        { nombre: "Test 4", img: "Test4.png", url: "https://drrubenmpereyra-stack.github.io/Cuestionario-4/" },
+        { nombre: "Test 5", img: "Test5.png", url: "https://drrubenmpereyra-stack.github.io/Cuestionario-5/" }
     ];
 
     tests.forEach(test => {
@@ -907,6 +907,12 @@ window.iniciarModuloTest = () => {
     contenedor.appendChild(grid);
     vista.appendChild(contenedor);
 };
+
+
+
+
+// 3. ARRANQUE
+document.body.onload = renderLogin;
 
 
 
