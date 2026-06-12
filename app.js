@@ -684,6 +684,7 @@ window.iniciarModuloComunicacion = async (esAdmin) => {
         });
     });
 };
+// MODULO COMUNICACION
 window.iniciarModuloComunicacion = async (esAdmin) => {
     const vista = document.getElementById('main-view');
     vista.textContent = ''; 
@@ -706,26 +707,23 @@ window.iniciarModuloComunicacion = async (esAdmin) => {
         optTodos.value = "TODOS"; optTodos.textContent = "TODOS";
         selectDest.appendChild(optTodos);
 
-        // --- CARGA DINÁMICA CORREGIDA ---
+        // --- CARGA DESDE LA COLECCIÓN 'participantes' usando campo 'nombre_apellido' ---
         try {
-            const snap = await db.collection("usuarios").get();
-            snap.forEach((doc) => {
+            const snap = await db.collection("participantes").get();
+            snap.forEach(doc => {
                 const u = doc.data();
-                // Verificamos si 'u' existe antes de intentar leer propiedades
-                if (u) {
-                    // CAMBIA 'nombre' SI EL CAMPO EN TU DB SE LLAMA DE OTRA FORMA
-                    const nombreMostrar = u.nombre || u.nombre_completo || ""; 
-                    
-                    if (nombreMostrar) {
-                        const opt = document.createElement('option');
-                        opt.value = nombreMostrar;
-                        opt.textContent = nombreMostrar;
-                        selectDest.appendChild(opt);
-                    }
+                // Usamos el campo exacto que me confirmaste
+                const nombreMostrar = u.nombre_apellido; 
+                
+                if (nombreMostrar) {
+                    const opt = document.createElement('option');
+                    opt.value = nombreMostrar;
+                    opt.textContent = nombreMostrar;
+                    selectDest.appendChild(opt);
                 }
             });
         } catch (e) {
-            console.error("Error al cargar la base de datos:", e);
+            console.error("Error al cargar participantes:", e);
         }
 
         const inputAsunto = document.createElement('input');
@@ -736,20 +734,11 @@ window.iniciarModuloComunicacion = async (esAdmin) => {
         areaMensaje.placeholder = 'Mensaje...';
         areaMensaje.style.cssText = "border: 1px solid #000; display: block; width: 100%; height: 80px;";
 
-        const divEmo = document.createElement('div');
-        ['😊', '📢', '⚠️', '✅', '📅'].forEach(e => {
-            const s = document.createElement('span');
-            s.textContent = e;
-            s.style.cursor = 'pointer';
-            s.onclick = () => areaMensaje.value += e;
-            divEmo.appendChild(s);
-        });
-
         const btn = document.createElement('button');
         btn.textContent = 'Enviar';
         btn.style.marginTop = '10px';
 
-        contenedor.append(lblDest, selectDest, inputAsunto, areaMensaje, divEmo, btn);
+        contenedor.append(lblDest, selectDest, inputAsunto, areaMensaje, btn);
 
         btn.onclick = async () => {
             if (!inputAsunto.value || !areaMensaje.value) return alert("Completa los campos");
@@ -766,6 +755,7 @@ window.iniciarModuloComunicacion = async (esAdmin) => {
         };
     }
 
+    // --- TABLA DE MENSAJES (Misma lógica) ---
     const tabla = document.createElement('table');
     tabla.style.cssText = "width: 100%; border-collapse: collapse; margin-top: 20px;";
     tabla.innerHTML = esAdmin 
