@@ -858,7 +858,7 @@ window.iniciarModuloActividades = () => {
         divVisor.scrollIntoView({ behavior: 'smooth' });
     }
 };
-// MODULO DE TEST
+// MODULOS DE TEST 1 al 5
 window.iniciarModuloTest = () => {
     const vista = document.getElementById('main-view');
     vista.textContent = ''; 
@@ -878,30 +878,35 @@ window.iniciarModuloTest = () => {
     contenedor.appendChild(h2);
 
     const grid = document.createElement('div');
-    grid.style.cssText = "display: flex; justify-content: center; margin-top: 20px;";
+    grid.style.cssText = "display: flex; flex-wrap: wrap; justify-content: center; margin-top: 20px; gap: 20px;"; // Agregado flex-wrap y gap
     
-    const card = document.createElement('div');
-    card.style.cssText = "border: 2px solid #D4AF37; border-radius: 15px; overflow: hidden; cursor: pointer; width: 220px; background: #050508;";
+    // Lista de datos para los tests
+    const tests = [
+        { nombre: "Cuestionario 1", img: "Test1.png", url: "https://drrubenmpereyra-stack.github.io/Cuestionario-1/" },
+        { nombre: "Cuestionario 2", img: "Test2.png", url: "https://drrubenmpereyra-stack.github.io/Cuestionario-2/" },
+        { nombre: "Cuestionario 3", img: "Test3.png", url: "https://drrubenmpereyra-stack.github.io/Cuestionario-3_1/" },
+        { nombre: "Cuestionario 4", img: "Test4.png", url: "https://drrubenmpereyra-stack.github.io/Cuestionario-4/" },
+        { nombre: "Cuestionario 5", img: "Test5.png", url: "https://drrubenmpereyra-stack.github.io/Cuestionario-5/" }
+    ];
+
+    tests.forEach(test => {
+        const card = document.createElement('div');
+        card.style.cssText = "border: 2px solid #D4AF37; border-radius: 15px; overflow: hidden; cursor: pointer; width: 220px; background: #050508; transition: transform 0.2s;";
+        
+        card.innerHTML = `<img src="${test.img}" style="width: 100%;"><div style="padding: 10px; color: #D4AF37;">${test.nombre}</div>`;
+        
+        card.onclick = () => {
+            const nombre = (window.usuarioActual && window.usuarioActual.nombre) ? window.usuarioActual.nombre : "Alumno Anónimo";
+            const url = test.url + '?alumno=' + encodeURIComponent(nombre);
+            window.open(url, '_blank');
+        };
+        
+        grid.appendChild(card);
+    });
     
-    // CORRECCIÓN AQUÍ: Ambos lados deben ser backticks `` ` ``
-    card.innerHTML = `<img src="Test1.png" style="width: 100%;"><div style="padding: 10px; color: #D4AF37;">Cuestionario 1</div>`;
-    
-    card.onclick = () => {
-        const nombre = (window.usuarioActual && window.usuarioActual.nombre) ? window.usuarioActual.nombre : "Alumno Anónimo";
-        const url = 'https://drrubenmpereyra-stack.github.io/Cuestionario-1/?alumno=' + encodeURIComponent(nombre);
-        window.open(url, '_blank');
-    };
-    
-    grid.appendChild(card);
     contenedor.appendChild(grid);
     vista.appendChild(contenedor);
 };
-
-
-
-
-// 3. ARRANQUE
-document.body.onload = renderLogin;
 
 
 
