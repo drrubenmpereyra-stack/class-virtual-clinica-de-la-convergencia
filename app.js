@@ -707,13 +707,13 @@ window.iniciarModuloComunicacion = async (esAdmin) => {
         optTodos.value = "TODOS"; optTodos.textContent = "TODOS";
         selectDest.appendChild(optTodos);
 
-        // --- CARGA DESDE LA COLECCIÓN 'participantes' usando campo 'nombre_apellido' ---
+        // --- CARGA CORREGIDA CON EL CAMPO 'nombre' ---
         try {
             const snap = await db.collection("participantes").get();
             snap.forEach(doc => {
                 const u = doc.data();
-                // Usamos el campo exacto que me confirmaste
-                const nombreMostrar = u.nombre_apellido; 
+                // Usamos 'nombre' tal como lo confirmó la consola
+                const nombreMostrar = u.nombre; 
                 
                 if (nombreMostrar) {
                     const opt = document.createElement('option');
@@ -755,7 +755,6 @@ window.iniciarModuloComunicacion = async (esAdmin) => {
         };
     }
 
-    // --- TABLA DE MENSAJES (Misma lógica) ---
     const tabla = document.createElement('table');
     tabla.style.cssText = "width: 100%; border-collapse: collapse; margin-top: 20px;";
     tabla.innerHTML = esAdmin 
