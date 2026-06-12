@@ -907,6 +907,31 @@ window.iniciarModuloTest = () => {
         divVisor.scrollIntoView({ behavior: 'smooth' });
     }
 };
+// --- RECEPTOR DE MENSAJES DEL IFRAME DE TESTS ---
+window.addEventListener("message", (event) => {
+    // 1. Verificamos que el mensaje provenga de un origen confiable si fuera necesario
+    // 2. Comprobamos que el mensaje tenga la estructura que enviamos desde el test
+    if (event.data && event.data.tipo === 'GUARDAR_RESULTADO') {
+        const datos = event.data.payload;
+        
+        console.log("Recibiendo nota desde el test...", datos);
+        
+        // Guardamos en Firestore usando tu variable 'db' que ya existe en app.js
+        db.collection("resultados_test").add({
+            alumno: datos.alumno,
+            test_numero: datos.test_numero,
+            nota: datos.nota,
+            fecha: datos.fecha
+        })
+        .then(() => {
+            console.log("¡Éxito! Resultado guardado en la auditoría.");
+            // Opcional: Podrías disparar aquí un aviso visual para el alumno
+        })
+        .catch((e) => {
+            console.error("Error crítico al guardar en Firestore:", e);
+        });
+    }
+});
 
 // --- ARRANQUE ---
 document.body.onload = renderLogin;
