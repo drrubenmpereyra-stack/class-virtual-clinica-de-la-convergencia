@@ -859,7 +859,6 @@ window.iniciarModuloActividades = () => {
     }
 };
 // MODULO DE TEST
-// 1. FUNCIÓN QUE CREA LA VISTA DEL TEST (La que invoca el botón)
 window.iniciarModuloTest = () => {
     const vista = document.getElementById('main-view');
     vista.textContent = ''; 
@@ -884,63 +883,25 @@ window.iniciarModuloTest = () => {
     const card = document.createElement('div');
     card.style.cssText = "border: 2px solid #D4AF37; border-radius: 15px; overflow: hidden; cursor: pointer; width: 220px; background: #050508;";
     
+    // CORRECCIÓN AQUÍ: Ambos lados deben ser backticks `` ` ``
     card.innerHTML = `<img src="Test1.png" style="width: 100%;"><div style="padding: 10px; color: #D4AF37;">Cuestionario 1</div>`;
-    // Esta llamada ahora es segura porque cargarIframeTest existe abajo
-    card.onclick = () => cargarIframeTest('https://drrubenmpereyra-stack.github.io/Cuestionario-1/', 'Cuestionario 1');
-    grid.appendChild(card);
-
-    contenedor.appendChild(grid);
-    vista.appendChild(contenedor);
-
-    const divVisor = document.createElement('div');
-    divVisor.id = 'visor-test';
-    divVisor.style.cssText = "margin-top: 30px; display: none; width: 100%;";
-    const iframe = document.createElement('iframe');
-    iframe.style.cssText = "width: 100%; height: 800px; border: 3px solid #D4AF37; border-radius: 10px; background: #000;";
-    divVisor.appendChild(iframe);
-    vista.appendChild(divVisor);
-}; 
-
-// 2. FUNCIÓN DE CARGA (Independiente y Global)
-function cargarIframeTest(url, nombre) {
-    const divVisor = document.getElementById('visor-test');
-    if (!divVisor) return;
-    const iframe = divVisor.querySelector('iframe');
     
-    divVisor.style.display = 'block';
-    iframe.src = url;
-    
-    iframe.onload = () => {
-        const nombreUsuario = (window.usuarioActual && window.usuarioActual.nombre) 
-                              ? window.usuarioActual.nombre 
-                              : "Alumno Anónimo";
-                              
-        iframe.contentWindow.postMessage({
-            tipo: 'SET_USER',
-            nombre: nombreUsuario
-        }, "*");
+    card.onclick = () => {
+        const nombre = (window.usuarioActual && window.usuarioActual.nombre) ? window.usuarioActual.nombre : "Alumno Anónimo";
+        const url = 'https://drrubenmpereyra-stack.github.io/Cuestionario-1/?alumno=' + encodeURIComponent(nombre);
+        window.open(url, '_blank');
     };
     
-    divVisor.scrollIntoView({ behavior: 'smooth' });
-}
+    grid.appendChild(card);
+    contenedor.appendChild(grid);
+    vista.appendChild(contenedor);
+};
 
-// 3. RECEPTOR DE RESULTADOS (Independiente y Global)
-window.addEventListener("message", (event) => {
-    if (event.data && event.data.tipo === 'GUARDAR_RESULTADO') {
-        const datos = event.data.payload;
-        
-        if (typeof db !== 'undefined') {
-            db.collection("resultados_test").add({
-                alumno: datos.alumno,
-                test_numero: datos.test_numero,
-                nota: datos.nota,
-                fecha: datos.fecha
-            })
-            .then(() => console.log("Resultado guardado con éxito."))
-            .catch((e) => console.error("Error en DB:", e));
-        }
-    }
-});
+
+
+
+// 3. ARRANQUE
+document.body.onload = renderLogin;
 
 
 
