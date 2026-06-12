@@ -858,6 +858,7 @@ window.iniciarModuloActividades = () => {
         divVisor.scrollIntoView({ behavior: 'smooth' });
     }
 };
+// 1. ESTA FUNCIÓN VA SOLA
 window.iniciarModuloTest = () => {
     const vista = document.getElementById('main-view');
     vista.textContent = ''; 
@@ -865,7 +866,6 @@ window.iniciarModuloTest = () => {
     const contenedor = document.createElement('div');
     contenedor.style.cssText = "padding: 20px; text-align: center; color: #fff; font-family: sans-serif;";
 
-    // Botón Salir
     const btnSalir = document.createElement('button');
     btnSalir.textContent = "⬅ Volver al Panel Principal";
     btnSalir.style.cssText = "background: #d32f2f; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 20px;";
@@ -874,17 +874,15 @@ window.iniciarModuloTest = () => {
 
     const h2 = document.createElement('h2');
     h2.textContent = 'Evaluaciones Clínicas - Clínica de la Convergencia';
-    h2.style.color = "#D4AF37"; // Tono dorado clínico
+    h2.style.color = "#D4AF37";
     contenedor.appendChild(h2);
 
-    // Contenedor para el Test 1
     const grid = document.createElement('div');
     grid.style.cssText = "display: flex; justify-content: center; margin-top: 20px;";
     
     const card = document.createElement('div');
     card.style.cssText = "border: 2px solid #D4AF37; border-radius: 15px; overflow: hidden; cursor: pointer; width: 220px; background: #050508;";
     
-    // Aquí usamos la imagen Test1.png que subiste
     card.innerHTML = `<img src="Test1.png" style="width: 100%;"><div style="padding: 10px; color: #D4AF37;">Cuestionario 1</div>`;
     card.onclick = () => cargarIframeTest('https://drrubenmpereyra-stack.github.io/Cuestionario-1/', 'Cuestionario 1');
     grid.appendChild(card);
@@ -892,7 +890,6 @@ window.iniciarModuloTest = () => {
     contenedor.appendChild(grid);
     vista.appendChild(contenedor);
 
-    // Visor de Test
     const divVisor = document.createElement('div');
     divVisor.id = 'visor-test';
     divVisor.style.cssText = "margin-top: 30px; display: none; width: 100%;";
@@ -900,40 +897,26 @@ window.iniciarModuloTest = () => {
     iframe.style.cssText = "width: 100%; height: 800px; border: 3px solid #D4AF37; border-radius: 10px; background: #000;";
     divVisor.appendChild(iframe);
     vista.appendChild(divVisor);
+}; // <--- AQUÍ CIERRA BIEN LA FUNCIÓN
 
-    function cargarIframeTest(url, nombre) {
-        divVisor.style.display = 'block';
-        iframe.src = url;
-        divVisor.scrollIntoView({ behavior: 'smooth' });
-    }
-};
-// --- RECEPTOR DE MENSAJES DEL IFRAME DE TESTS ---
+// 2. EL RECEPTOR VA FUERA, EN EL NIVEL PRINCIPAL
 window.addEventListener("message", (event) => {
-    // 1. Verificamos que el mensaje provenga de un origen confiable si fuera necesario
-    // 2. Comprobamos que el mensaje tenga la estructura que enviamos desde el test
     if (event.data && event.data.tipo === 'GUARDAR_RESULTADO') {
         const datos = event.data.payload;
-        
         console.log("Recibiendo nota desde el test...", datos);
         
-        // Guardamos en Firestore usando tu variable 'db' que ya existe en app.js
         db.collection("resultados_test").add({
             alumno: datos.alumno,
             test_numero: datos.test_numero,
             nota: datos.nota,
             fecha: datos.fecha
         })
-        .then(() => {
-            console.log("¡Éxito! Resultado guardado en la auditoría.");
-            // Opcional: Podrías disparar aquí un aviso visual para el alumno
-        })
-        .catch((e) => {
-            console.error("Error crítico al guardar en Firestore:", e);
-        });
+        .then(() => console.log("¡Éxito! Resultado guardado en la auditoría."))
+        .catch((e) => console.error("Error crítico al guardar en Firestore:", e));
     }
 });
 
-// --- ARRANQUE ---
+// 3. ARRANQUE
 document.body.onload = renderLogin;
 
 
