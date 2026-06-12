@@ -911,54 +911,59 @@ window.iniciarModuloTest = () => {
     contenedor.appendChild(grid);
     vista.appendChild(contenedor);
 };
+// AUDITORIA TEST
 window.auditoriaTest = async () => {
     const vista = document.getElementById('main-view');
-    vista.textContent = 'Cargando registros...';
+    vista.innerHTML = '<div style="color: #fff; padding: 20px; text-align: center;">Cargando registros de auditoría...</div>';
 
-    // 1. Obtener datos de Firestore
-    const snapshot = await db.collection("resultados").orderBy("fecha", "desc").get();
-    
-    // 2. Construir la vista
-    vista.innerHTML = `
-        <div style="padding: 20px; color: #fff; font-family: sans-serif;">
-            <button onclick="mostrarDashboard()" style="background:#d32f2f; color:white; border:none; padding:10px 20px; border-radius:5px; cursor:pointer; margin-bottom:20px;">⬅ Volver</button>
-            <h2 style="color:#D4AF37; text-transform:uppercase; letter-spacing:2px;">Auditoría de Resultados</h2>
-            <div style="max-width: 800px; margin: 0 auto; border: 1px solid #334155; border-radius: 6px; overflow: hidden;">
-                <table style="width: 100%; border-collapse: collapse; background: #050508;">
-                    <thead>
-                        <tr style="background: #1e293b; color: #D4AF37;">
-                            <th style="padding:15px; border-bottom:1px solid #334155;">Estudiante</th>
-                            <th style="padding:15px; border-bottom:1px solid #334155;">Test</th>
-                            <th style="padding:15px; border-bottom:1px solid #334155;">Nota</th>
-                            <th style="padding:15px; border-bottom:1px solid #334155;">Verificado</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabla-resultados"></tbody>
-                </table>
-            </div>
-        </div>
-    `;
-
-    const tbody = document.getElementById('tabla-resultados');
-
-    // 3. Renderizar filas
-    snapshot.forEach(doc => {
-        const data = doc.data();
-        const tr = document.createElement('tr');
-        tr.style.borderBottom = "1px solid #334155";
+    try {
+        const snapshot = await db.collection("resultados").orderBy("fecha", "desc").get();
         
-        tr.innerHTML = `
-            <td style="padding:12px; text-align:center;">${data.alumno}</td>
-            <td style="padding:12px; text-align:center;">${data.test_numero}</td>
-            <td style="padding:12px; text-align:center;">${data.nota}</td>
-            <td style="padding:12px; text-align:center;">
-                <input type="checkbox" ${data.verificado ? 'checked' : ''} 
-                       onchange="marcarVerificado('${doc.id}', '${data.test_numero}', '${data.alumno}', this.checked)">
-            </td>
-        `;
-        tbody.appendChild(tr);
-    });
-};window.marcarVerificado = async (id, test, alumno, esVerificado) => {
+        let filas = "";
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const esVerificado = data.verificado ? "checked" : "";
+            filas += `
+                <tr style="border-bottom: 1px solid #334155;">
+                    <td style="padding: 15px;">${data.alumno}</td>
+                    <td style="padding: 15px;">${data.test_numero}</td>
+                    <td style="padding: 15px; text-align: center;">${data.nota}</td>
+                    <td style="padding: 15px; text-align: center;">
+                        <input type="checkbox" ${esVerificado} onchange="marcarVerificado('${doc.id}', '${data.test_numero}', '${data.alumno}', this.checked)">
+                    </td>
+                    <td style="padding: 15px; text-align: center;">
+                        <button onclick="eliminarRegistro('${doc.id}', '${data.test_numero}', '${data.alumno}')" 
+                                style="background:#8b0000; color:white; border:none; padding:5px 10px; border-radius:3px; cursor:pointer;">
+                            Eliminar
+                        </button>
+                    </td>
+                </tr>`;
+        });
+
+        vista.innerHTML = `
+            <div style="padding: 20px; color: #fff; font-family: sans-serif;">
+                <button onclick="mostrarDashboard()" style="background: #d32f2f; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 20px;">⬅ Volver al Panel</button>
+                <h2 style="color: #D4AF37; text-align: center; margin-bottom: 20px;">Auditoría de Test</h2>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; max-width: 900px; margin: 0 auto; border-collapse: collapse; background: #050508; border: 1px solid #D4AF37;">
+                        <thead>
+                            <tr style="background: #1e293b; color: #D4AF37;">
+                                <th style="padding: 15px; border: 1px solid #334155;">Estudiante</th>
+                                <th style="padding: 15px; border: 1px solid #334155;">Test</th>
+                                <th style="padding: 15px; border: 1px solid #334155;">Nota</th>
+                                <th style="padding: 15px; border: 1px solid #334155;">Verificado</th>
+                                <th style="padding: 15px; border: 1px solid #334155;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>${filas || '<tr><td colspan="5" style="padding:20px; text-align:center;">No hay resultados registrados.</td></tr>'}</tbody>
+                    </table>
+                </div>
+            </div>`;
+    } catch (e) {
+        vista.innerHTML = `<div style="color: red; padding: 20px; text-align: center;">Error al cargar auditoría: ${e.message}</div>`;
+    }
+};
+window.marcarVerificado = async (id, test, alumno, esVerificado) => {
     if (!esVerificado) return; // Solo lógica si marca el checkbox
 
     try {
@@ -977,6 +982,25 @@ window.auditoriaTest = async () => {
         alert("Registro verificado y exportado con éxito.");
     } catch (e) {
         console.error("Error al auditar:", e);
+    }
+};
+window.eliminarRegistro = async (id, test, alumno) => {
+    if (!confirm(`¿Estás seguro de eliminar el registro de ${alumno} (${test})?`)) return;
+
+    try {
+        // 1. Eliminar de la colección principal
+        await db.collection("resultados").doc(id).delete();
+        
+        // 2. Intentar eliminar de la colección de aprobados (si existía)
+        const nombreDoc = `Resultados ${test} de ${alumno}`;
+        await db.collection("resultados_aprobados").doc(nombreDoc).delete();
+
+        alert("Registro eliminado correctamente.");
+        // Refrescar la vista para que el usuario vea el cambio
+        auditoriaTest();
+    } catch (e) {
+        console.error("Error al eliminar:", e);
+        alert("Hubo un error al intentar eliminar el registro.");
     }
 };
 
