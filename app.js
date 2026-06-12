@@ -858,7 +858,8 @@ window.iniciarModuloActividades = () => {
         divVisor.scrollIntoView({ behavior: 'smooth' });
     }
 };
-// 1. ESTA FUNCIÓN VA SOLA
+// MODULO DE TEST
+// 1. FUNCIÓN QUE CREA LA VISTA DEL TEST (La que invoca el botón)
 window.iniciarModuloTest = () => {
     const vista = document.getElementById('main-view');
     vista.textContent = ''; 
@@ -884,6 +885,7 @@ window.iniciarModuloTest = () => {
     card.style.cssText = "border: 2px solid #D4AF37; border-radius: 15px; overflow: hidden; cursor: pointer; width: 220px; background: #050508;";
     
     card.innerHTML = `<img src="Test1.png" style="width: 100%;"><div style="padding: 10px; color: #D4AF37;">Cuestionario 1</div>`;
+    // Esta llamada ahora es segura porque cargarIframeTest existe abajo
     card.onclick = () => cargarIframeTest('https://drrubenmpereyra-stack.github.io/Cuestionario-1/', 'Cuestionario 1');
     grid.appendChild(card);
 
@@ -898,8 +900,11 @@ window.iniciarModuloTest = () => {
     divVisor.appendChild(iframe);
     vista.appendChild(divVisor);
 }; 
+
+// 2. FUNCIÓN DE CARGA (Independiente y Global)
 function cargarIframeTest(url, nombre) {
     const divVisor = document.getElementById('visor-test');
+    if (!divVisor) return;
     const iframe = divVisor.querySelector('iframe');
     
     divVisor.style.display = 'block';
@@ -914,31 +919,28 @@ function cargarIframeTest(url, nombre) {
             tipo: 'SET_USER',
             nombre: nombreUsuario
         }, "*");
-        console.log("Nombre enviado al iframe:", nombreUsuario);
     };
     
     divVisor.scrollIntoView({ behavior: 'smooth' });
-}// <--- AQUÍ CIERRA BIEN LA FUNCIÓN
+}
 
-// 2. EL RECEPTOR VA FUERA, EN EL NIVEL PRINCIPAL
+// 3. RECEPTOR DE RESULTADOS (Independiente y Global)
 window.addEventListener("message", (event) => {
     if (event.data && event.data.tipo === 'GUARDAR_RESULTADO') {
         const datos = event.data.payload;
-        console.log("Recibiendo nota desde el test...", datos);
         
-        db.collection("resultados_test").add({
-            alumno: datos.alumno,
-            test_numero: datos.test_numero,
-            nota: datos.nota,
-            fecha: datos.fecha
-        })
-        .then(() => console.log("¡Éxito! Resultado guardado en la auditoría."))
-        .catch((e) => console.error("Error crítico al guardar en Firestore:", e));
+        if (typeof db !== 'undefined') {
+            db.collection("resultados_test").add({
+                alumno: datos.alumno,
+                test_numero: datos.test_numero,
+                nota: datos.nota,
+                fecha: datos.fecha
+            })
+            .then(() => console.log("Resultado guardado con éxito."))
+            .catch((e) => console.error("Error en DB:", e));
+        }
     }
 });
-
-// 3. ARRANQUE
-document.body.onload = renderLogin;
 
 
 
