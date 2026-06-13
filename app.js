@@ -142,7 +142,7 @@ if (b === "Auditoria Taller") {
     btn.onclick = () => auditoriaTaller(); 
 }
 // DEPARTAMENTO DE TITULOS
-if (b === "Central Diplomas") {
+if (b === "Central de diplomas") {
     btn.onclick = () => gestionarDiplomas();
 }
 
@@ -1124,6 +1124,10 @@ window.eliminarRegistro = async (id) => {
 
 // DEPARTAMENTO DE DIPLOMAS
 window.gestionarDiplomas = () => {
+    // Si la función no se ejecuta, veremos este log en la consola (F12)
+    console.log("Abriendo Central de Diplomas...");
+    
+    // Ejecución forzada de la función
     const vista = document.getElementById('main-view');
     
     const estudiantes = [
@@ -1138,20 +1142,16 @@ window.gestionarDiplomas = () => {
     vista.innerHTML = `
         <div style="padding: 20px; color: #fff; font-family: sans-serif;">
             <button onclick="mostrarDashboard()" style="background: #d32f2f; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 20px;">⬅ Volver al Panel</button>
-            
             <div style="text-align: center; margin-bottom: 40px;">
                 <h2 style="color: #D4AF37;">Central de Diplomas</h2>
                 <img src="diploma.png" onclick="window.open('https://drrubenmpereyra-stack.github.io/Departamento-de-titulos-clinica-de-la-convergencia/', '_blank')" 
-                     style="width: 200px; cursor: pointer; border-radius: 50%; border: 2px solid #D4AF37; transition: transform 0.3s;"
-                     onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                <p style="color: #888; margin-top: 10px;">Clic en el diploma para abrir el Formulario de Títulos</p>
+                     style="width: 200px; cursor: pointer; border: 2px solid #D4AF37;">
             </div>
-
-            <table style="width: 100%; border-collapse: collapse; background: #0f172a; border: 1px solid #334155;">
+            <table style="width: 100%; border-collapse: collapse; background: #0f172a;">
                 <thead>
                     <tr style="border-bottom: 2px solid #D4AF37; color: #D4AF37;">
                         <th style="padding: 12px; text-align: left;">Apellido y Nombres</th>
-                        <th style="padding: 12px; text-align: center;">Acceso a Carpeta Drive</th>
+                        <th style="padding: 12px; text-align: center;">Acceso Drive</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -1159,8 +1159,7 @@ window.gestionarDiplomas = () => {
                         <tr style="border-bottom: 1px solid #334155;">
                             <td style="padding: 12px;">${e.nombre}</td>
                             <td style="padding: 12px; text-align: center;">
-                                <input type="checkbox" onchange="if(this.checked) { window.open('${e.drive}', '_blank'); this.checked = false; }" 
-                                       style="cursor: pointer; transform: scale(1.5);">
+                                <input type="checkbox" onchange="if(this.checked) { window.open('${e.drive}', '_blank'); this.checked = false; }" style="cursor: pointer; transform: scale(1.5);">
                             </td>
                         </tr>
                     `).join('')}
@@ -1172,5 +1171,4 @@ window.gestionarDiplomas = () => {
 
 // 3. ARRANQUE
 document.body.onload = renderLogin;
-
 
