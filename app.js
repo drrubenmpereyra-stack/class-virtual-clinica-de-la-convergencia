@@ -1272,15 +1272,26 @@ window.consultarMiDiploma = () => {
 };
 
 // Esta función se dispara solo cuando el usuario presiona el botón "Consultar"
+// Usamos el nombre desde la lógica de tus participantes
 window.ejecutarConsultaFirebase = async () => {
     const resultadoDiv = document.getElementById('resultado-consulta');
-    const nombreAlumno = nombreUsuarioActual; 
     
-    resultadoDiv.innerHTML = `<p style="color:#D4AF37;">Consultando...</p>`;
+    // Si tu variable global no existe, vamos a buscar el nombre 
+    // del participante desde el contexto donde guardas el usuario actual
+    const nombreAlumno = typeof nombreUsuarioActual !== 'undefined' ? nombreUsuarioActual : "RIOS Graciela"; // Ejemplo de respaldo
+
+    if (!nombreAlumno) {
+        resultadoDiv.innerHTML = `<p style="color:red;">Error: No se identifica el usuario.</p>`;
+        return;
+    }
+    
+    resultadoDiv.innerHTML = `<p style="color:#D4AF37;">Consultando base de datos...</p>`;
 
     try {
+        // CORRECCIÓN: Si en participantes el campo es "nombre", 
+        // probablemente en registro_diplomas también lo sea.
         const diplomaSnap = await db.collection("registro_diplomas")
-            .where("alumno", "==", nombreAlumno)
+            .where("nombre", "==", nombreAlumno) // Cambiado a "nombre"
             .get();
 
         if (!diplomaSnap.empty) {
@@ -1289,8 +1300,8 @@ window.ejecutarConsultaFirebase = async () => {
                 const data = doc.data();
                 filas += `
                     <div style="background:#1e293b; border:1px solid #D4AF37; padding:15px; margin-top:10px; border-radius:5px; text-align:left;">
-                        <p><strong>Nombre:</strong> ${data.alumno}</p>
-                        <p><strong>Fecha:</strong> ${data.fecha}</p>
+                        <p><strong>Nombre:</strong> ${data.nombre || 'No especificado'}</p>
+                        <p><strong>Fecha:</strong> ${data.fecha || 'No especificado'}</p>
                     </div>`;
             });
 
@@ -1307,7 +1318,7 @@ window.ejecutarConsultaFirebase = async () => {
             resultadoDiv.innerHTML = `<p style="color:#D4AF37; border:1px solid #D4AF37; padding:15px; border-radius:5px; max-width:300px; margin:auto;">Sin datos de Diploma, consultar a Dirección.</p>`;
         }
     } catch (e) {
-        resultadoDiv.innerHTML = `<p style="color:red;">Error al conectar con la base de datos.</p>`;
+        resultadoDiv.innerHTML = `<p style="color:red;">Error de conexión.</p>`;
         console.error(e);
     }
 };
