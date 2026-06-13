@@ -151,7 +151,7 @@ if (b === "Emitir diplomas") {
 }
 // MI DIPLOMA (ALUMNOS)
 if (b === "Mi diploma") {
-    btn.onclick = () => crearBotonDiploma(nombreUsuarioActual);
+    btn.onclick = () => crearFormularioDiploma();
 }
 
 
@@ -1253,61 +1253,58 @@ window.guardarDiploma = async (id, nombre) => {
     }
 };
 // Mi diploma
-/**
- * Crea el botón imagen que abre la carpeta del alumno conectado.
- * @param {string} nombreAlumnoConectado - La variable que identifica al alumno en sesión.
- */
-window.crearBotonDiploma = (nombreAlumnoConectado) => {
-    const contenedor = document.getElementById('main-view');
-    contenedor.textContent = ''; // Limpiar vista
+window.crearFormularioDiploma = async () => {
+    const vista = document.getElementById('main-view');
+    vista.textContent = 'Cargando...';
 
-    // Contenedor centrado
-    const divWrapper = document.createElement('div');
-    divWrapper.style.textAlign = 'center';
-    divWrapper.style.padding = '50px';
+    try {
+        // 1. Buscamos al participante (ajusta 'emailUsuarioActual' por la variable de sesión que tengas)
+        const snapParticipante = await db.collection("participantes")
+            .where("email", "==", emailUsuarioActual) // O el campo que uses para identificar al usuario logueado
+            .get();
 
-    // Crear elemento Imagen
-    const imgDiploma = document.createElement('img');
-    imgDiploma.src = 'diplomaicono.png';
-    imgDiploma.alt = 'Obtener Diploma';
-    imgDiploma.style.cursor = 'pointer';
-    imgDiploma.style.width = '120px'; // Ajustado para mejor visualización
-    imgDiploma.style.transition = 'transform 0.2s';
-    
-    // Efecto visual al pasar el mouse
-    imgDiploma.onmouseover = () => imgDiploma.style.transform = 'scale(1.05)';
-    imgDiploma.onmouseout = () => imgDiploma.style.transform = 'scale(1)';
-
-    // Texto descriptivo
-    const label = document.createElement('p');
-    label.textContent = 'Obtener Diploma';
-    label.style.color = '#D4AF37';
-    label.style.marginTop = '10px';
-    label.style.fontFamily = 'sans-serif';
-
-    // Acción: Obtener link y abrir ventana nueva
-    imgDiploma.onclick = () => {
-        const url = obtenerLinkDrive(nombreAlumnoConectado);
-        if (url !== '#') {
-            window.open(url, '_blank', 'noopener,noreferrer');
-        } else {
-            alert("No se encontró una carpeta de Drive asignada para: " + nombreAlumnoConectado);
+        if (snapParticipante.empty) {
+            vista.textContent = "Error: Participante no encontrado.";
+            return;
         }
-    };
 
-    divWrapper.appendChild(imgDiploma);
-    divWrapper.appendChild(label);
-    contenedor.appendChild(divWrapper);
+        const nombre = snapParticipante.docs[0].data().nombre;
+
+        // 2. Construimos la vista una vez que tenemos el nombre
+        vista.textContent = ''; 
+        const contenedor = document.createElement('div');
+        contenedor.style.textAlign = 'center';
+        contenedor.style.padding = '20px';
+
+        const h2 = document.createElement('h2');
+        h2.textContent = 'Mi Diploma';
+        h2.style.color = '#D4AF37';
+
+        const btnImagen = document.createElement('img');
+        btnImagen.src = 'diplomaicono.png';
+        btnImagen.alt = 'Obtener Diploma';
+        btnImagen.style.cursor = 'pointer';
+        btnImagen.style.width = '150px';
+        btnImagen.style.display = 'block';
+        btnImagen.style.margin = '20px auto';
+
+        // 3. Acción de descarga
+        btnImagen.onclick = () => {
+            const link = obtenerLinkDrive(nombre);
+            if (link && link !== '#') {
+                window.open(link, '_blank');
+            } else {
+                alert("No se encontró la carpeta de Drive para: " + nombre);
+            }
+        };
+
+        contenedor.appendChild(h2);
+        contenedor.appendChild(btnImagen);
+        vista.appendChild(contenedor);
+
+    } catch (error) {
+        vista.textContent = "Error al obtener datos: " + error.message;
+    }
 };
-
-// Asegúrate de que esta función mantenga tu lógica de mapeo
-function obtenerLinkDrive(nombre) {
-    const estudiantes = [
-        { nombre: "RIOS Graciela", drive: "https://drive.google.com/drive/folders/1da5V0BKy4FghsOCz7B66mNOz7ZTFMKt5?usp=drive_link" }
-        // Añadir aquí el resto de los alumnos
-    ];
-    const est = estudiantes.find(e => e.nombre === nombre);
-    return est ? est.drive : '#';
-}
 // 3. ARRANQUE
 document.body.onload = renderLogin;
