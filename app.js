@@ -1123,8 +1123,8 @@ window.eliminarRegistro = async (id) => {
 };
 // DEPARTAMENTO DE TITULOS
 window.abrirDepartamentoTitulos = () => {
-    // Abrimos el formulario en una ventana nueva
-    window.open("https://drrubenmpereyra-stack.github.io/Departamento-de-titulos-", "_blank");
+    // URL corregida con el nombre completo del repositorio
+    window.open("https://drrubenmpereyra-stack.github.io/Departamento-de-titulos-clinica-de-la-convergencia/", "_blank");
 };
 
 // 3. ARRANQUE
