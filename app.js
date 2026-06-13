@@ -151,7 +151,7 @@ if (b === "Emitir diplomas") {
 }
 // MI DIPLOMA (VISTA ALUMNO)
 if (b === "Mi Diploma") {
-    btn.onclick = () => mostrarMiDiploma(nombreUsuarioActual); 
+    btn.onclick = () => mostrarMiDiploma(); 
 }
 
     navMenu.appendChild(btn);
