@@ -1173,80 +1173,68 @@ window.gestionarDiplomas = () => {
     `;
 };
 // EMITIR DIPLOMA
-window.emitirDiplomas = () => {
+window.emitirDiplomas = async () => {
     const vista = document.getElementById('main-view');
-    const alumnos = [
-        { id: "1", nombre: "CAON FEDERICO" },
-        { id: "2", nombre: "PRAVAZ EMILIA" },
-        { id: "3", nombre: "RIOS GRACIELA" },
-        { id: "4", nombre: "RODRIGUEZ RAMIRO" },
-        { id: "5", nombre: "SCHWAB GISELA" },
-        { id: "6", nombre: "STEFANINI BENZO ROMINA" }
-    ];
+    vista.innerHTML = `<div style="padding: 20px; color: #fff;">Cargando participantes...</div>`;
 
-    vista.innerHTML = `
-        <div style="padding: 20px; color: #fff;">
-            <button onclick="mostrarDashboard()" style="background:#d32f2f; color:white; padding:10px; border:none; cursor:pointer;">⬅ Volver</button>
-            <h2 style="color:#D4AF37; text-align:center;">Emisión de Diplomas</h2>
-            <table style="width:100%; border-collapse:collapse; background:#0f172a; margin-top:20px;">
-                <tr style="border-bottom:2px solid #D4AF37;">
-                    <th style="padding:10px;">Alumno</th><th style="padding:10px;">Fecha</th><th style="padding:10px;">Guardar</th>
-                </tr>
-                ${alumnos.map(a => `
-                    <tr style="border-bottom:1px solid #334155;">
-                        <td style="padding:10px;">${a.nombre}</td>
-                        <td style="padding:10px;"><input type="date" id="f-${a.id}"></td>
-                        <td style="padding:10px; text-align:center;">
-                            <input type="checkbox" id="sw-${a.id}" onchange="guardarDiploma('${a.id}', '${a.nombre}')">
-                        </td>
+    try {
+        // 1. Obtenemos los participantes de la colección "participantes"
+        const snapshot = await db.collection("participantes").get();
+        let htmlTabla = `
+            <div style="padding: 20px; color: #fff;">
+                <button onclick="mostrarDashboard()" style="background:#d32f2f; color:white; padding:10px; border:none; cursor:pointer;">⬅ Volver</button>
+                <h2 style="color:#D4AF37; text-align:center;">Emisión de Diplomas</h2>
+                <table style="width:100%; border-collapse:collapse; background:#0f172a; margin-top:20px;">
+                    <tr style="border-bottom:2px solid #D4AF37;">
+                        <th style="padding:10px;">Alumno</th>
+                        <th style="padding:10px;">Fecha</th>
+                        <th style="padding:10px;">Guardar</th>
                     </tr>
-                `).join('')}
-            </table>
-        </div>
-    `;
+        `;
+
+        // 2. Construimos las filas dinámicamente
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const id = doc.id; // Usamos el ID del documento de Firestore
+            htmlTabla += `
+                <tr style="border-bottom:1px solid #334155;">
+                    <td style="padding:10px;">${data.nombre}</td>
+                    <td style="padding:10px;"><input type="date" id="f-${id}"></td>
+                    <td style="padding:10px; text-align:center;">
+                        <input type="checkbox" id="sw-${id}" onchange="guardarDiploma('${id}', '${data.nombre}')">
+                    </td>
+                </tr>
+            `;
+        });
+
+        htmlTabla += `</table></div>`;
+        vista.innerHTML = htmlTabla;
+
+    } catch (error) {
+        console.error("Error cargando participantes:", error);
+        alert("No se pudieron cargar los participantes.");
+    }
 };
 
 window.guardarDiploma = async (id, nombre) => {
     const sw = document.getElementById(`sw-${id}`);
     const fecha = document.getElementById(`f-${id}`).value;
-    if (sw.checked && fecha) {
-        await db.collection("registro_diplomas").add({ alumno: nombre, fecha: fecha, timestamp: new Date() });
-        alert("Guardado: " + nombre);
-    } else if (sw.checked && !fecha) {
-        alert("Selecciona fecha primero");
-        sw.checked = false;
-    }
-};
-window.procesarEmision = async () => {
-    const nombre = document.getElementById('nombre-alumno').value;
-    const fecha = document.getElementById('fecha-emision').value;
-    const obs = document.getElementById('observaciones').value;
-    const debeGuardar = document.getElementById('guardar-db').checked;
-
-    if (!nombre || !fecha) {
-        alert("Por favor, completa los campos requeridos.");
-        return;
-    }
-
-    if (debeGuardar) {
-        try {
-            await db.collection("registro_diplomas").add({
-                alumno: nombre,
-                fecha: fecha,
-                observaciones: obs,
-                timestamp: new Date()
-            });
-            alert("Diploma emitido y registrado exitosamente.");
-        } catch (e) {
-            console.error("Error al guardar:", e);
-        }
-    } else {
-        alert("Diploma emitido (Sin registro en base de datos).");
-    }
     
-    // Opcional: Limpiar formulario tras emitir
-    document.getElementById('form-diploma').reset();
+    if (sw.checked) {
+        if (!fecha) {
+            alert("Selecciona fecha primero");
+            sw.checked = false;
+            return;
+        }
+        await db.collection("registro_diplomas").add({ 
+            alumno: nombre, 
+            fecha: fecha, 
+            timestamp: new Date() 
+        });
+        alert("Guardado: " + nombre);
+    }
 };
+
 
 // 3. ARRANQUE
 document.body.onload = renderLogin;
