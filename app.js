@@ -1270,67 +1270,65 @@ window.consultarMiDiploma = () => {
         </div>
     `;
 };
+// 1. Función independiente: Consulta y muestra los datos
 window.ejecutarConsultaFirebase = async () => {
     const resultadoDiv = document.getElementById('resultado-consulta');
     const nombreAlumno = typeof nombreUsuarioActual !== 'undefined' ? nombreUsuarioActual : "RIOS Graciela";
-
-    // Limpiamos el área antes de crear los elementos
-    resultadoDiv.innerHTML = ''; 
-    const pLoading = document.createElement('p');
-    pLoading.textContent = "Consultando...";
-    resultadoDiv.appendChild(pLoading);
+    
+    resultadoDiv.textContent = "Consultando...";
 
     try {
         const diplomaSnap = await db.collection("registro_diplomas")
             .where("nombre", "==", nombreAlumno)
             .get();
 
-        resultadoDiv.innerHTML = ''; // Limpiamos el "Consultando..."
+        resultadoDiv.textContent = ""; 
 
         if (!diplomaSnap.empty) {
-            // Crear contenedor de resultados
-            const contenedor = document.createElement('div');
-            
             diplomaSnap.forEach(doc => {
                 const data = doc.data();
+                
+                const contenedorDatos = document.createElement('div');
+                contenedorDatos.style.marginBottom = "20px";
+                
                 const pNombre = document.createElement('p');
                 pNombre.textContent = "Nombre: " + (data.nombre || 'N/A');
+                
                 const pFecha = document.createElement('p');
                 pFecha.textContent = "Fecha: " + (data.fecha || 'N/A');
-                contenedor.appendChild(pNombre);
-                contenedor.appendChild(pFecha);
+                
+                contenedorDatos.appendChild(pNombre);
+                contenedorDatos.appendChild(pFecha);
+                resultadoDiv.appendChild(contenedorDatos);
             });
 
-            // Crear Botón "Descarga"
+            // Creamos el botón de descarga llamando a la función independiente
             const btnDescarga = document.createElement('button');
-            btnDescarga.textContent = "📥 Descarga";
+            btnDescarga.textContent = "Descarga";
+            btnDescarga.style.display = "block";
+            btnDescarga.style.margin = "20px auto";
             btnDescarga.style.padding = "10px 20px";
-            btnDescarga.style.marginTop = "20px";
-            btnDescarga.style.cursor = "pointer";
             
-            btnDescarga.onclick = () => {
-                const link = obtenerLinkDrive(nombreAlumno);
-                if (link && link !== '#') {
-                    window.open(link, '_blank');
-                } else {
-                    alert("No hay carpeta de Drive disponible para este alumno.");
-                }
-            };
+            // La acción está totalmente separada
+            btnDescarga.onclick = () => window.abrirDriveDiploma(nombreAlumno);
 
-            contenedor.appendChild(btnDescarga);
-            resultadoDiv.appendChild(contenedor);
-
+            resultadoDiv.appendChild(btnDescarga);
         } else {
-            const pSinDatos = document.createElement('p');
-            pSinDatos.textContent = "Sin datos de Diploma, consultar a Dirección.";
-            pSinDatos.style.color = "#D4AF37";
-            resultadoDiv.appendChild(pSinDatos);
+            resultadoDiv.textContent = "Sin datos de Diploma, consultar a Dirección.";
         }
     } catch (e) {
+        resultadoDiv.textContent = "Error al consultar la base de datos.";
         console.error(e);
-        const pError = document.createElement('p');
-        pError.textContent = "Error de conexión.";
-        resultadoDiv.appendChild(pError);
+    }
+};
+
+// 2. Función independiente: Proceso exclusivo de descarga/acceso a Drive
+window.abrirDriveDiploma = (nombre) => {
+    const link = obtenerLinkDrive(nombre);
+    if (link && link !== '#') {
+        window.open(link, '_blank');
+    } else {
+        alert("Carpeta no encontrada para este usuario.");
     }
 };
 function obtenerLinkDrive(nombre) {
