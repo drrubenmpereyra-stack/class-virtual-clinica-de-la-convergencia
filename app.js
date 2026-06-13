@@ -1257,7 +1257,7 @@ window.crearFormularioDiploma = () => {
     const vista = document.getElementById('main-view');
     vista.textContent = ''; 
 
-    // 1. Lista interna para evitar dependencias externas
+    // 1. La lista de alumnos está integrada aquí mismo
     const estudiantes = [
         { nombre: "CAON FEDERICO", drive: "https://drive.google.com/drive/folders/1LnnPq0w7P81ShMJsG3MNoLkfhktakV6v?usp=sharing" },
         { nombre: "PRAVAZ EMILIA", drive: "https://drive.google.com/drive/folders/1fOJ27u87krGO9ykIbBtNBT_xSvSUmXuF?usp=drive_link" },
@@ -1267,12 +1267,12 @@ window.crearFormularioDiploma = () => {
         { nombre: "STEFANINI BENZO ROMINA", drive: "https://drive.google.com/drive/folders/1PioVY2n5eJp7W1-c-yLqVzHkiXfNbEzh?usp=drive_link" }
     ];
 
-    // 2. Identificación del usuario (usando la variable global 'usuario' que confirmamos antes)
-    // Buscamos el nombre completo en tu configuración para comparar con la lista
+    // 2. Identificamos al usuario. 
+    // Usamos 'usuario' que es la variable global que tu sistema ya utiliza.
     const datosUsuario = CONFIGURACION_USUARIOS.find(u => u.user === usuario);
     const nombreCompleto = datosUsuario ? datosUsuario.nombre.toUpperCase() : "";
 
-    // 3. Construcción del formulario
+    // 3. Construimos el formulario
     const contenedor = document.createElement('div');
     contenedor.style.textAlign = 'center';
     contenedor.style.padding = '20px';
@@ -1288,7 +1288,7 @@ window.crearFormularioDiploma = () => {
     btnImagen.style.margin = '20px auto';
     btnImagen.style.display = 'block';
 
-    // 4. Lógica de búsqueda interna (ahora sí encontrará el link)
+    // 4. Lógica de búsqueda interna (ahora es 100% independiente)
     btnImagen.onclick = () => {
         const est = estudiantes.find(e => e.nombre === nombreCompleto);
         if (est) {
