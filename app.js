@@ -1175,54 +1175,46 @@ window.gestionarDiplomas = () => {
 // EMITIR DIPLOMA
 window.emitirDiplomas = () => {
     const vista = document.getElementById('main-view');
-    // ... array de alumnos ...
+    const alumnos = [
+        { id: "1", nombre: "CAON FEDERICO" },
+        { id: "2", nombre: "PRAVAZ EMILIA" },
+        { id: "3", nombre: "RIOS GRACIELA" },
+        { id: "4", nombre: "RODRIGUEZ RAMIRO" },
+        { id: "5", nombre: "SCHWAB GISELA" },
+        { id: "6", nombre: "STEFANINI BENZO ROMINA" }
+    ];
+
     vista.innerHTML = `
-        <div class="contenedor-diplomas">
-            <h2 style="color: #D4AF37; text-align: center;">Emisión de Diplomas</h2>
-            <table class="tabla-diplomas">
-                <thead>
-                    <tr><th>Alumno</th><th>Fecha</th><th>Observaciones</th><th>Guardar</th></tr>
-                </thead>
-                <tbody>
-                    ${alumnos.map(a => `
-                        <tr>
-                            <td>${a.nombre}</td>
-                            <td><input type="date" id="fecha-${a.id}"></td>
-                            <td><input type="text" id="obs-${a.id}" placeholder="Notas..."></td>
-                            <td>
-                                <label class="switch">
-                                    <input type="checkbox" id="switch-${a.id}" onchange="gestionarSwitch(${a.id}, '${a.nombre}')">
-                                    <span class="slider"></span>
-                                </label>
-                            </td>
-                        </tr>
-                    `).join('')}
-                </tbody>
+        <div style="padding: 20px; color: #fff;">
+            <button onclick="mostrarDashboard()" style="background:#d32f2f; color:white; padding:10px; border:none; cursor:pointer;">⬅ Volver</button>
+            <h2 style="color:#D4AF37; text-align:center;">Emisión de Diplomas</h2>
+            <table style="width:100%; border-collapse:collapse; background:#0f172a; margin-top:20px;">
+                <tr style="border-bottom:2px solid #D4AF37;">
+                    <th style="padding:10px;">Alumno</th><th style="padding:10px;">Fecha</th><th style="padding:10px;">Guardar</th>
+                </tr>
+                ${alumnos.map(a => `
+                    <tr style="border-bottom:1px solid #334155;">
+                        <td style="padding:10px;">${a.nombre}</td>
+                        <td style="padding:10px;"><input type="date" id="f-${a.id}"></td>
+                        <td style="padding:10px; text-align:center;">
+                            <input type="checkbox" id="sw-${a.id}" onchange="guardarDiploma('${a.id}', '${a.nombre}')">
+                        </td>
+                    </tr>
+                `).join('')}
             </table>
         </div>
     `;
 };
 
-window.guardarUnDiploma = async (id, nombre) => {
-    const fecha = document.getElementById(`fecha-${id}`).value;
-    const obs = document.getElementById(`obs-${id}`).value;
-
-    if (!fecha) {
-        alert("Por favor, seleccione una fecha.");
-        return;
-    }
-
-    try {
-        await db.collection("registro_diplomas").add({
-            alumno: nombre,
-            fecha: fecha,
-            observaciones: obs,
-            timestamp: new Date()
-        });
-        alert(`Diploma de ${nombre} registrado exitosamente.`);
-    } catch (e) {
-        console.error("Error al guardar:", e);
-        alert("Error al guardar en la base de datos.");
+window.guardarDiploma = async (id, nombre) => {
+    const sw = document.getElementById(`sw-${id}`);
+    const fecha = document.getElementById(`f-${id}`).value;
+    if (sw.checked && fecha) {
+        await db.collection("registro_diplomas").add({ alumno: nombre, fecha: fecha, timestamp: new Date() });
+        alert("Guardado: " + nombre);
+    } else if (sw.checked && !fecha) {
+        alert("Selecciona fecha primero");
+        sw.checked = false;
     }
 };
 window.procesarEmision = async () => {
