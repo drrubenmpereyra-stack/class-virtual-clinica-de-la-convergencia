@@ -151,7 +151,7 @@ if (b === "Emitir diplomas") {
 }
 // MI DIPLOMA (ALUMNOS)
 if (b === "Mi diploma") {
-    btn.onclick = () => window.consultarMiDiploma();
+    btn.onclick = () => crearBotonDiploma(nombreUsuarioActual);
 }
 
 
@@ -1253,82 +1253,61 @@ window.guardarDiploma = async (id, nombre) => {
     }
 };
 // Mi diploma
-// 1. Función que inicializa la vista "Mi diploma"
-window.consultarMiDiploma = () => {
-    const vista = document.getElementById('main-view');
-    vista.textContent = ''; // Limpiar vista
+/**
+ * Crea el botón imagen que abre la carpeta del alumno conectado.
+ * @param {string} nombreAlumnoConectado - La variable que identifica al alumno en sesión.
+ */
+window.crearBotonDiploma = (nombreAlumnoConectado) => {
+    const contenedor = document.getElementById('main-view');
+    contenedor.textContent = ''; // Limpiar vista
 
-    const h2 = document.createElement('h2');
-    h2.textContent = 'Mi Diploma';
+    // Contenedor centrado
+    const divWrapper = document.createElement('div');
+    divWrapper.style.textAlign = 'center';
+    divWrapper.style.padding = '50px';
+
+    // Crear elemento Imagen
+    const imgDiploma = document.createElement('img');
+    imgDiploma.src = 'diplomaicono.png';
+    imgDiploma.alt = 'Obtener Diploma';
+    imgDiploma.style.cursor = 'pointer';
+    imgDiploma.style.width = '120px'; // Ajustado para mejor visualización
+    imgDiploma.style.transition = 'transform 0.2s';
     
-    const btnConsultar = document.createElement('button');
-    btnConsultar.textContent = 'Consultar base de datos';
-    btnConsultar.onclick = () => ejecutarConsultaFirebase();
+    // Efecto visual al pasar el mouse
+    imgDiploma.onmouseover = () => imgDiploma.style.transform = 'scale(1.05)';
+    imgDiploma.onmouseout = () => imgDiploma.style.transform = 'scale(1)';
 
-    const resultadoDiv = document.createElement('div');
-    resultadoDiv.id = 'resultado-consulta';
+    // Texto descriptivo
+    const label = document.createElement('p');
+    label.textContent = 'Obtener Diploma';
+    label.style.color = '#D4AF37';
+    label.style.marginTop = '10px';
+    label.style.fontFamily = 'sans-serif';
 
-    vista.appendChild(h2);
-    vista.appendChild(btnConsultar);
-    vista.appendChild(resultadoDiv);
-};
-
-// 2. Función de consulta a la base de datos
-window.ejecutarConsultaFirebase = async () => {
-    const resDiv = document.getElementById('resultado-consulta');
-    resDiv.textContent = 'Consultando...';
-
-    // Obtenemos el nombre del participante logueado
-    // Nota: Asegúrate de reemplazar 'nombreUsuarioActual' por la variable que maneja tu sesión
-    const nombreAlumno = typeof nombreUsuarioActual !== 'undefined' ? nombreUsuarioActual : "";
-
-    try {
-        const snap = await db.collection("registro_diplomas")
-            .where("alumno", "==", nombreAlumno)
-            .get();
-        
-        resDiv.textContent = ''; // Limpiar mensaje de carga
-
-        if (!snap.empty) {
-            snap.forEach(doc => {
-                const data = doc.data();
-                
-                const pNombre = document.createElement('p');
-                pNombre.textContent = 'Alumno: ' + (data.alumno || 'N/A');
-                
-                const pFecha = document.createElement('p');
-                pFecha.textContent = 'Fecha: ' + (data.fecha || 'N/A');
-                
-                resDiv.appendChild(pNombre);
-                resDiv.appendChild(pFecha);
-
-                // Casilla de verificación para abrir Drive
-                const label = document.createElement('label');
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.onchange = (e) => {
-                    if (e.target.checked) {
-                        // Se asume que el objeto data tiene el link al drive
-                        if (data.linkDrive) {
-                            window.open(data.linkDrive, '_blank');
-                        } else {
-                            alert("No se encontró el enlace de Drive.");
-                        }
-                    }
-                };
-                
-                label.appendChild(checkbox);
-                label.appendChild(document.createTextNode(' Acceder a mi carpeta Drive'));
-                resDiv.appendChild(label);
-            });
+    // Acción: Obtener link y abrir ventana nueva
+    imgDiploma.onclick = () => {
+        const url = obtenerLinkDrive(nombreAlumnoConectado);
+        if (url !== '#') {
+            window.open(url, '_blank', 'noopener,noreferrer');
         } else {
-            resDiv.textContent = 'No hay datos sobre su diploma, comunicarse a Dirección.';
+            alert("No se encontró una carpeta de Drive asignada para: " + nombreAlumnoConectado);
         }
-    } catch (e) {
-        resDiv.textContent = 'Error al consultar la base de datos.';
-        console.error(e);
-    }
+    };
+
+    divWrapper.appendChild(imgDiploma);
+    divWrapper.appendChild(label);
+    contenedor.appendChild(divWrapper);
 };
 
+// Asegúrate de que esta función mantenga tu lógica de mapeo
+function obtenerLinkDrive(nombre) {
+    const estudiantes = [
+        { nombre: "RIOS Graciela", drive: "https://drive.google.com/drive/folders/1da5V0BKy4FghsOCz7B66mNOz7ZTFMKt5?usp=drive_link" }
+        // Añadir aquí el resto de los alumnos
+    ];
+    const est = estudiantes.find(e => e.nombre === nombre);
+    return est ? est.drive : '#';
+}
 // 3. ARRANQUE
 document.body.onload = renderLogin;
