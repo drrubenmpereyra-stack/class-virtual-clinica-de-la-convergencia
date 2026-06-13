@@ -1257,11 +1257,22 @@ window.crearFormularioDiploma = () => {
     const vista = document.getElementById('main-view');
     vista.textContent = ''; 
 
-    // Aquí capturamos directamente el nombre del usuario logueado 
-    // tal como lo tienes guardado en tu base de datos (Ej: "Rios Graciela")
-    // Si tu variable de sesión se llama 'userActual' o 'usuarioActual', úsala aquí:
-    const nombreAlumno = typeof userActual !== 'undefined' ? userActual : "Usuario";
+    // 1. Lista interna para evitar dependencias externas
+    const estudiantes = [
+        { nombre: "CAON FEDERICO", drive: "https://drive.google.com/drive/folders/1LnnPq0w7P81ShMJsG3MNoLkfhktakV6v?usp=sharing" },
+        { nombre: "PRAVAZ EMILIA", drive: "https://drive.google.com/drive/folders/1fOJ27u87krGO9ykIbBtNBT_xSvSUmXuF?usp=drive_link" },
+        { nombre: "RIOS GRACIELA", drive: "https://drive.google.com/drive/folders/1da5V0BKy4FghsOCz7B66mNOz7ZTFMKt5?usp=drive_link" },
+        { nombre: "RODRIGUEZ RAMIRO", drive: "https://drive.google.com/drive/folders/1kixAS7AqD1zr3pDYKC4mjBBW0sqNimx0?usp=drive_link" },
+        { nombre: "SCHWAB GISELA", drive: "https://drive.google.com/drive/folders/1xDl_o19beXQrXMo4AdLBF4TWmEHkqwYb?usp=drive_link" },
+        { nombre: "STEFANINI BENZO ROMINA", drive: "https://drive.google.com/drive/folders/1PioVY2n5eJp7W1-c-yLqVzHkiXfNbEzh?usp=drive_link" }
+    ];
 
+    // 2. Identificación del usuario (usando la variable global 'usuario' que confirmamos antes)
+    // Buscamos el nombre completo en tu configuración para comparar con la lista
+    const datosUsuario = CONFIGURACION_USUARIOS.find(u => u.user === usuario);
+    const nombreCompleto = datosUsuario ? datosUsuario.nombre.toUpperCase() : "";
+
+    // 3. Construcción del formulario
     const contenedor = document.createElement('div');
     contenedor.style.textAlign = 'center';
     contenedor.style.padding = '20px';
@@ -1272,19 +1283,18 @@ window.crearFormularioDiploma = () => {
 
     const btnImagen = document.createElement('img');
     btnImagen.src = 'diplomaicono.png';
-    btnImagen.alt = 'Obtener Diploma';
     btnImagen.style.cursor = 'pointer';
     btnImagen.style.width = '150px';
     btnImagen.style.margin = '20px auto';
     btnImagen.style.display = 'block';
 
+    // 4. Lógica de búsqueda interna (ahora sí encontrará el link)
     btnImagen.onclick = () => {
-        // Llamamos directamente a tu función que ya tienes y funciona
-        const link = obtenerLinkDrive(nombreAlumno);
-        if (link && link !== '#') {
-            window.open(link, '_blank');
+        const est = estudiantes.find(e => e.nombre === nombreCompleto);
+        if (est) {
+            window.open(est.drive, '_blank');
         } else {
-            alert("No se encontró una carpeta de Drive para: " + nombreAlumno);
+            alert("No se encontró carpeta para: " + nombreCompleto);
         }
     };
 
