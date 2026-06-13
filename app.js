@@ -1255,52 +1255,67 @@ window.guardarDiploma = async (id, nombre) => {
 // Mi diploma
 window.crearFormularioDiploma = () => {
     const vista = document.getElementById('main-view');
-    vista.textContent = ''; 
+    vista.textContent = 'Cargando diploma...';
 
-    // 1. La lista de alumnos está integrada aquí mismo
-    const estudiantes = [
-        { nombre: "CAON FEDERICO", drive: "https://drive.google.com/drive/folders/1LnnPq0w7P81ShMJsG3MNoLkfhktakV6v?usp=sharing" },
-        { nombre: "PRAVAZ EMILIA", drive: "https://drive.google.com/drive/folders/1fOJ27u87krGO9ykIbBtNBT_xSvSUmXuF?usp=drive_link" },
-        { nombre: "RIOS GRACIELA", drive: "https://drive.google.com/drive/folders/1da5V0BKy4FghsOCz7B66mNOz7ZTFMKt5?usp=drive_link" },
-        { nombre: "RODRIGUEZ RAMIRO", drive: "https://drive.google.com/drive/folders/1kixAS7AqD1zr3pDYKC4mjBBW0sqNimx0?usp=drive_link" },
-        { nombre: "SCHWAB GISELA", drive: "https://drive.google.com/drive/folders/1xDl_o19beXQrXMo4AdLBF4TWmEHkqwYb?usp=drive_link" },
-        { nombre: "STEFANINI BENZO ROMINA", drive: "https://drive.google.com/drive/folders/1PioVY2n5eJp7W1-c-yLqVzHkiXfNbEzh?usp=drive_link" }
-    ];
-
-    // 2. Identificamos al usuario. 
-    // Usamos 'usuario' que es la variable global que tu sistema ya utiliza.
-    const datosUsuario = CONFIGURACION_USUARIOS.find(u => u.user === usuario);
-    const nombreCompleto = datosUsuario ? datosUsuario.nombre.toUpperCase() : "";
-
-    // 3. Construimos el formulario
-    const contenedor = document.createElement('div');
-    contenedor.style.textAlign = 'center';
-    contenedor.style.padding = '20px';
-
-    const h2 = document.createElement('h2');
-    h2.textContent = 'Mi Diploma';
-    h2.style.color = '#D4AF37';
-
-    const btnImagen = document.createElement('img');
-    btnImagen.src = 'diplomaicono.png';
-    btnImagen.style.cursor = 'pointer';
-    btnImagen.style.width = '150px';
-    btnImagen.style.margin = '20px auto';
-    btnImagen.style.display = 'block';
-
-    // 4. Lógica de búsqueda interna (ahora es 100% independiente)
-    btnImagen.onclick = () => {
-        const est = estudiantes.find(e => e.nombre === nombreCompleto);
-        if (est) {
-            window.open(est.drive, '_blank');
-        } else {
-            alert("No se encontró carpeta para: " + nombreCompleto);
-        }
+    // 1. Lista de links integrada (para no depender de funciones externas)
+    const links = {
+        "CAON FEDERICO": "https://drive.google.com/drive/folders/1LnnPq0w7P81ShMJsG3MNoLkfhktakV6v?usp=sharing",
+        "PRAVAZ EMILIA": "https://drive.google.com/drive/folders/1fOJ27u87krGO9ykIbBtNBT_xSvSUmXuF?usp=drive_link",
+        "RIOS GRACIELA": "https://drive.google.com/drive/folders/1da5V0BKy4FghsOCz7B66mNOz7ZTFMKt5?usp=drive_link",
+        "RODRIGUEZ RAMIRO": "https://drive.google.com/drive/folders/1kixAS7AqD1zr3pDYKC4mjBBW0sqNimx0?usp=drive_link",
+        "SCHWAB GISELA": "https://drive.google.com/drive/folders/1xDl_o19beXQrXMo4AdLBF4TWmEHkqwYb?usp=drive_link",
+        "STEFANINI BENZO ROMINA": "https://drive.google.com/drive/folders/1PioVY2n5eJp7W1-c-yLqVzHkiXfNbEzh?usp=drive_link"
     };
 
-    contenedor.appendChild(h2);
-    contenedor.appendChild(btnImagen);
-    vista.appendChild(contenedor);
+    // 2. Usamos el nombre que ya tienes en memoria tras el login (nombreUsuarioActual)
+    // Buscamos directamente en tu base de datos 'participantes' por el campo 'nombre'
+    const nombreBuscado = typeof nombreUsuarioActual !== 'undefined' ? nombreUsuarioActual : "";
+
+    db.collection("participantes")
+        .where("nombre", "==", nombreBuscado)
+        .get()
+        .then((snap) => {
+            if (snap.empty) {
+                vista.textContent = "Error: No se encontró registro en participantes para: " + nombreBuscado;
+                return;
+            }
+
+            // Nombre encontrado en BD
+            const nombreEnBD = snap.docs[0].data().nombre.toUpperCase();
+
+            // 3. Construcción del formulario
+            vista.textContent = '';
+            const contenedor = document.createElement('div');
+            contenedor.style.textAlign = 'center';
+            contenedor.style.padding = '20px';
+
+            const h2 = document.createElement('h2');
+            h2.textContent = 'Mi Diploma';
+            h2.style.color = '#D4AF37';
+
+            const btnImagen = document.createElement('img');
+            btnImagen.src = 'diplomaicono.png';
+            btnImagen.style.cursor = 'pointer';
+            btnImagen.style.width = '150px';
+            btnImagen.style.margin = '20px auto';
+            btnImagen.style.display = 'block';
+
+            btnImagen.onclick = () => {
+                const url = links[nombreEnBD];
+                if (url) {
+                    window.open(url, '_blank');
+                } else {
+                    alert("No hay carpeta asignada para: " + nombreEnBD);
+                }
+            };
+
+            contenedor.appendChild(h2);
+            contenedor.appendChild(btnImagen);
+            vista.appendChild(contenedor);
+        })
+        .catch((err) => {
+            vista.textContent = "Error de conexión: " + err.message;
+        });
 };
 // 3. ARRANQUE
 document.body.onload = renderLogin;
