@@ -1257,10 +1257,10 @@ window.crearFormularioDiploma = () => {
     const vista = document.getElementById('main-view');
     vista.textContent = ''; 
 
-    // 1. Buscamos el objeto del usuario logueado en tu configuración
-    // (Asumiendo que 'usuarioLogueado' es la variable donde guardas el nombre de usuario al entrar)
-    const usuarioInfo = CONFIGURACION_USUARIOS.find(u => u.user === usuarioLogueado);
-    const nombre = usuarioInfo ? usuarioInfo.nombre : "Alumno";
+    // Aquí capturamos directamente el nombre del usuario logueado 
+    // tal como lo tienes guardado en tu base de datos (Ej: "Rios Graciela")
+    // Si tu variable de sesión se llama 'userActual' o 'usuarioActual', úsala aquí:
+    const nombreAlumno = typeof userActual !== 'undefined' ? userActual : "Usuario";
 
     const contenedor = document.createElement('div');
     contenedor.style.textAlign = 'center';
@@ -1275,15 +1275,16 @@ window.crearFormularioDiploma = () => {
     btnImagen.alt = 'Obtener Diploma';
     btnImagen.style.cursor = 'pointer';
     btnImagen.style.width = '150px';
-    btnImagen.style.display = 'block';
     btnImagen.style.margin = '20px auto';
+    btnImagen.style.display = 'block';
 
     btnImagen.onclick = () => {
-        const link = obtenerLinkDrive(nombre);
+        // Llamamos directamente a tu función que ya tienes y funciona
+        const link = obtenerLinkDrive(nombreAlumno);
         if (link && link !== '#') {
             window.open(link, '_blank');
         } else {
-            alert("No se encontró la carpeta de Drive para: " + nombre);
+            alert("No se encontró una carpeta de Drive para: " + nombreAlumno);
         }
     };
 
