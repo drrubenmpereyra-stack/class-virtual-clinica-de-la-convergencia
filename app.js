@@ -149,10 +149,12 @@ if (b === "Central de diplomas") {
 if (b === "Emitir diplomas") {
     btn.onclick = () => emitirDiplomas();
 }
-// MI DIPLOMA (VISTA ALUMNO)
+// MI DIPLOMA (ALUMNOS)
 if (b === "Mi diploma") {
     btn.onclick = () => window.consultarMiDiploma();
 }
+
+
     navMenu.appendChild(btn);
 });
 
@@ -1251,99 +1253,82 @@ window.guardarDiploma = async (id, nombre) => {
     }
 };
 // Mi diploma
-// 1. Función principal que crea la vista y el botón "Consultar"
+// 1. Función que inicializa la vista "Mi diploma"
 window.consultarMiDiploma = () => {
     const vista = document.getElementById('main-view');
+    vista.textContent = ''; // Limpiar vista
 
-    vista.innerHTML = `
-        <div style="padding:20px; color:#fff; font-family:sans-serif; text-align:center;">
-            <button onclick="mostrarDashboard()" style="background:#d32f2f; color:white; padding:10px; border:none; cursor:pointer; margin-bottom:20px;">⬅ Volver</button>
-            <h2 style="color:#D4AF37;">Mi diploma</h2>
-            
-            <div id="area-consulta">
-                <button onclick="ejecutarConsultaFirebase()" style="background:#0f172a; border:2px solid #D4AF37; color:#D4AF37; padding:15px 30px; cursor:pointer; font-weight:bold; border-radius:5px;">
-                    Consultar base de datos
-                </button>
-            </div>
-            
-            <div id="resultado-consulta" style="margin-top:20px;"></div>
-        </div>
-    `;
-};
-// 1. Función independiente: Consulta y muestra los datos
-window.ejecutarConsultaFirebase = async () => {
-    const resultadoDiv = document.getElementById('resultado-consulta');
-    const nombreAlumno = typeof nombreUsuarioActual !== 'undefined' ? nombreUsuarioActual : "RIOS Graciela";
+    const h2 = document.createElement('h2');
+    h2.textContent = 'Mi Diploma';
     
-    resultadoDiv.textContent = "Consultando...";
+    const btnConsultar = document.createElement('button');
+    btnConsultar.textContent = 'Consultar base de datos';
+    btnConsultar.onclick = () => ejecutarConsultaFirebase();
+
+    const resultadoDiv = document.createElement('div');
+    resultadoDiv.id = 'resultado-consulta';
+
+    vista.appendChild(h2);
+    vista.appendChild(btnConsultar);
+    vista.appendChild(resultadoDiv);
+};
+
+// 2. Función de consulta a la base de datos
+window.ejecutarConsultaFirebase = async () => {
+    const resDiv = document.getElementById('resultado-consulta');
+    resDiv.textContent = 'Consultando...';
+
+    // Obtenemos el nombre del participante logueado
+    // Nota: Asegúrate de reemplazar 'nombreUsuarioActual' por la variable que maneja tu sesión
+    const nombreAlumno = typeof nombreUsuarioActual !== 'undefined' ? nombreUsuarioActual : "";
 
     try {
-        const diplomaSnap = await db.collection("registro_diplomas")
-            .where("nombre", "==", nombreAlumno)
+        const snap = await db.collection("registro_diplomas")
+            .where("alumno", "==", nombreAlumno)
             .get();
+        
+        resDiv.textContent = ''; // Limpiar mensaje de carga
 
-        resultadoDiv.textContent = ""; 
-
-        if (!diplomaSnap.empty) {
-            diplomaSnap.forEach(doc => {
+        if (!snap.empty) {
+            snap.forEach(doc => {
                 const data = doc.data();
                 
-                const contenedorDatos = document.createElement('div');
-                contenedorDatos.style.marginBottom = "20px";
-                
                 const pNombre = document.createElement('p');
-                pNombre.textContent = "Nombre: " + (data.nombre || 'N/A');
+                pNombre.textContent = 'Alumno: ' + (data.alumno || 'N/A');
                 
                 const pFecha = document.createElement('p');
-                pFecha.textContent = "Fecha: " + (data.fecha || 'N/A');
+                pFecha.textContent = 'Fecha: ' + (data.fecha || 'N/A');
                 
-                contenedorDatos.appendChild(pNombre);
-                contenedorDatos.appendChild(pFecha);
-                resultadoDiv.appendChild(contenedorDatos);
+                resDiv.appendChild(pNombre);
+                resDiv.appendChild(pFecha);
+
+                // Casilla de verificación para abrir Drive
+                const label = document.createElement('label');
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.onchange = (e) => {
+                    if (e.target.checked) {
+                        // Se asume que el objeto data tiene el link al drive
+                        if (data.linkDrive) {
+                            window.open(data.linkDrive, '_blank');
+                        } else {
+                            alert("No se encontró el enlace de Drive.");
+                        }
+                    }
+                };
+                
+                label.appendChild(checkbox);
+                label.appendChild(document.createTextNode(' Acceder a mi carpeta Drive'));
+                resDiv.appendChild(label);
             });
-
-            // Creamos el botón de descarga llamando a la función independiente
-            const btnDescarga = document.createElement('button');
-            btnDescarga.textContent = "Descarga";
-            btnDescarga.style.display = "block";
-            btnDescarga.style.margin = "20px auto";
-            btnDescarga.style.padding = "10px 20px";
-            
-            // La acción está totalmente separada
-            btnDescarga.onclick = () => window.abrirDriveDiploma(nombreAlumno);
-
-            resultadoDiv.appendChild(btnDescarga);
         } else {
-            resultadoDiv.textContent = "Sin datos de Diploma, consultar a Dirección.";
+            resDiv.textContent = 'No hay datos sobre su diploma, comunicarse a Dirección.';
         }
     } catch (e) {
-        resultadoDiv.textContent = "Error al consultar la base de datos.";
+        resDiv.textContent = 'Error al consultar la base de datos.';
         console.error(e);
     }
 };
-
-// 2. Función independiente: Proceso exclusivo de descarga/acceso a Drive
-window.abrirDriveDiploma = (nombre) => {
-    const link = obtenerLinkDrive(nombre);
-    if (link && link !== '#') {
-        window.open(link, '_blank');
-    } else {
-        alert("Carpeta no encontrada para este usuario.");
-    }
-};
-function obtenerLinkDrive(nombre) {
-    const estudiantes = [
-        { nombre: "CAON FEDERICO", drive: "https://drive.google.com/drive/folders/1LnnPq0w7P81ShMJsG3MNoLkfhktakV6v?usp=sharing" },
-        { nombre: "PRAVAZ EMILIA", drive: "https://drive.google.com/drive/folders/1fOJ27u87krGO9ykIbBtNBT_xSvSUmXuF?usp=drive_link" },
-        { nombre: "RIOS Graciela", drive: "https://drive.google.com/drive/folders/1da5V0BKy4FghsOCz7B66mNOz7ZTFMKt5?usp=drive_link" },
-        { nombre: "RODRIGUEZ RAMIRO", drive: "https://drive.google.com/drive/folders/1kixAS7AqD1zr3pDYKC4mjBBW0sqNimx0?usp=drive_link" },
-        { nombre: "SCHWAB GISELA", drive: "https://drive.google.com/drive/folders/1xDl_o19beXQrXMo4AdLBF4TWmEHkqwYb?usp=drive_link" },
-        { nombre: "STEFANINI BENZO ROMINA", drive: "https://drive.google.com/drive/folders/1PioVY2n5eJp7W1-c-yLqVzHkiXfNbEzh?usp=drive_link" }
-    ];
-    // Asegúrate de que el nombre que buscas coincida exactamente con la lista de arriba
-    const est = estudiantes.find(e => e.nombre === nombre);
-    return est ? est.drive : '#';
-}
 
 // 3. ARRANQUE
 document.body.onload = renderLogin;
