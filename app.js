@@ -1251,10 +1251,10 @@ window.guardarDiploma = async (id, nombre) => {
     }
 };
 // Mi diploma
+// 1. Función principal que crea la vista y el botón "Consultar"
 window.consultarMiDiploma = () => {
     const vista = document.getElementById('main-view');
 
-    // Estética convergencia: botones y contenedores oscuros con bordes dorados
     vista.innerHTML = `
         <div style="padding:20px; color:#fff; font-family:sans-serif; text-align:center;">
             <button onclick="mostrarDashboard()" style="background:#d32f2f; color:white; padding:10px; border:none; cursor:pointer; margin-bottom:20px;">⬅ Volver</button>
@@ -1271,27 +1271,17 @@ window.consultarMiDiploma = () => {
     `;
 };
 
-// Esta función se dispara solo cuando el usuario presiona el botón "Consultar"
-// Usamos el nombre desde la lógica de tus participantes
+// 2. Función que ejecuta la consulta y muestra el formulario/leyenda
 window.ejecutarConsultaFirebase = async () => {
     const resultadoDiv = document.getElementById('resultado-consulta');
+    // Usamos la variable global de tu sistema
+    const nombreAlumno = typeof nombreUsuarioActual !== 'undefined' ? nombreUsuarioActual : "RIOS Graciela";
     
-    // Si tu variable global no existe, vamos a buscar el nombre 
-    // del participante desde el contexto donde guardas el usuario actual
-    const nombreAlumno = typeof nombreUsuarioActual !== 'undefined' ? nombreUsuarioActual : "RIOS Graciela"; // Ejemplo de respaldo
-
-    if (!nombreAlumno) {
-        resultadoDiv.innerHTML = `<p style="color:red;">Error: No se identifica el usuario.</p>`;
-        return;
-    }
-    
-    resultadoDiv.innerHTML = `<p style="color:#D4AF37;">Consultando base de datos...</p>`;
+    resultadoDiv.innerHTML = `<p style="color:#D4AF37;">Consultando...</p>`;
 
     try {
-        // CORRECCIÓN: Si en participantes el campo es "nombre", 
-        // probablemente en registro_diplomas también lo sea.
         const diplomaSnap = await db.collection("registro_diplomas")
-            .where("nombre", "==", nombreAlumno) // Cambiado a "nombre"
+            .where("nombre", "==", nombreAlumno)
             .get();
 
         if (!diplomaSnap.empty) {
@@ -1300,17 +1290,25 @@ window.ejecutarConsultaFirebase = async () => {
                 const data = doc.data();
                 filas += `
                     <div style="background:#1e293b; border:1px solid #D4AF37; padding:15px; margin-top:10px; border-radius:5px; text-align:left;">
-                        <p><strong>Nombre:</strong> ${data.nombre || 'No especificado'}</p>
-                        <p><strong>Fecha:</strong> ${data.fecha || 'No especificado'}</p>
+                        <p><strong>Nombre:</strong> ${data.nombre || 'N/A'}</p>
+                        <p><strong>Fecha:</strong> ${data.fecha || 'N/A'}</p>
                     </div>`;
             });
 
             resultadoDiv.innerHTML = `
-                <div style="max-width:400px; margin:auto;">
+                <div style="max-width:400px; margin:auto; text-align:center;">
                     ${filas}
-                    <div style="margin-top:20px; padding:15px; border:1px solid #D4AF37; border-radius:5px;">
-                        <input type="checkbox" id="checkDrive" onchange="if(this.checked) window.open('${obtenerLinkDrive(nombreAlumno)}', '_blank')">
-                        <label for="checkDrive">Acceder a mi carpeta Drive</label>
+                    
+                    <div style="margin-top:30px; padding:20px; border:2px dashed #D4AF37; border-radius:10px; background:#0f172a;">
+                        <p style="color:#fff; margin-bottom:15px;">
+                            Estimado/a, si la tabla está con datos marque aquí:
+                        </p>
+                        <label style="color:#D4AF37; cursor:pointer; font-weight:bold; font-size:1.1em;">
+                            <input type="checkbox" id="checkDrive" 
+                                   onchange="if(this.checked) window.open('${obtenerLinkDrive(nombreAlumno)}', '_blank')"
+                                   style="margin-right:10px; transform: scale(1.5);">
+                            Acceder a mi carpeta Drive
+                        </label>
                     </div>
                 </div>
             `;
@@ -1322,19 +1320,19 @@ window.ejecutarConsultaFirebase = async () => {
         console.error(e);
     }
 };
-
-// Función auxiliar para recuperar el link localmente
 function obtenerLinkDrive(nombre) {
     const estudiantes = [
         { nombre: "CAON FEDERICO", drive: "https://drive.google.com/drive/folders/1LnnPq0w7P81ShMJsG3MNoLkfhktakV6v?usp=sharing" },
         { nombre: "PRAVAZ EMILIA", drive: "https://drive.google.com/drive/folders/1fOJ27u87krGO9ykIbBtNBT_xSvSUmXuF?usp=drive_link" },
-        { nombre: "RIOS GRACIELA", drive: "https://drive.google.com/drive/folders/1da5V0BKy4FghsOCz7B66mNOz7ZTFMKt5?usp=drive_link" },
+        { nombre: "RIOS Graciela", drive: "https://drive.google.com/drive/folders/1da5V0BKy4FghsOCz7B66mNOz7ZTFMKt5?usp=drive_link" },
         { nombre: "RODRIGUEZ RAMIRO", drive: "https://drive.google.com/drive/folders/1kixAS7AqD1zr3pDYKC4mjBBW0sqNimx0?usp=drive_link" },
         { nombre: "SCHWAB GISELA", drive: "https://drive.google.com/drive/folders/1xDl_o19beXQrXMo4AdLBF4TWmEHkqwYb?usp=drive_link" },
         { nombre: "STEFANINI BENZO ROMINA", drive: "https://drive.google.com/drive/folders/1PioVY2n5eJp7W1-c-yLqVzHkiXfNbEzh?usp=drive_link" }
     ];
+    // Asegúrate de que el nombre que buscas coincida exactamente con la lista de arriba
     const est = estudiantes.find(e => e.nombre === nombre);
     return est ? est.drive : '#';
 }
+
 // 3. ARRANQUE
 document.body.onload = renderLogin;
