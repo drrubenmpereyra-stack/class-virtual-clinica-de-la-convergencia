@@ -1253,58 +1253,43 @@ window.guardarDiploma = async (id, nombre) => {
     }
 };
 // Mi diploma
-window.crearFormularioDiploma = async () => {
+window.crearFormularioDiploma = () => {
     const vista = document.getElementById('main-view');
-    vista.textContent = 'Cargando...';
+    vista.textContent = ''; 
 
-    try {
-        // Usamos emailUsuario tal como haces en otras partes del código
-        const snapParticipante = await db.collection("participantes")
-            .where("email", "==", emailUsuario) 
-            .get();
+    // 1. Buscamos el objeto del usuario logueado en tu configuración
+    // (Asumiendo que 'usuarioLogueado' es la variable donde guardas el nombre de usuario al entrar)
+    const usuarioInfo = CONFIGURACION_USUARIOS.find(u => u.user === usuarioLogueado);
+    const nombre = usuarioInfo ? usuarioInfo.nombre : "Alumno";
 
-        if (snapParticipante.empty) {
-            vista.textContent = "Error: Participante no encontrado.";
-            return;
+    const contenedor = document.createElement('div');
+    contenedor.style.textAlign = 'center';
+    contenedor.style.padding = '20px';
+
+    const h2 = document.createElement('h2');
+    h2.textContent = 'Mi Diploma';
+    h2.style.color = '#D4AF37';
+
+    const btnImagen = document.createElement('img');
+    btnImagen.src = 'diplomaicono.png';
+    btnImagen.alt = 'Obtener Diploma';
+    btnImagen.style.cursor = 'pointer';
+    btnImagen.style.width = '150px';
+    btnImagen.style.display = 'block';
+    btnImagen.style.margin = '20px auto';
+
+    btnImagen.onclick = () => {
+        const link = obtenerLinkDrive(nombre);
+        if (link && link !== '#') {
+            window.open(link, '_blank');
+        } else {
+            alert("No se encontró la carpeta de Drive para: " + nombre);
         }
+    };
 
-        const dataParticipante = snapParticipante.docs[0].data();
-        const nombre = dataParticipante.nombre;
-
-        // Construcción de la vista
-        vista.textContent = ''; 
-        const contenedor = document.createElement('div');
-        contenedor.style.textAlign = 'center';
-        contenedor.style.padding = '20px';
-
-        const h2 = document.createElement('h2');
-        h2.textContent = 'Mi Diploma';
-        h2.style.color = '#D4AF37';
-
-        const btnImagen = document.createElement('img');
-        btnImagen.src = 'diplomaicono.png';
-        btnImagen.alt = 'Obtener Diploma';
-        btnImagen.style.cursor = 'pointer';
-        btnImagen.style.width = '150px';
-        btnImagen.style.display = 'block';
-        btnImagen.style.margin = '20px auto';
-
-        btnImagen.onclick = () => {
-            const link = obtenerLinkDrive(nombre);
-            if (link && link !== '#') {
-                window.open(link, '_blank');
-            } else {
-                alert("No se encontró la carpeta de Drive para: " + nombre);
-            }
-        };
-
-        contenedor.appendChild(h2);
-        contenedor.appendChild(btnImagen);
-        vista.appendChild(contenedor);
-
-    } catch (error) {
-        vista.textContent = "Error al obtener datos: " + error.message;
-    }
+    contenedor.appendChild(h2);
+    contenedor.appendChild(btnImagen);
+    vista.appendChild(contenedor);
 };
 // 3. ARRANQUE
 document.body.onload = renderLogin;
