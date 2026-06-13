@@ -137,6 +137,10 @@ if (b === "Auditoria Test") {
 if (b === "Mis Talleres") {
     btn.onclick = () => gestionarTalleres();
 }
+// PARA AUDITORIA TALLER
+if (b === "Auditoria Taller") { 
+    btn.onclick = () => auditoriaTaller(); 
+}
 
     navMenu.appendChild(btn);
 });
@@ -1035,10 +1039,86 @@ window.gestionarTalleres = () => {
     `;
     vista.innerHTML = contenido;
 };
+// AUDITORIA TALLER (ADM)
+// Función completa de Auditoría de Talleres
+window.auditoriaTaller = async () => {
+    const vista = document.getElementById('main-view');
+    vista.innerHTML = `
+        <div style="padding: 20px; color: #fff; font-family: sans-serif;">
+            <button onclick="mostrarDashboard()" style="background: #d32f2f; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 20px;">⬅ Volver al Panel</button>
+            <h2 style="color: #D4AF37; text-align: center; margin-bottom: 20px;">Auditoría de Talleres</h2>
+            <table style="width: 100%; border-collapse: collapse; background: #0f172a; border: 1px solid #334155;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #D4AF37; color: #D4AF37;">
+                        <th style="padding: 12px; text-align: left;">Alumno</th>
+                        <th style="padding: 12px; text-align: left;">Taller</th>
+                        <th style="padding: 12px; text-align: left;">Nota</th>
+                        <th style="padding: 12px; text-align: left;">Fecha</th>
+                        <th style="padding: 12px; text-align: center;">Verificado</th>
+                        <th style="padding: 12px; text-align: center;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="lista-resultados"></tbody>
+            </table>
+        </div>
+    `;
 
+    try {
+        const tbody = document.getElementById('lista-resultados');
+        const snapshot = await db.collection("resultados_talleres").orderBy("fecha", "desc").get();
+
+        if (snapshot.empty) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 20px;">No hay registros de talleres aún.</td></tr>`;
+            return;
+        }
+
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = "1px solid #334155";
+            
+            tr.innerHTML = `
+                <td style="padding: 12px;">${data.alumno}</td>
+                <td style="padding: 12px;">${data.taller_numero}</td>
+                <td style="padding: 12px;">${data.nota}</td>
+                <td style="padding: 12px;">${data.fecha}</td>
+                <td style="padding: 12px; text-align: center;">
+                    <input type="checkbox" ${data.verificado ? 'checked' : ''} onchange="toggleVerificado('${doc.id}', this.checked)" style="cursor: pointer; transform: scale(1.5);">
+                </td>
+                <td style="padding: 12px; text-align: center;">
+                    <button onclick="eliminarRegistro('${doc.id}')" style="background: #991b1b; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Eliminar</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    } catch (error) {
+        console.error("Error al cargar auditoría:", error);
+        alert("Error al cargar los registros de la base de datos.");
+    }
+};
+
+// Función para alternar estado de verificación
+window.toggleVerificado = async (id, estado) => {
+    try {
+        await db.collection("resultados_talleres").doc(id).update({ verificado: estado });
+    } catch (error) {
+        console.error("Error al actualizar verificación:", error);
+    }
+};
+
+// Función para eliminar un registro con confirmación
+window.eliminarRegistro = async (id) => {
+    if (confirm("¿Estás seguro de que deseas eliminar este registro de taller?")) {
+        try {
+            await db.collection("resultados_talleres").doc(id).delete();
+            auditoriaTaller(); // Recargar la tabla automáticamente
+        } catch (error) {
+            console.error("Error al eliminar:", error);
+        }
+    }
+};
 // 3. ARRANQUE
 document.body.onload = renderLogin;
-
 
 
 
