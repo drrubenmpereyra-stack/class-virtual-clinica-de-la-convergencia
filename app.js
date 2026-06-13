@@ -1253,11 +1253,11 @@ window.guardarDiploma = async (id, nombre) => {
     }
 };
 // Mi diploma
-window.crearFormularioDiploma = () => {
+window.crearFormularioDiploma = async () => {
     const vista = document.getElementById('main-view');
-    vista.textContent = 'Cargando diploma...';
+    vista.textContent = 'Cargando...';
 
-    // 1. Lista de links integrada (para no depender de funciones externas)
+    // 1. Lista de links integrada (para que no dependa de funciones externas)
     const links = {
         "CAON FEDERICO": "https://drive.google.com/drive/folders/1LnnPq0w7P81ShMJsG3MNoLkfhktakV6v?usp=sharing",
         "PRAVAZ EMILIA": "https://drive.google.com/drive/folders/1fOJ27u87krGO9ykIbBtNBT_xSvSUmXuF?usp=drive_link",
@@ -1267,55 +1267,52 @@ window.crearFormularioDiploma = () => {
         "STEFANINI BENZO ROMINA": "https://drive.google.com/drive/folders/1PioVY2n5eJp7W1-c-yLqVzHkiXfNbEzh?usp=drive_link"
     };
 
-    // 2. Usamos el nombre que ya tienes en memoria tras el login (nombreUsuarioActual)
-    // Buscamos directamente en tu base de datos 'participantes' por el campo 'nombre'
-    const nombreBuscado = typeof nombreUsuarioActual !== 'undefined' ? nombreUsuarioActual : "";
+    try {
+        // 2. Consulta a Firebase igual a la que te funciona en otras partes
+        // Asumiendo que 'emailUsuario' es la variable que tienes definida para el login
+        const snap = await db.collection("participantes").where("email", "==", emailUsuario).get();
+        
+        if (snap.empty) {
+            vista.textContent = "Error: Participante no encontrado.";
+            return;
+        }
 
-    db.collection("participantes")
-        .where("nombre", "==", nombreBuscado)
-        .get()
-        .then((snap) => {
-            if (snap.empty) {
-                vista.textContent = "Error: No se encontró registro en participantes para: " + nombreBuscado;
-                return;
+        // 3. Este es el dato real del usuario logueado
+        const nombreEnBD = snap.docs[0].data().nombre.toUpperCase();
+
+        // 4. Construcción visual
+        vista.textContent = '';
+        const contenedor = document.createElement('div');
+        contenedor.style.textAlign = 'center';
+        contenedor.style.padding = '20px';
+
+        const h2 = document.createElement('h2');
+        h2.textContent = 'Mi Diploma';
+        h2.style.color = '#D4AF37';
+
+        const btn = document.createElement('img');
+        btn.src = 'diplomaicono.png';
+        btn.style.cursor = 'pointer';
+        btn.style.width = '150px';
+        btn.style.margin = '20px auto';
+        btn.style.display = 'block';
+
+        btn.onclick = () => {
+            const url = links[nombreEnBD];
+            if (url) {
+                window.open(url, '_blank');
+            } else {
+                alert("No se encontró diploma para: " + nombreEnBD);
             }
+        };
 
-            // Nombre encontrado en BD
-            const nombreEnBD = snap.docs[0].data().nombre.toUpperCase();
+        contenedor.appendChild(h2);
+        contenedor.appendChild(btn);
+        vista.appendChild(contenedor);
 
-            // 3. Construcción del formulario
-            vista.textContent = '';
-            const contenedor = document.createElement('div');
-            contenedor.style.textAlign = 'center';
-            contenedor.style.padding = '20px';
-
-            const h2 = document.createElement('h2');
-            h2.textContent = 'Mi Diploma';
-            h2.style.color = '#D4AF37';
-
-            const btnImagen = document.createElement('img');
-            btnImagen.src = 'diplomaicono.png';
-            btnImagen.style.cursor = 'pointer';
-            btnImagen.style.width = '150px';
-            btnImagen.style.margin = '20px auto';
-            btnImagen.style.display = 'block';
-
-            btnImagen.onclick = () => {
-                const url = links[nombreEnBD];
-                if (url) {
-                    window.open(url, '_blank');
-                } else {
-                    alert("No hay carpeta asignada para: " + nombreEnBD);
-                }
-            };
-
-            contenedor.appendChild(h2);
-            contenedor.appendChild(btnImagen);
-            vista.appendChild(contenedor);
-        })
-        .catch((err) => {
-            vista.textContent = "Error de conexión: " + err.message;
-        });
+    } catch (err) {
+        vista.textContent = "Error al conectar: " + err.message;
+    }
 };
 // 3. ARRANQUE
 document.body.onload = renderLogin;
