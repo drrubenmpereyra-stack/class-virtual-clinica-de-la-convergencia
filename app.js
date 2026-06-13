@@ -143,7 +143,7 @@ if (b === "Auditoria Taller") {
 }
 // DEPARTAMENTO DE TITULOS
 if (b === "Central Diplomas") {
-    btn.onclick = () => abrirDepartamentoTitulos();
+    btn.onclick = () => gestionarDiplomas();
 }
 
     navMenu.appendChild(btn);
@@ -1121,14 +1121,56 @@ window.eliminarRegistro = async (id) => {
         }
     }
 };
-// DEPARTAMENTO DE TITULOS
-window.abrirDepartamentoTitulos = () => {
-    // URL corregida con el nombre completo del repositorio
-    window.open("https://drrubenmpereyra-stack.github.io/Departamento-de-titulos-clinica-de-la-convergencia/", "_blank");
+
+// DEPARTAMENTO DE DIPLOMAS
+window.gestionarDiplomas = () => {
+    const vista = document.getElementById('main-view');
+    
+    const estudiantes = [
+        { nombre: "CAON FEDERICO", drive: "https://drive.google.com/drive/folders/1LnnPq0w7P81ShMJsG3MNoLkfhktakV6v?usp=sharing" },
+        { nombre: "PRAVAZ EMILIA", drive: "https://drive.google.com/drive/folders/1fOJ27u87krGO9ykIbBtNBT_xSvSUmXuF?usp=drive_link" },
+        { nombre: "RIOS GRACIELA", drive: "https://drive.google.com/drive/folders/1da5V0BKy4FghsOCz7B66mNOz7ZTFMKt5?usp=drive_link" },
+        { nombre: "RODRIGUEZ RAMIRO", drive: "https://drive.google.com/drive/folders/1kixAS7AqD1zr3pDYKC4mjBBW0sqNimx0?usp=drive_link" },
+        { nombre: "SCHWAB GISELA", drive: "https://drive.google.com/drive/folders/1xDl_o19beXQrXMo4AdLBF4TWmEHkqwYb?usp=drive_link" },
+        { nombre: "STEFANINI BENZO ROMINA", drive: "https://drive.google.com/drive/folders/1PioVY2n5eJp7W1-c-yLqVzHkiXfNbEzh?usp=drive_link" }
+    ];
+
+    vista.innerHTML = `
+        <div style="padding: 20px; color: #fff; font-family: sans-serif;">
+            <button onclick="mostrarDashboard()" style="background: #d32f2f; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 20px;">⬅ Volver al Panel</button>
+            
+            <div style="text-align: center; margin-bottom: 40px;">
+                <h2 style="color: #D4AF37;">Central de Diplomas</h2>
+                <img src="diploma.png" onclick="window.open('https://drrubenmpereyra-stack.github.io/Departamento-de-titulos-clinica-de-la-convergencia/', '_blank')" 
+                     style="width: 200px; cursor: pointer; border-radius: 50%; border: 2px solid #D4AF37; transition: transform 0.3s;"
+                     onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                <p style="color: #888; margin-top: 10px;">Clic en el diploma para abrir el Formulario de Títulos</p>
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse; background: #0f172a; border: 1px solid #334155;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #D4AF37; color: #D4AF37;">
+                        <th style="padding: 12px; text-align: left;">Apellido y Nombres</th>
+                        <th style="padding: 12px; text-align: center;">Acceso a Carpeta Drive</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${estudiantes.map(e => `
+                        <tr style="border-bottom: 1px solid #334155;">
+                            <td style="padding: 12px;">${e.nombre}</td>
+                            <td style="padding: 12px; text-align: center;">
+                                <input type="checkbox" onchange="if(this.checked) { window.open('${e.drive}', '_blank'); this.checked = false; }" 
+                                       style="cursor: pointer; transform: scale(1.5);">
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
 };
 
 // 3. ARRANQUE
 document.body.onload = renderLogin;
-
 
 
