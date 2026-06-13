@@ -1270,54 +1270,67 @@ window.consultarMiDiploma = () => {
         </div>
     `;
 };
-
-// 2. Función que ejecuta la consulta y muestra el formulario/leyenda
 window.ejecutarConsultaFirebase = async () => {
     const resultadoDiv = document.getElementById('resultado-consulta');
-    // Usamos la variable global de tu sistema
     const nombreAlumno = typeof nombreUsuarioActual !== 'undefined' ? nombreUsuarioActual : "RIOS Graciela";
-    
-    resultadoDiv.innerHTML = `<p style="color:#D4AF37;">Consultando...</p>`;
+
+    // Limpiamos el área antes de crear los elementos
+    resultadoDiv.innerHTML = ''; 
+    const pLoading = document.createElement('p');
+    pLoading.textContent = "Consultando...";
+    resultadoDiv.appendChild(pLoading);
 
     try {
         const diplomaSnap = await db.collection("registro_diplomas")
             .where("nombre", "==", nombreAlumno)
             .get();
 
+        resultadoDiv.innerHTML = ''; // Limpiamos el "Consultando..."
+
         if (!diplomaSnap.empty) {
-            let filas = "";
+            // Crear contenedor de resultados
+            const contenedor = document.createElement('div');
+            
             diplomaSnap.forEach(doc => {
                 const data = doc.data();
-                filas += `
-                    <div style="background:#1e293b; border:1px solid #D4AF37; padding:15px; margin-top:10px; border-radius:5px; text-align:left;">
-                        <p><strong>Nombre:</strong> ${data.nombre || 'N/A'}</p>
-                        <p><strong>Fecha:</strong> ${data.fecha || 'N/A'}</p>
-                    </div>`;
+                const pNombre = document.createElement('p');
+                pNombre.textContent = "Nombre: " + (data.nombre || 'N/A');
+                const pFecha = document.createElement('p');
+                pFecha.textContent = "Fecha: " + (data.fecha || 'N/A');
+                contenedor.appendChild(pNombre);
+                contenedor.appendChild(pFecha);
             });
 
-            resultadoDiv.innerHTML = `
-                <div style="max-width:400px; margin:auto; text-align:center;">
-                    ${filas}
-                    
-                    <div style="margin-top:30px; padding:20px; border:2px dashed #D4AF37; border-radius:10px; background:#0f172a;">
-                        <p style="color:#fff; margin-bottom:15px;">
-                            Estimado/a, si la tabla está con datos marque aquí:
-                        </p>
-                        <label style="color:#D4AF37; cursor:pointer; font-weight:bold; font-size:1.1em;">
-                            <input type="checkbox" id="checkDrive" 
-                                   onchange="if(this.checked) window.open('${obtenerLinkDrive(nombreAlumno)}', '_blank')"
-                                   style="margin-right:10px; transform: scale(1.5);">
-                            Acceder a mi carpeta Drive
-                        </label>
-                    </div>
-                </div>
-            `;
+            // Crear Botón "Descarga"
+            const btnDescarga = document.createElement('button');
+            btnDescarga.textContent = "📥 Descarga";
+            btnDescarga.style.padding = "10px 20px";
+            btnDescarga.style.marginTop = "20px";
+            btnDescarga.style.cursor = "pointer";
+            
+            btnDescarga.onclick = () => {
+                const link = obtenerLinkDrive(nombreAlumno);
+                if (link && link !== '#') {
+                    window.open(link, '_blank');
+                } else {
+                    alert("No hay carpeta de Drive disponible para este alumno.");
+                }
+            };
+
+            contenedor.appendChild(btnDescarga);
+            resultadoDiv.appendChild(contenedor);
+
         } else {
-            resultadoDiv.innerHTML = `<p style="color:#D4AF37; border:1px solid #D4AF37; padding:15px; border-radius:5px; max-width:300px; margin:auto;">Sin datos de Diploma, consultar a Dirección.</p>`;
+            const pSinDatos = document.createElement('p');
+            pSinDatos.textContent = "Sin datos de Diploma, consultar a Dirección.";
+            pSinDatos.style.color = "#D4AF37";
+            resultadoDiv.appendChild(pSinDatos);
         }
     } catch (e) {
-        resultadoDiv.innerHTML = `<p style="color:red;">Error de conexión.</p>`;
         console.error(e);
+        const pError = document.createElement('p');
+        pError.textContent = "Error de conexión.";
+        resultadoDiv.appendChild(pError);
     }
 };
 function obtenerLinkDrive(nombre) {
