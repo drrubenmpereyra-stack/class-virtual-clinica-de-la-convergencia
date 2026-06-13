@@ -151,7 +151,7 @@ if (b === "Emitir diplomas") {
 }
 // MI DIPLOMA (VISTA ALUMNO)
 if (b === "Mi diploma") {
-    btn.onclick = () => mostrarMiDiploma(); 
+    btn.onclick = () => window.consultarMiDiploma();
 }
 
     navMenu.appendChild(btn);
@@ -1252,10 +1252,10 @@ window.guardarDiploma = async (id, nombre) => {
     }
 };
 // Mi diploma
-window.mostrarMiDiploma = async (nombreAlumno) => {
+window.consultarMiDiploma = async () => {
     const vista = document.getElementById('main-view');
-    
-    // Array de referencia de carpetas de Drive
+    const nombreAlumno = nombreUsuarioActual; 
+
     const estudiantes = [
         { nombre: "CAON FEDERICO", drive: "https://drive.google.com/drive/folders/1LnnPq0w7P81ShMJsG3MNoLkfhktakV6v?usp=sharing" },
         { nombre: "PRAVAZ EMILIA", drive: "https://drive.google.com/drive/folders/1fOJ27u87krGO9ykIbBtNBT_xSvSUmXuF?usp=drive_link" },
@@ -1266,50 +1266,50 @@ window.mostrarMiDiploma = async (nombreAlumno) => {
     ];
 
     const estudiante = estudiantes.find(e => e.nombre === nombreAlumno);
-    
-    vista.innerHTML = `<div style="padding:20px; color:#fff; text-align:center;">Cargando...</div>`;
+
+    vista.innerHTML = `<div style="padding:20px; color:#fff;">Cargando...</div>`;
 
     try {
-        // Consulta única: ¿Tiene el alumno un registro en la base de datos de diplomas emitidos?
         const diplomaSnap = await db.collection("registro_diplomas")
             .where("alumno", "==", nombreAlumno)
             .get();
-        
-        let html = `
-            <div style="padding:20px; color:#fff; font-family:sans-serif; text-align:center;">
-                <button onclick="mostrarDashboard()" style="background:#d32f2f; color:white; padding:10px; border:none; cursor:pointer; margin-bottom:20px;">⬅ Volver</button>
-                <h2 style="color:#D4AF37;">Mi Diploma</h2>
-                <img src="diplomaicono.png" style="width:150px; margin:20px 0;">
-        `;
 
-        if (!diplomaSnap.empty && estudiante) {
-            // Existe registro y el estudiante está en la lista: Botón habilitado
-            html += `
-                <div style="background:#0f172a; border:2px solid #D4AF37; padding:20px; border-radius:10px; max-width:400px; margin:auto;">
-                    <p style="color:#D4AF37;">Diploma disponible para descarga.</p>
-                </div>
-                <a href="${estudiante.drive}" target="_blank" 
-                   style="display:inline-block; margin-top:20px; background:#D4AF37; color:#000; text-decoration:none; padding:12px 25px; font-weight:bold; border-radius:5px;">
-                    📥 Descargar Diploma
-                </a>
-            `;
-        } else {
-            // No se encontró el registro: Mensaje de dirección
-            html += `
-                <div style="background:#1e293b; border:1px solid #D4AF37; padding:20px; border-radius:10px; max-width:400px; margin:auto;">
-                    <p style="color:#D4AF37;">Su Diploma no ha sido emitido a la fecha, comuníquese con Dirección.</p>
-                </div>
-            `;
+        let filasTabla = "";
+        if (!diplomaSnap.empty) {
+            diplomaSnap.forEach(doc => {
+                const data = doc.data();
+                filasTabla += `
+                    <tr style="border-bottom:1px solid #444;">
+                        <td style="padding:10px;">${data.alumno}</td>
+                        <td style="padding:10px;">${data.fecha}</td>
+                    </tr>`;
+            });
         }
-        
-        vista.innerHTML = html + `</div>`;
+
+        vista.innerHTML = `
+            <div style="padding:20px; color:#fff; font-family:sans-serif;">
+                <button onclick="mostrarDashboard()">⬅ Volver</button>
+                <h2 style="color:#D4AF37;">Mi Diploma</h2>
+                
+                <table style="width:100%; border-collapse:collapse; margin:20px 0; background:#0f172a;">
+                    <tr style="border-bottom:2px solid #D4AF37; color:#D4AF37;">
+                        <th style="padding:10px; text-align:left;">Nombre</th>
+                        <th style="padding:10px; text-align:left;">Fecha</th>
+                    </tr>
+                    ${filasTabla}
+                </table>
+
+                <div style="margin-top:30px; padding:15px; border:1px solid #D4AF37; border-radius:5px;">
+                    <p>Estimado/a, si la tabla está con datos marque aquí:</p>
+                    <input type="checkbox" id="checkDiploma" onchange="if(this.checked) window.open('${estudiante ? estudiante.drive : '#'}', '_blank')">
+                    <label for="checkDiploma">Acceder a mi carpeta Drive</label>
+                </div>
+            </div>
+        `;
     } catch (e) {
-        console.error("Error al cargar la vista de diploma:", e);
-        vista.innerHTML = `<p style="color:red; text-align:center;">Error al acceder al sistema.</p>`;
+        console.error(e);
     }
 };
 
-
 // 3. ARRANQUE
 document.body.onload = renderLogin;
-
