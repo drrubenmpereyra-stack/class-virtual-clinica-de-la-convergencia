@@ -141,6 +141,9 @@ if (b === "Mis Talleres") {
 if (b === "Auditoria Taller") { 
     btn.onclick = () => auditoriaTaller(); 
 }
+// DEPARTAMENTO DE TITULOS
+if (b === "Central Diplomas") {
+    btn.onclick = () => abrirDepartamentoTitulos();
 
     navMenu.appendChild(btn);
 });
@@ -1116,6 +1119,10 @@ window.eliminarRegistro = async (id) => {
             console.error("Error al eliminar:", error);
         }
     }
+};
+window.abrirDepartamentoTitulos = () => {
+    // Abrimos el formulario en una ventana nueva
+    window.open("https://drrubenmpereyra-stack.github.io/Departamento-de-titulos-", "_blank");
 };
 // 3. ARRANQUE
 document.body.onload = renderLogin;
