@@ -149,6 +149,10 @@ if (b === "Central de diplomas") {
 if (b === "Emitir diplomas") {
     btn.onclick = () => emitirDiplomas();
 }
+// MI DIPLOMA (VISTA ALUMNO)
+if (b === "Mi Diploma") {
+    btn.onclick = () => mostrarMiDiploma(nombreUsuarioActual); 
+}
 
     navMenu.appendChild(btn);
 });
@@ -1245,6 +1249,63 @@ window.guardarDiploma = async (id, nombre) => {
         }
     } else {
         slider.style.backgroundColor = "#334155"; // Regresa a gris
+    }
+};
+// Mi diploma
+window.mostrarMiDiploma = async (nombreAlumno) => {
+    const vista = document.getElementById('main-view');
+    
+    // Array de referencia de carpetas de Drive
+    const estudiantes = [
+        { nombre: "CAON FEDERICO", drive: "https://drive.google.com/drive/folders/1LnnPq0w7P81ShMJsG3MNoLkfhktakV6v?usp=sharing" },
+        { nombre: "PRAVAZ EMILIA", drive: "https://drive.google.com/drive/folders/1fOJ27u87krGO9ykIbBtNBT_xSvSUmXuF?usp=drive_link" },
+        { nombre: "RIOS GRACIELA", drive: "https://drive.google.com/drive/folders/1da5V0BKy4FghsOCz7B66mNOz7ZTFMKt5?usp=drive_link" },
+        { nombre: "RODRIGUEZ RAMIRO", drive: "https://drive.google.com/drive/folders/1kixAS7AqD1zr3pDYKC4mjBBW0sqNimx0?usp=drive_link" },
+        { nombre: "SCHWAB GISELA", drive: "https://drive.google.com/drive/folders/1xDl_o19beXQrXMo4AdLBF4TWmEHkqwYb?usp=drive_link" },
+        { nombre: "STEFANINI BENZO ROMINA", drive: "https://drive.google.com/drive/folders/1PioVY2n5eJp7W1-c-yLqVzHkiXfNbEzh?usp=drive_link" }
+    ];
+
+    const estudiante = estudiantes.find(e => e.nombre === nombreAlumno);
+    
+    vista.innerHTML = `<div style="padding:20px; color:#fff; text-align:center;">Cargando...</div>`;
+
+    try {
+        // Consulta única: ¿Tiene el alumno un registro en la base de datos de diplomas emitidos?
+        const diplomaSnap = await db.collection("registro_diplomas")
+            .where("alumno", "==", nombreAlumno)
+            .get();
+        
+        let html = `
+            <div style="padding:20px; color:#fff; font-family:sans-serif; text-align:center;">
+                <button onclick="mostrarDashboard()" style="background:#d32f2f; color:white; padding:10px; border:none; cursor:pointer; margin-bottom:20px;">⬅ Volver</button>
+                <h2 style="color:#D4AF37;">Mi Diploma</h2>
+                <img src="diplomaicono.png" style="width:150px; margin:20px 0;">
+        `;
+
+        if (!diplomaSnap.empty && estudiante) {
+            // Existe registro y el estudiante está en la lista: Botón habilitado
+            html += `
+                <div style="background:#0f172a; border:2px solid #D4AF37; padding:20px; border-radius:10px; max-width:400px; margin:auto;">
+                    <p style="color:#D4AF37;">Diploma disponible para descarga.</p>
+                </div>
+                <a href="${estudiante.drive}" target="_blank" 
+                   style="display:inline-block; margin-top:20px; background:#D4AF37; color:#000; text-decoration:none; padding:12px 25px; font-weight:bold; border-radius:5px;">
+                    📥 Descargar Diploma
+                </a>
+            `;
+        } else {
+            // No se encontró el registro: Mensaje de dirección
+            html += `
+                <div style="background:#1e293b; border:1px solid #D4AF37; padding:20px; border-radius:10px; max-width:400px; margin:auto;">
+                    <p style="color:#D4AF37;">Su Diploma no ha sido emitido a la fecha, comuníquese con Dirección.</p>
+                </div>
+            `;
+        }
+        
+        vista.innerHTML = html + `</div>`;
+    } catch (e) {
+        console.error("Error al cargar la vista de diploma:", e);
+        vista.innerHTML = `<p style="color:red; text-align:center;">Error al acceder al sistema.</p>`;
     }
 };
 
