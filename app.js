@@ -1258,9 +1258,9 @@ window.crearFormularioDiploma = async () => {
     vista.textContent = 'Cargando...';
 
     try {
-        // 1. Buscamos al participante (ajusta 'emailUsuarioActual' por la variable de sesión que tengas)
+        // Usamos emailUsuario tal como haces en otras partes del código
         const snapParticipante = await db.collection("participantes")
-            .where("email", "==", emailUsuarioActual) // O el campo que uses para identificar al usuario logueado
+            .where("email", "==", emailUsuario) 
             .get();
 
         if (snapParticipante.empty) {
@@ -1268,9 +1268,10 @@ window.crearFormularioDiploma = async () => {
             return;
         }
 
-        const nombre = snapParticipante.docs[0].data().nombre;
+        const dataParticipante = snapParticipante.docs[0].data();
+        const nombre = dataParticipante.nombre;
 
-        // 2. Construimos la vista una vez que tenemos el nombre
+        // Construcción de la vista
         vista.textContent = ''; 
         const contenedor = document.createElement('div');
         contenedor.style.textAlign = 'center';
@@ -1288,7 +1289,6 @@ window.crearFormularioDiploma = async () => {
         btnImagen.style.display = 'block';
         btnImagen.style.margin = '20px auto';
 
-        // 3. Acción de descarga
         btnImagen.onclick = () => {
             const link = obtenerLinkDrive(nombre);
             if (link && link !== '#') {
