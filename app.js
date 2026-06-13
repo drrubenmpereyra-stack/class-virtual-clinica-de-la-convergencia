@@ -145,6 +145,10 @@ if (b === "Auditoria Taller") {
 if (b === "Central de diplomas") {
     btn.onclick = () => gestionarDiplomas();
 }
+// EMITIR DIPLOMA
+if (b === "Emitir diplomas") {
+    btn.onclick = () => emitirDiplomas();
+}
 
     navMenu.appendChild(btn);
 });
@@ -1167,6 +1171,62 @@ window.gestionarDiplomas = () => {
             </table>
         </div>
     `;
+};
+// EMITIR DIPLOMA
+window.emitirDiplomas = () => {
+    const vista = document.getElementById('main-view');
+    vista.innerHTML = `
+        <div style="padding: 20px; color: #fff; font-family: sans-serif; max-width: 600px; margin: auto;">
+            <button onclick="mostrarDashboard()" style="background: #d32f2f; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 20px;">⬅ Volver al Panel</button>
+            <h2 style="color: #D4AF37; text-align: center;">Emitir Diploma</h2>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <img src="diplomaicono.jpg" style="width: 150px; border: 2px solid #D4AF37; border-radius: 10px;">
+            </div>
+            
+            <div id="form-diploma" style="background: #0f172a; padding: 20px; border-radius: 10px; border: 1px solid #334155;">
+                <input type="text" id="nombre-alumno" placeholder="Apellido y Nombre" style="width: 100%; padding: 10px; margin-bottom: 15px; background: #1e293b; border: 1px solid #475569; color: white; border-radius: 5px;">
+                <input type="date" id="fecha-emision" style="width: 100%; padding: 10px; margin-bottom: 15px; background: #1e293b; border: 1px solid #475569; color: white; border-radius: 5px;">
+                <textarea id="observaciones" placeholder="Observaciones" style="width: 100%; padding: 10px; margin-bottom: 15px; background: #1e293b; border: 1px solid #475569; color: white; border-radius: 5px;"></textarea>
+                
+                <div style="display: flex; align-items: center; gap: 10px; color: #D4AF37;">
+                    <input type="checkbox" id="guardar-db" style="transform: scale(1.5);">
+                    <label>Guardar en Base de Datos</label>
+                </div>
+                
+                <button onclick="procesarEmision()" style="width: 100%; margin-top: 20px; padding: 12px; background: #D4AF37; border: none; font-weight: bold; cursor: pointer; border-radius: 5px;">Emitir y Procesar</button>
+            </div>
+        </div>
+    `;
+};
+window.procesarEmision = async () => {
+    const nombre = document.getElementById('nombre-alumno').value;
+    const fecha = document.getElementById('fecha-emision').value;
+    const obs = document.getElementById('observaciones').value;
+    const debeGuardar = document.getElementById('guardar-db').checked;
+
+    if (!nombre || !fecha) {
+        alert("Por favor, completa los campos requeridos.");
+        return;
+    }
+
+    if (debeGuardar) {
+        try {
+            await db.collection("registro_diplomas").add({
+                alumno: nombre,
+                fecha: fecha,
+                observaciones: obs,
+                timestamp: new Date()
+            });
+            alert("Diploma emitido y registrado exitosamente.");
+        } catch (e) {
+            console.error("Error al guardar:", e);
+        }
+    } else {
+        alert("Diploma emitido (Sin registro en base de datos).");
+    }
+    
+    // Opcional: Limpiar formulario tras emitir
+    document.getElementById('form-diploma').reset();
 };
 
 // 3. ARRANQUE
