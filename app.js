@@ -1175,28 +1175,72 @@ window.gestionarDiplomas = () => {
 // EMITIR DIPLOMA
 window.emitirDiplomas = () => {
     const vista = document.getElementById('main-view');
+    
+    // Aquí puedes listar a todos tus alumnos pendientes
+    const alumnos = [
+        { id: 1, nombre: "CAON FEDERICO" },
+        { id: 2, nombre: "PRAVAZ EMILIA" },
+        { id: 3, nombre: "RIOS GRACIELA" },
+        { id: 4, nombre: "RODRIGUEZ RAMIRO" },
+        { id: 5, nombre: "SCHWAB GISELA" },
+        { id: 6, nombre: "STEFANINI BENZO ROMINA" }
+    ];
+
     vista.innerHTML = `
-        <div style="padding: 20px; color: #fff; font-family: sans-serif; max-width: 600px; margin: auto;">
+        <div style="padding: 20px; color: #fff; font-family: sans-serif;">
             <button onclick="mostrarDashboard()" style="background: #d32f2f; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 20px;">⬅ Volver al Panel</button>
-            <h2 style="color: #D4AF37; text-align: center;">Emitir Diploma</h2>
+            <h2 style="color: #D4AF37; text-align: center;">Emisión de Diplomas</h2>
             <div style="text-align: center; margin-bottom: 20px;">
-                <img src="diplomaicono.jpg" style="width: 150px; border: 2px solid #D4AF37; border-radius: 10px;">
+                <img src="diplomaicono.jpg" style="width: 100px; border: 2px solid #D4AF37; border-radius: 10px;">
             </div>
             
-            <div id="form-diploma" style="background: #0f172a; padding: 20px; border-radius: 10px; border: 1px solid #334155;">
-                <input type="text" id="nombre-alumno" placeholder="Apellido y Nombre" style="width: 100%; padding: 10px; margin-bottom: 15px; background: #1e293b; border: 1px solid #475569; color: white; border-radius: 5px;">
-                <input type="date" id="fecha-emision" style="width: 100%; padding: 10px; margin-bottom: 15px; background: #1e293b; border: 1px solid #475569; color: white; border-radius: 5px;">
-                <textarea id="observaciones" placeholder="Observaciones" style="width: 100%; padding: 10px; margin-bottom: 15px; background: #1e293b; border: 1px solid #475569; color: white; border-radius: 5px;"></textarea>
-                
-                <div style="display: flex; align-items: center; gap: 10px; color: #D4AF37;">
-                    <input type="checkbox" id="guardar-db" style="transform: scale(1.5);">
-                    <label>Guardar en Base de Datos</label>
-                </div>
-                
-                <button onclick="procesarEmision()" style="width: 100%; margin-top: 20px; padding: 12px; background: #D4AF37; border: none; font-weight: bold; cursor: pointer; border-radius: 5px;">Emitir y Procesar</button>
-            </div>
+            <table style="width: 100%; border-collapse: collapse; background: #0f172a; color: white;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #D4AF37; color: #D4AF37;">
+                        <th style="padding: 10px;">Alumno</th>
+                        <th style="padding: 10px;">Fecha</th>
+                        <th style="padding: 10px;">Observaciones</th>
+                        <th style="padding: 10px;">Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${alumnos.map(a => `
+                        <tr style="border-bottom: 1px solid #334155;">
+                            <td style="padding: 10px;">${a.nombre}</td>
+                            <td style="padding: 10px;"><input type="date" id="fecha-${a.id}" style="background: #1e293b; color: white; border: 1px solid #475569;"></td>
+                            <td style="padding: 10px;"><input type="text" id="obs-${a.id}" placeholder="Notas..." style="background: #1e293b; color: white; border: 1px solid #475569;"></td>
+                            <td style="padding: 10px; text-align: center;">
+                                <button onclick="guardarUnDiploma(${a.id}, '${a.nombre}')" style="background: #D4AF37; color: #000; border: none; padding: 5px 15px; cursor: pointer; font-weight: bold; border-radius: 4px;">Guardar</button>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
         </div>
     `;
+};
+
+window.guardarUnDiploma = async (id, nombre) => {
+    const fecha = document.getElementById(`fecha-${id}`).value;
+    const obs = document.getElementById(`obs-${id}`).value;
+
+    if (!fecha) {
+        alert("Por favor, seleccione una fecha.");
+        return;
+    }
+
+    try {
+        await db.collection("registro_diplomas").add({
+            alumno: nombre,
+            fecha: fecha,
+            observaciones: obs,
+            timestamp: new Date()
+        });
+        alert(`Diploma de ${nombre} registrado exitosamente.`);
+    } catch (e) {
+        console.error("Error al guardar:", e);
+        alert("Error al guardar en la base de datos.");
+    }
 };
 window.procesarEmision = async () => {
     const nombre = document.getElementById('nombre-alumno').value;
