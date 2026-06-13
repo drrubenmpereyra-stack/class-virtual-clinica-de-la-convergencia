@@ -1175,42 +1175,25 @@ window.gestionarDiplomas = () => {
 // EMITIR DIPLOMA
 window.emitirDiplomas = () => {
     const vista = document.getElementById('main-view');
-    
-    // Aquí puedes listar a todos tus alumnos pendientes
-    const alumnos = [
-        { id: 1, nombre: "CAON FEDERICO" },
-        { id: 2, nombre: "PRAVAZ EMILIA" },
-        { id: 3, nombre: "RIOS GRACIELA" },
-        { id: 4, nombre: "RODRIGUEZ RAMIRO" },
-        { id: 5, nombre: "SCHWAB GISELA" },
-        { id: 6, nombre: "STEFANINI BENZO ROMINA" }
-    ];
-
+    // ... array de alumnos ...
     vista.innerHTML = `
-        <div style="padding: 20px; color: #fff; font-family: sans-serif;">
-            <button onclick="mostrarDashboard()" style="background: #d32f2f; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 20px;">⬅ Volver al Panel</button>
+        <div class="contenedor-diplomas">
             <h2 style="color: #D4AF37; text-align: center;">Emisión de Diplomas</h2>
-            <div style="text-align: center; margin-bottom: 20px;">
-                <img src="diplomaicono.jpg" style="width: 100px; border: 2px solid #D4AF37; border-radius: 10px;">
-            </div>
-            
-            <table style="width: 100%; border-collapse: collapse; background: #0f172a; color: white;">
+            <table class="tabla-diplomas">
                 <thead>
-                    <tr style="border-bottom: 2px solid #D4AF37; color: #D4AF37;">
-                        <th style="padding: 10px;">Alumno</th>
-                        <th style="padding: 10px;">Fecha</th>
-                        <th style="padding: 10px;">Observaciones</th>
-                        <th style="padding: 10px;">Acción</th>
-                    </tr>
+                    <tr><th>Alumno</th><th>Fecha</th><th>Observaciones</th><th>Guardar</th></tr>
                 </thead>
                 <tbody>
                     ${alumnos.map(a => `
-                        <tr style="border-bottom: 1px solid #334155;">
-                            <td style="padding: 10px;">${a.nombre}</td>
-                            <td style="padding: 10px;"><input type="date" id="fecha-${a.id}" style="background: #1e293b; color: white; border: 1px solid #475569;"></td>
-                            <td style="padding: 10px;"><input type="text" id="obs-${a.id}" placeholder="Notas..." style="background: #1e293b; color: white; border: 1px solid #475569;"></td>
-                            <td style="padding: 10px; text-align: center;">
-                                <button onclick="guardarUnDiploma(${a.id}, '${a.nombre}')" style="background: #D4AF37; color: #000; border: none; padding: 5px 15px; cursor: pointer; font-weight: bold; border-radius: 4px;">Guardar</button>
+                        <tr>
+                            <td>${a.nombre}</td>
+                            <td><input type="date" id="fecha-${a.id}"></td>
+                            <td><input type="text" id="obs-${a.id}" placeholder="Notas..."></td>
+                            <td>
+                                <label class="switch">
+                                    <input type="checkbox" id="switch-${a.id}" onchange="gestionarSwitch(${a.id}, '${a.nombre}')">
+                                    <span class="slider"></span>
+                                </label>
                             </td>
                         </tr>
                     `).join('')}
