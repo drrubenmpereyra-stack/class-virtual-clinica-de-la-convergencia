@@ -153,7 +153,6 @@ if (b === "Emitir diplomas") {
 if (b === "Mi diploma") {
     btn.onclick = () => window.consultarMiDiploma();
 }
-
     navMenu.appendChild(btn);
 });
 
@@ -1252,10 +1251,69 @@ window.guardarDiploma = async (id, nombre) => {
     }
 };
 // Mi diploma
-window.consultarMiDiploma = async () => {
+window.consultarMiDiploma = () => {
     const vista = document.getElementById('main-view');
-    const nombreAlumno = nombreUsuarioActual; 
 
+    // Estética convergencia: botones y contenedores oscuros con bordes dorados
+    vista.innerHTML = `
+        <div style="padding:20px; color:#fff; font-family:sans-serif; text-align:center;">
+            <button onclick="mostrarDashboard()" style="background:#d32f2f; color:white; padding:10px; border:none; cursor:pointer; margin-bottom:20px;">⬅ Volver</button>
+            <h2 style="color:#D4AF37;">Mi diploma</h2>
+            
+            <div id="area-consulta">
+                <button onclick="ejecutarConsultaFirebase()" style="background:#0f172a; border:2px solid #D4AF37; color:#D4AF37; padding:15px 30px; cursor:pointer; font-weight:bold; border-radius:5px;">
+                    Consultar base de datos
+                </button>
+            </div>
+            
+            <div id="resultado-consulta" style="margin-top:20px;"></div>
+        </div>
+    `;
+};
+
+// Esta función se dispara solo cuando el usuario presiona el botón "Consultar"
+window.ejecutarConsultaFirebase = async () => {
+    const resultadoDiv = document.getElementById('resultado-consulta');
+    const nombreAlumno = nombreUsuarioActual; 
+    
+    resultadoDiv.innerHTML = `<p style="color:#D4AF37;">Consultando...</p>`;
+
+    try {
+        const diplomaSnap = await db.collection("registro_diplomas")
+            .where("alumno", "==", nombreAlumno)
+            .get();
+
+        if (!diplomaSnap.empty) {
+            let filas = "";
+            diplomaSnap.forEach(doc => {
+                const data = doc.data();
+                filas += `
+                    <div style="background:#1e293b; border:1px solid #D4AF37; padding:15px; margin-top:10px; border-radius:5px; text-align:left;">
+                        <p><strong>Nombre:</strong> ${data.alumno}</p>
+                        <p><strong>Fecha:</strong> ${data.fecha}</p>
+                    </div>`;
+            });
+
+            resultadoDiv.innerHTML = `
+                <div style="max-width:400px; margin:auto;">
+                    ${filas}
+                    <div style="margin-top:20px; padding:15px; border:1px solid #D4AF37; border-radius:5px;">
+                        <input type="checkbox" id="checkDrive" onchange="if(this.checked) window.open('${obtenerLinkDrive(nombreAlumno)}', '_blank')">
+                        <label for="checkDrive">Acceder a mi carpeta Drive</label>
+                    </div>
+                </div>
+            `;
+        } else {
+            resultadoDiv.innerHTML = `<p style="color:#D4AF37; border:1px solid #D4AF37; padding:15px; border-radius:5px; max-width:300px; margin:auto;">Sin datos de Diploma, consultar a Dirección.</p>`;
+        }
+    } catch (e) {
+        resultadoDiv.innerHTML = `<p style="color:red;">Error al conectar con la base de datos.</p>`;
+        console.error(e);
+    }
+};
+
+// Función auxiliar para recuperar el link localmente
+function obtenerLinkDrive(nombre) {
     const estudiantes = [
         { nombre: "CAON FEDERICO", drive: "https://drive.google.com/drive/folders/1LnnPq0w7P81ShMJsG3MNoLkfhktakV6v?usp=sharing" },
         { nombre: "PRAVAZ EMILIA", drive: "https://drive.google.com/drive/folders/1fOJ27u87krGO9ykIbBtNBT_xSvSUmXuF?usp=drive_link" },
@@ -1264,52 +1322,8 @@ window.consultarMiDiploma = async () => {
         { nombre: "SCHWAB GISELA", drive: "https://drive.google.com/drive/folders/1xDl_o19beXQrXMo4AdLBF4TWmEHkqwYb?usp=drive_link" },
         { nombre: "STEFANINI BENZO ROMINA", drive: "https://drive.google.com/drive/folders/1PioVY2n5eJp7W1-c-yLqVzHkiXfNbEzh?usp=drive_link" }
     ];
-
-    const estudiante = estudiantes.find(e => e.nombre === nombreAlumno);
-
-    vista.innerHTML = `<div style="padding:20px; color:#fff;">Cargando...</div>`;
-
-    try {
-        const diplomaSnap = await db.collection("registro_diplomas")
-            .where("alumno", "==", nombreAlumno)
-            .get();
-
-        let filasTabla = "";
-        if (!diplomaSnap.empty) {
-            diplomaSnap.forEach(doc => {
-                const data = doc.data();
-                filasTabla += `
-                    <tr style="border-bottom:1px solid #444;">
-                        <td style="padding:10px;">${data.alumno}</td>
-                        <td style="padding:10px;">${data.fecha}</td>
-                    </tr>`;
-            });
-        }
-
-        vista.innerHTML = `
-            <div style="padding:20px; color:#fff; font-family:sans-serif;">
-                <button onclick="mostrarDashboard()">⬅ Volver</button>
-                <h2 style="color:#D4AF37;">Mi Diploma</h2>
-                
-                <table style="width:100%; border-collapse:collapse; margin:20px 0; background:#0f172a;">
-                    <tr style="border-bottom:2px solid #D4AF37; color:#D4AF37;">
-                        <th style="padding:10px; text-align:left;">Nombre</th>
-                        <th style="padding:10px; text-align:left;">Fecha</th>
-                    </tr>
-                    ${filasTabla}
-                </table>
-
-                <div style="margin-top:30px; padding:15px; border:1px solid #D4AF37; border-radius:5px;">
-                    <p>Estimado/a, si la tabla está con datos marque aquí:</p>
-                    <input type="checkbox" id="checkDiploma" onchange="if(this.checked) window.open('${estudiante ? estudiante.drive : '#'}', '_blank')">
-                    <label for="checkDiploma">Acceder a mi carpeta Drive</label>
-                </div>
-            </div>
-        `;
-    } catch (e) {
-        console.error(e);
-    }
-};
-
+    const est = estudiantes.find(e => e.nombre === nombre);
+    return est ? est.drive : '#';
+}
 // 3. ARRANQUE
 document.body.onload = renderLogin;
