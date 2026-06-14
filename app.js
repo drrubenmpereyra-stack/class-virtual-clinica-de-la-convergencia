@@ -150,7 +150,7 @@ if (b === "Emitir diplomas") {
     btn.onclick = () => emitirDiplomas();
 }
 // MI DIPLOMA (ALUMNOS)
-if (b === "Mi Diploma") {
+if (b === "Mi diploma") {
     btn.onclick = () => gestionarDiploma();
 }
 
