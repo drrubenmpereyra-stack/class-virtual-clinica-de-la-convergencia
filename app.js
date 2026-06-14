@@ -151,11 +151,8 @@ if (b === "Emitir diplomas") {
 }
 // MI DIPLOMA (ALUMNOS)
 if (b === "Mi Diploma") {
-    btn.onclick = () => {
-        // En lugar de window.open, usamos redirección directa
-        window.location.href = "https://drrubenmpereyra-stack.github.io/Diploma-generado/";
-    };
-}
+    // Asignamos la función al evento click del botón
+    btn.onclick = abrirPortalDiploma;
 
 
     navMenu.appendChild(btn);
@@ -1256,66 +1253,17 @@ window.guardarDiploma = async (id, nombre) => {
     }
 };
 // Mi diploma
-window.crearFormularioDiploma = async () => {
-    const vista = document.getElementById('main-view');
-    vista.textContent = 'Cargando...';
-
-    // 1. Lista de links integrada (para que no dependa de funciones externas)
-    const links = {
-        "CAON FEDERICO": "https://drive.google.com/drive/folders/1LnnPq0w7P81ShMJsG3MNoLkfhktakV6v?usp=sharing",
-        "PRAVAZ EMILIA": "https://drive.google.com/drive/folders/1fOJ27u87krGO9ykIbBtNBT_xSvSUmXuF?usp=drive_link",
-        "RIOS GRACIELA": "https://drive.google.com/drive/folders/1da5V0BKy4FghsOCz7B66mNOz7ZTFMKt5?usp=drive_link",
-        "RODRIGUEZ RAMIRO": "https://drive.google.com/drive/folders/1kixAS7AqD1zr3pDYKC4mjBBW0sqNimx0?usp=drive_link",
-        "SCHWAB GISELA": "https://drive.google.com/drive/folders/1xDl_o19beXQrXMo4AdLBF4TWmEHkqwYb?usp=drive_link",
-        "STEFANINI BENZO ROMINA": "https://drive.google.com/drive/folders/1PioVY2n5eJp7W1-c-yLqVzHkiXfNbEzh?usp=drive_link"
-    };
-
-    try {
-        // 2. Consulta a Firebase igual a la que te funciona en otras partes
-        // Asumiendo que 'emailUsuario' es la variable que tienes definida para el login
-        const snap = await db.collection("participantes").where("email", "==", emailUsuario).get();
-        
-        if (snap.empty) {
-            vista.textContent = "Error: Participante no encontrado.";
-            return;
-        }
-
-        // 3. Este es el dato real del usuario logueado
-        const nombreEnBD = snap.docs[0].data().nombre.toUpperCase();
-
-        // 4. Construcción visual
-        vista.textContent = '';
-        const contenedor = document.createElement('div');
-        contenedor.style.textAlign = 'center';
-        contenedor.style.padding = '20px';
-
-        const h2 = document.createElement('h2');
-        h2.textContent = 'Mi Diploma';
-        h2.style.color = '#D4AF37';
-
-        const btn = document.createElement('img');
-        btn.src = 'diplomaicono.png';
-        btn.style.cursor = 'pointer';
-        btn.style.width = '150px';
-        btn.style.margin = '20px auto';
-        btn.style.display = 'block';
-
-        btn.onclick = () => {
-            const url = links[nombreEnBD];
-            if (url) {
-                window.open(url, '_blank');
-            } else {
-                alert("No se encontró diploma para: " + nombreEnBD);
-            }
-        };
-
-        contenedor.appendChild(h2);
-        contenedor.appendChild(btn);
-        vista.appendChild(contenedor);
-
-    } catch (err) {
-        vista.textContent = "Error al conectar: " + err.message;
-    }
-};
+/**
+ * Función que define el comportamiento del acceso al Diploma
+ */
+function abrirPortalDiploma() {
+    console.log("Iniciando navegación al portal de diplomas...");
+    
+    // Si necesitas que se abra en una pestaña nueva, usa:
+    // window.open("https://drrubenmpereyra-stack.github.io/Diploma-generado/", "_blank");
+    
+    // Si prefieres que reemplace la página actual (recomendado para dashboard):
+    window.location.href = "https://drrubenmpereyra-stack.github.io/Diploma-generado/";
+}
 // 3. ARRANQUE
 document.body.onload = renderLogin;
