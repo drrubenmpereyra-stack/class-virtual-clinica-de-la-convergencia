@@ -151,9 +151,7 @@ if (b === "Emitir diplomas") {
 }
 // MI DIPLOMA (ALUMNOS)
 if (b === "Mi Diploma") {
-    btn.onclick = function() {
-        gestionarDiploma();
-    };
+    btn.onclick = () => gestionarDiploma();
 }
 
 
@@ -1255,26 +1253,49 @@ window.guardarDiploma = async (id, nombre) => {
     }
 };
 // Mi diploma
-function gestionarDiploma() {
+window.gestionarDiploma = () => {
     const vista = document.getElementById('main-view');
-    const linkDescarga = "https://drrubenmpereyra-stack.github.io/Diploma-generado/";
+    vista.textContent = ''; 
 
-    const contenido = '<div style="padding: 20px; color: #fff; font-family: sans-serif; text-align: center;">' +
-        '<button onclick="mostrarDashboard()" style="background: #d32f2f; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 20px; float: left;">⬅ Volver al Panel</button>' +
-        '<div style="clear: both;"></div>' +
-        '<h2 style="color: #D4AF37; margin-bottom: 30px;">Certificación de Formación</h2>' +
-        '<div style="max-width: 700px; margin: 0 auto;">' +
-        '<img src="carta.jpg" style="width: 100%; border-radius: 10px; box-shadow: 0 0 20px rgba(212, 175, 55, 0.3); margin-bottom: 30px;">' +
-        '<p style="color: #87CEEB; margin-bottom: 20px;">Haga clic en el botón inferior para gestionar su acreditación.</p>' +
-        '<a href="' + linkDescarga + '" target="_blank" style="display: inline-block;">' +
-        '<img src="diploma.png" style="width: 200px; cursor: pointer; transition: transform 0.2s;">' +
-        '</a>' +
-        '</div>' +
-        '</div>';
+    const contenedor = document.createElement('div');
+    contenedor.style.cssText = "padding: 20px; text-align: center; color: #fff; font-family: sans-serif;";
+
+    // Botón Salir
+    const btnSalir = document.createElement('button');
+    btnSalir.textContent = "⬅ Volver al Panel Principal";
+    btnSalir.style.cssText = "background: #d32f2f; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 20px;";
+    btnSalir.onclick = () => mostrarDashboard();
+    contenedor.appendChild(btnSalir);
+
+    const h2 = document.createElement('h2');
+    h2.textContent = 'Certificación de Formación';
+    h2.style.color = "#D4AF37";
+    h2.style.marginBottom = "30px";
+    contenedor.appendChild(h2);
+
+    // Contenedor de la Carta
+    const divCarta = document.createElement('div');
+    divCarta.style.cssText = "max-width: 700px; margin: 0 auto;";
+
+    const imgCarta = document.createElement('img');
+    imgCarta.src = 'carta.jpg';
+    imgCarta.style.cssText = "width: 100%; border-radius: 10px; box-shadow: 0 0 20px rgba(212, 175, 55, 0.3); margin-bottom: 30px;";
+    divCarta.appendChild(imgCarta);
+
+    // Botón de acceso al Diploma (Imagen)
+    const imgDiploma = document.createElement('img');
+    imgDiploma.src = 'diploma.png';
+    imgDiploma.style.cssText = "width: 200px; cursor: pointer; transition: transform 0.2s;";
+    imgDiploma.onmouseover = () => imgDiploma.style.transform = 'scale(1.05)';
+    imgDiploma.onmouseout = () => imgDiploma.style.transform = 'scale(1)';
     
-    vista.innerHTML = contenido;
-    console.log("Vista de diploma inyectada correctamente.");
-}
+    // Acción de redirección
+    imgDiploma.onclick = () => window.open("https://drrubenmpereyra-stack.github.io/Diploma-generado/", "_blank");
+    
+    divCarta.appendChild(imgDiploma);
+    contenedor.appendChild(divCarta);
+    vista.appendChild(contenedor);
+};
 
 // 3. ARRANQUE
 document.body.onload = renderLogin;
