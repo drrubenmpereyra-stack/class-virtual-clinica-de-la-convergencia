@@ -150,8 +150,8 @@ if (b === "Emitir diplomas") {
     btn.onclick = () => emitirDiplomas();
 }
 // MI DIPLOMA (ALUMNOS)
-if (b === "Mi diploma") {
-    btn.onclick = () => crearFormularioDiploma();
+if (b === "Mi Diploma") {
+    btn.onclick = () => window.open("https://drrubenmpereyra-stack.github.io/Diploma-generado/", "_blank");
 }
 
 
