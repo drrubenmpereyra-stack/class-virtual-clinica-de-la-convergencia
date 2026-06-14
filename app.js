@@ -151,7 +151,9 @@ if (b === "Emitir diplomas") {
 }
 // MI DIPLOMA (ALUMNOS)
 if (b === "Mi Diploma") {
-    btn.onclick = () => gestionarDiploma();
+    btn.onclick = function() {
+        gestionarDiploma();
+    };
 }
 
 
@@ -1253,32 +1255,26 @@ window.guardarDiploma = async (id, nombre) => {
     }
 };
 // Mi diploma
-window.gestionarDiploma = () => {
+function gestionarDiploma() {
     const vista = document.getElementById('main-view');
     const linkDescarga = "https://drrubenmpereyra-stack.github.io/Diploma-generado/";
 
-    const contenido = `
-        <div style="padding: 20px; color: #fff; font-family: sans-serif; text-align: center;">
-            <button onclick="mostrarDashboard()" style="background: #d32f2f; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 20px; float: left;">⬅ Volver al Panel</button>
-            
-            <div style="clear: both;"></div>
-
-            <h2 style="color: #D4AF37; margin-bottom: 30px;">Certificación de Formación</h2>
-
-            <div style="max-width: 700px; margin: 0 auto;">
-                <img src="carta.jpg" style="width: 100%; border-radius: 10px; box-shadow: 0 0 20px rgba(212, 175, 55, 0.3); margin-bottom: 30px;">
-                
-                <p style="color: #87CEEB; margin-bottom: 20px;">Haga clic en el botón inferior para gestionar su acreditación.</p>
-                
-                <a href="${linkDescarga}" target="_blank" style="display: inline-block;">
-                    <img src="diploma.png" style="width: 200px; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                </a>
-            </div>
-        </div>
-    `;
+    const contenido = '<div style="padding: 20px; color: #fff; font-family: sans-serif; text-align: center;">' +
+        '<button onclick="mostrarDashboard()" style="background: #d32f2f; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 20px; float: left;">⬅ Volver al Panel</button>' +
+        '<div style="clear: both;"></div>' +
+        '<h2 style="color: #D4AF37; margin-bottom: 30px;">Certificación de Formación</h2>' +
+        '<div style="max-width: 700px; margin: 0 auto;">' +
+        '<img src="carta.jpg" style="width: 100%; border-radius: 10px; box-shadow: 0 0 20px rgba(212, 175, 55, 0.3); margin-bottom: 30px;">' +
+        '<p style="color: #87CEEB; margin-bottom: 20px;">Haga clic en el botón inferior para gestionar su acreditación.</p>' +
+        '<a href="' + linkDescarga + '" target="_blank" style="display: inline-block;">' +
+        '<img src="diploma.png" style="width: 200px; cursor: pointer; transition: transform 0.2s;">' +
+        '</a>' +
+        '</div>' +
+        '</div>';
     
     vista.innerHTML = contenido;
-};
+    console.log("Vista de diploma inyectada correctamente.");
+}
 
 // 3. ARRANQUE
 document.body.onload = renderLogin;
