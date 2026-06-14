@@ -151,7 +151,10 @@ if (b === "Emitir diplomas") {
 }
 // MI DIPLOMA (ALUMNOS)
 if (b === "Mi Diploma") {
-    btn.onclick = () => window.open("https://drrubenmpereyra-stack.github.io/Diploma-generado/", "_blank");
+    btn.onclick = () => {
+        // En lugar de window.open, usamos redirección directa
+        window.location.href = "https://drrubenmpereyra-stack.github.io/Diploma-generado/";
+    };
 }
 
 
