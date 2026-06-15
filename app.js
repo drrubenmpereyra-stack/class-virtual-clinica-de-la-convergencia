@@ -31,7 +31,7 @@ const MAPA_BOTONES = {
 };
 
 const LISTA_ADMIN = ["Encuentros", "Talleres", "Biblioteca", "Actividades recreativas", "Participantes", "Pagos", "Asistencia", "Calificaciones", "Analíticos", "Visado analíticos", "Emitir diplomas", "Herramientas", "Auditoria Test", "Auditoria Taller", "Central de diplomas", "Enviar mensajes", ];
-const LISTA_ALUMNO = ["Encuentros", "Talleres", "Biblioteca", "Actividades recreativas", "Mis Test", "Mis Talleres", "Mis pagos", "Mi asistencia", "Mi analítico", "Mi diploma", "Mis mensajes", "Autoevaluación"];
+const LISTA_ALUMNO = ["Encuentros", "Talleres", "Biblioteca", "Actividades recreativas", "Mis Test", "Mis Talleres", "Mis pagos", "Mi asistencia", "Mi analítico", "Mi diploma", "Mis mensajes", "Mis calificaciones"];
 
 let usuarioActual = null;
 
@@ -153,9 +153,14 @@ if (b === "Emitir diplomas") {
 if (b === "Mi diploma") {
     btn.onclick = () => gestionarDiploma();
     
-}// CALIFICACIONES (ADMINISTRADOR)
+}
+// CALIFICACIONES (ADMINISTRADOR)
 if (b === "Calificaciones") {
     btn.onclick = () => gestionarCalificacionesAdmin();
+}
+// MIS CALIFICACIONES (ALUMNOS)
+if (b === "Mis calificaciones") {
+    btn.onclick = () => gestionarMisCalificacionesAlumno(nombreUsuarioActual);
 }
 
 
@@ -1370,6 +1375,54 @@ window.confirmarBorrado = (docId) => {
             cargarDatosGenerales(); // Refresca la tabla
         });
     }
+};
+window.gestionarMisCalificacionesAlumno = function(nombreAlumno) {
+    const vista = document.getElementById('main-view');
+    vista.innerHTML = ''; // Limpiamos vista
+
+    const contenedor = document.createElement('div');
+    contenedor.style.cssText = "padding: 20px; color: #fff;";
+    contenedor.innerHTML = `
+        <h2 style="color: #D4AF37;">Mis Calificaciones: ${nombreAlumno}</h2>
+        <table style="width: 100%; border-collapse: collapse; margin-top: 20px; background: #050508;">
+            <thead>
+                <tr style="background: #1a1a1a; color: #fff;">
+                    <th style="padding: 15px; border: 1px solid #333;">Actividad</th>
+                    <th style="padding: 15px; border: 1px solid #333;">Detalle</th>
+                    <th style="padding: 15px; border: 1px solid #333;">Nota</th>
+                    <th style="padding: 15px; border: 1px solid #333;">Fecha</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-alumno-body"></tbody>
+        </table>
+    `;
+    vista.appendChild(contenedor);
+
+    // Consultamos Firestore filtrando específicamente por el nombre del alumno
+    db.collection("resultados_test")
+        .where("nombre", "==", nombreAlumno)
+        .orderBy("fecha", "desc")
+        .get().then((querySnapshot) => {
+            const tbody = document.getElementById('tabla-alumno-body');
+            tbody.innerHTML = ''; 
+
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                const textoTest = data.Test_numero ? data.Test_numero.toLowerCase() : "";
+                const esTaller = textoTest.includes("taller");
+                const nombreTipo = esTaller ? "Taller" : "Test";
+                const colorTipo = esTaller ? "#00FF88" : "#D4AF37";
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="padding: 12px; border: 1px solid #333; color: ${colorTipo}; font-weight: bold;">${nombreTipo}</td>
+                    <td style="padding: 12px; border: 1px solid #333;">${data.Test_numero || '-'}</td>
+                    <td style="padding: 12px; border: 1px solid #333; text-align: center;">${data.nota}</td>
+                    <td style="padding: 12px; border: 1px solid #333;">${new Date(data.fecha).toLocaleDateString()}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        });
 };
 
 // 3. ARRANQUE
