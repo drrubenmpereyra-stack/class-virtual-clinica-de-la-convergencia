@@ -1301,27 +1301,51 @@ window.gestionarDiploma = () => {
     vista.appendChild(contenedor);
 };
 // CALIFICACIONES (admnistrador)
+// --- FUNCIÓN PRINCIPAL DE GESTIÓN (La que llama el botón) ---
+window.gestionarCalificacionesAdmin = function() {
+    const vista = document.getElementById('main-view');
+    vista.innerHTML = ''; // Limpiamos la pantalla
+
+    // Construimos la estructura de la pantalla
+    const contenedor = document.createElement('div');
+    contenedor.style.cssText = "padding: 20px; color: #fff;";
+    contenedor.innerHTML = `
+        <h2 style="color: #D4AF37;">Consola de Auditoría: Test y Talleres</h2>
+        <table style="width: 100%; border-collapse: collapse; margin-top: 20px; background: #050508;">
+            <thead>
+                <tr style="background: #1a1a1a; color: #fff;">
+                    <th style="padding: 15px; border: 1px solid #333;">Estudiante</th>
+                    <th style="padding: 15px; border: 1px solid #333;">Actividad</th>
+                    <th style="padding: 15px; border: 1px solid #333;">Detalle</th>
+                    <th style="padding: 15px; border: 1px solid #333;">Nota</th>
+                    <th style="padding: 15px; border: 1px solid #333;">Acción</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-datos-admin"></tbody>
+        </table>
+    `;
+    vista.appendChild(contenedor);
+
+    // Llamamos a la función que carga los datos
+    cargarDatosGenerales();
+};
+
+// --- FUNCIÓN QUE IMPORTA DATOS DE LA BASE ---
 function cargarDatosGenerales() {
     const tbody = document.getElementById('tabla-datos-admin');
-    // Indicador visual de carga
     tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">Auditoría de registros en curso...</td></tr>';
 
     db.collection("resultados_test").orderBy("fecha", "desc").get().then((querySnapshot) => {
-        tbody.innerHTML = ''; // Limpiamos tabla
-        
+        tbody.innerHTML = ''; 
         querySnapshot.forEach((doc) => {
             const data = doc.data();
             
-            // LÓGICA INTELIGENTE: 
-            // Si el nombre del test incluye la palabra "Taller", el sistema lo etiqueta como Taller.
-            // Si no, lo etiqueta como Test. ¡Sin cambios en tus archivos de GitHub!
             const textoTest = data.Test_numero ? data.Test_numero.toLowerCase() : "";
             const esTaller = textoTest.includes("taller");
             
-            const colorTipo = esTaller ? "#00FF88" : "#D4AF37"; // Verde para Taller, Dorado para Test
+            const colorTipo = esTaller ? "#00FF88" : "#D4AF37";
             const nombreTipo = esTaller ? "Taller" : "Test";
             
-            // Filtro de calidad: Solo mostramos registros con nombre real
             if (data.nombre && data.nombre !== "Alumno Anónimo") {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -1338,6 +1362,15 @@ function cargarDatosGenerales() {
         });
     });
 }
+
+// --- FUNCIÓN DE SEGURIDAD PARA BORRAR ---
+window.confirmarBorrado = (docId) => {
+    if (confirm("ATENCIÓN: Se eliminará permanentemente este registro. ¿Desea continuar?")) {
+        db.collection("resultados_test").doc(docId).delete().then(() => {
+            cargarDatosGenerales(); // Refresca la tabla
+        });
+    }
+};
 
 // 3. ARRANQUE
 document.body.onload = renderLogin;
