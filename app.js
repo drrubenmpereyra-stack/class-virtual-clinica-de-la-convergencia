@@ -1380,16 +1380,34 @@ window.abrirModuloCalificaciones = function() {
     const vista = document.getElementById('main-view');
     vista.innerHTML = ''; // Limpia el dashboard
 
-    const btn = document.createElement('button');
-    btn.innerText = "Consultar Calificaciones";
-    btn.style.cssText = "display: block; margin: 50px auto; padding: 20px 40px; font-size: 20px; cursor: pointer; background: #D4AF37; border: none; border-radius: 5px; font-weight: bold; color: #000;";
+    // 1. Contenedor de la animación
+    const contenedorAnim = document.createElement('div');
+    contenedorAnim.style.cssText = "display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 50px;";
     
-    btn.onclick = function() {
-        window.open("https://drrubenmpereyra-stack.github.io/Consulta-Calificaciones/", "_blank");
-    };
+    // 2. SVG Vectorial animado (Flecha de flujo)
+    contenedorAnim.innerHTML = `
+        <svg width="100" height="100" viewBox="0 0 100 100" style="margin-bottom: 20px;">
+            <path d="M20 50 L80 50 M60 30 L80 50 L60 70" stroke="#D4AF37" stroke-width="4" fill="none">
+                <animate attributeName="stroke-dasharray" from="0,150" to="150,150" dur="2s" repeatCount="indefinite" />
+            </path>
+        </svg>
+        <p style="color: #D4AF37; font-family: sans-serif;">Procesando acceso a calificaciones...</p>
+    `;
     
-    vista.appendChild(btn);
+    vista.appendChild(contenedorAnim);
+
+    // 3. Crear botón tras un breve retardo visual (opcional)
+    setTimeout(() => {
+        const btn = document.createElement('button');
+        btn.innerText = "Consultar Calificaciones";
+        btn.style.cssText = "display: block; margin: 20px auto; padding: 20px 40px; font-size: 20px; cursor: pointer; background: #D4AF37; border: none; border-radius: 5px; font-weight: bold; color: #000;";
+        
+        btn.onclick = function() {
+            window.open("https://drrubenmpereyra-stack.github.io/Consulta-Calificaciones/", "_blank");
+        };
+        
+        vista.appendChild(btn);
+    }, 2000); // El botón aparece tras 2 segundos de animación
 };
 // 3. ARRANQUE
 document.body.onload = renderLogin;
-
