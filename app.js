@@ -158,10 +158,11 @@ if (b === "Mi diploma") {
 if (b === "Calificaciones") {
     btn.onclick = () => gestionarCalificacionesAdmin();
 }
-// MIS CALIFICACIONES (ALUMNOS)
+// MIS CALIFICACIONES (ALUMNO)
 if (b === "Mis calificaciones") {
-    btn.onclick = () => gestionarMisCalificacionesAlumno(nombreUsuarioActual);
+    btn.onclick = () => reproducirVideoIntro();
 }
+
 
 
     navMenu.appendChild(btn);
@@ -1306,7 +1307,6 @@ window.gestionarDiploma = () => {
     vista.appendChild(contenedor);
 };
 // CALIFICACIONES (admnistrador)
-// --- FUNCIÓN PRINCIPAL DE GESTIÓN (La que llama el botón) ---
 window.gestionarCalificacionesAdmin = function() {
     const vista = document.getElementById('main-view');
     vista.innerHTML = ''; // Limpiamos la pantalla
@@ -1376,53 +1376,38 @@ window.confirmarBorrado = (docId) => {
         });
     }
 };
-window.gestionarMisCalificacionesAlumno = function(nombreAlumno) {
+// MIS CALIFICACIONES (ALUMNOS)
+window.reproducirVideoIntro = function() {
     const vista = document.getElementById('main-view');
-    vista.innerHTML = ''; // Limpiamos vista
+    vista.innerHTML = ''; 
 
-    const contenedor = document.createElement('div');
-    contenedor.style.cssText = "padding: 20px; color: #fff;";
-    contenedor.innerHTML = `
-        <h2 style="color: #D4AF37;">Mis Calificaciones: ${nombreAlumno}</h2>
-        <table style="width: 100%; border-collapse: collapse; margin-top: 20px; background: #050508;">
-            <thead>
-                <tr style="background: #1a1a1a; color: #fff;">
-                    <th style="padding: 15px; border: 1px solid #333;">Actividad</th>
-                    <th style="padding: 15px; border: 1px solid #333;">Detalle</th>
-                    <th style="padding: 15px; border: 1px solid #333;">Nota</th>
-                    <th style="padding: 15px; border: 1px solid #333;">Fecha</th>
-                </tr>
-            </thead>
-            <tbody id="tabla-alumno-body"></tbody>
-        </table>
-    `;
-    vista.appendChild(contenedor);
+    // Crear elemento de video
+    const video = document.createElement('video');
+    video.src = "introespera.mp4"; // Asegúrese que el archivo esté en la carpeta raíz
+    video.style.width = "100%";
+    video.style.borderRadius = "10px";
+    video.autoplay = true;
+    
+    // Contenedor para el botón que aparecerá al final
+    const contenedorBoton = document.createElement('div');
+    contenedorBoton.style.textAlign = "center";
+    contenedorBoton.style.marginTop = "20px";
+    
+    vista.appendChild(video);
+    vista.appendChild(contenedorBoton);
 
-    // Consultamos Firestore filtrando específicamente por el nombre del alumno
-    db.collection("resultados_test")
-        .where("nombre", "==", nombreAlumno)
-        .orderBy("fecha", "desc")
-        .get().then((querySnapshot) => {
-            const tbody = document.getElementById('tabla-alumno-body');
-            tbody.innerHTML = ''; 
-
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                const textoTest = data.Test_numero ? data.Test_numero.toLowerCase() : "";
-                const esTaller = textoTest.includes("taller");
-                const nombreTipo = esTaller ? "Taller" : "Test";
-                const colorTipo = esTaller ? "#00FF88" : "#D4AF37";
-
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td style="padding: 12px; border: 1px solid #333; color: ${colorTipo}; font-weight: bold;">${nombreTipo}</td>
-                    <td style="padding: 12px; border: 1px solid #333;">${data.Test_numero || '-'}</td>
-                    <td style="padding: 12px; border: 1px solid #333; text-align: center;">${data.nota}</td>
-                    <td style="padding: 12px; border: 1px solid #333;">${new Date(data.fecha).toLocaleDateString()}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        });
+    // Evento al terminar el video
+    video.onended = () => {
+        contenedorBoton.innerHTML = `
+            <button id="btnIrConsulta" style="padding: 15px 30px; background: #D4AF37; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; font-weight: bold;">
+                Ir a consulta
+            </button>
+        `;
+        
+        document.getElementById('btnIrConsulta').onclick = () => {
+            window.open("https://drrubenmpereyra-stack.github.io/Consulta-Calificaciones/", "_blank");
+        };
+    };
 };
 
 // 3. ARRANQUE
