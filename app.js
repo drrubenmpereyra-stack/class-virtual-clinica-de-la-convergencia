@@ -159,11 +159,11 @@ if (b === "Calificaciones") {
     btn.onclick = () => gestionarCalificacionesAdmin();
 }
 // MIS CALIFICACIONES (ALUMNO)
+// En su sección de botones
 if (b === "Mis calificaciones") {
-    btn.onclick = () => reproducirVideoIntro();
+    btn.onclick = () => ejecutarFlujoCalificaciones();
+
 }
-
-
 
     navMenu.appendChild(btn);
 });
@@ -1377,38 +1377,33 @@ window.confirmarBorrado = (docId) => {
     }
 };
 // MIS CALIFICACIONES (ALUMNOS)
-window.reproducirVideoIntro = function() {
+window.ejecutarFlujoCalificaciones = function() {
     const vista = document.getElementById('main-view');
+    if (!vista) return;
+
     vista.innerHTML = ''; 
 
-    // Crear elemento de video
     const video = document.createElement('video');
-    video.src = "introespera.mp4"; // Asegúrese que el archivo esté en la carpeta raíz
+    video.src = "introespera.mp4";
+    video.autoplay = true;
+    video.muted = true;
     video.style.width = "100%";
     video.style.borderRadius = "10px";
-    video.autoplay = true;
-    
-    // Contenedor para el botón que aparecerá al final
-    const contenedorBoton = document.createElement('div');
-    contenedorBoton.style.textAlign = "center";
-    contenedorBoton.style.marginTop = "20px";
     
     vista.appendChild(video);
-    vista.appendChild(contenedorBoton);
 
-    // Evento al terminar el video
-    video.onended = () => {
-        contenedorBoton.innerHTML = `
-            <button id="btnIrConsulta" style="padding: 15px 30px; background: #D4AF37; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; font-weight: bold;">
-                Ir a consulta
-            </button>
-        `;
+    video.onended = function() {
+        const btn = document.createElement('button');
+        btn.innerText = "Ir a consulta";
+        btn.style.cssText = "display: block; margin: 20px auto; padding: 15px 30px; cursor: pointer; background: #D4AF37; border: none; font-weight: bold;";
         
-        document.getElementById('btnIrConsulta').onclick = () => {
+        btn.onclick = function() {
             window.open("https://drrubenmpereyra-stack.github.io/Consulta-Calificaciones/", "_blank");
         };
+        
+        vista.appendChild(btn);
     };
 };
-
 // 3. ARRANQUE
 document.body.onload = renderLogin;
+
