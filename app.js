@@ -159,11 +159,10 @@ if (b === "Calificaciones") {
     btn.onclick = () => gestionarCalificacionesAdmin();
 }
 // MIS CALIFICACIONES (ALUMNO)
-// En su sección de botones
 if (b === "Mis calificaciones") {
-    btn.onclick = () => ejecutarFlujoCalificaciones();
-
+    btn.onclick = () => abrirModuloCalificaciones();
 }
+
 
     navMenu.appendChild(btn);
 });
@@ -1377,32 +1376,19 @@ window.confirmarBorrado = (docId) => {
     }
 };
 // MIS CALIFICACIONES (ALUMNOS)
-window.ejecutarFlujoCalificaciones = function() {
+window.abrirModuloCalificaciones = function() {
     const vista = document.getElementById('main-view');
-    if (!vista) return;
+    vista.innerHTML = ''; // Limpia el dashboard
 
-    vista.innerHTML = ''; 
-
-    const video = document.createElement('video');
-    video.src = "introespera.mp4";
-    video.autoplay = true;
-    video.muted = true;
-    video.style.width = "100%";
-    video.style.borderRadius = "10px";
+    const btn = document.createElement('button');
+    btn.innerText = "Consultar Calificaciones";
+    btn.style.cssText = "display: block; margin: 50px auto; padding: 20px 40px; font-size: 20px; cursor: pointer; background: #D4AF37; border: none; border-radius: 5px; font-weight: bold; color: #000;";
     
-    vista.appendChild(video);
-
-    video.onended = function() {
-        const btn = document.createElement('button');
-        btn.innerText = "Ir a consulta";
-        btn.style.cssText = "display: block; margin: 20px auto; padding: 15px 30px; cursor: pointer; background: #D4AF37; border: none; font-weight: bold;";
-        
-        btn.onclick = function() {
-            window.open("https://drrubenmpereyra-stack.github.io/Consulta-Calificaciones/", "_blank");
-        };
-        
-        vista.appendChild(btn);
+    btn.onclick = function() {
+        window.open("https://drrubenmpereyra-stack.github.io/Consulta-Calificaciones/", "_blank");
     };
+    
+    vista.appendChild(btn);
 };
 // 3. ARRANQUE
 document.body.onload = renderLogin;
