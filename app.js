@@ -152,6 +152,10 @@ if (b === "Emitir diplomas") {
 // MI DIPLOMA (ALUMNOS)
 if (b === "Mi diploma") {
     btn.onclick = () => gestionarDiploma();
+    
+}// CALIFICACIONES (ADMINISTRADOR)
+if (b === "Calificaciones") {
+    btn.onclick = () => gestionarCalificacionesAdmin();
 }
 
 
@@ -1296,6 +1300,44 @@ window.gestionarDiploma = () => {
     contenedor.appendChild(divCarta);
     vista.appendChild(contenedor);
 };
+// CALIFICACIONES (admnistrador)
+function cargarDatosGenerales() {
+    const tbody = document.getElementById('tabla-datos-admin');
+    // Indicador visual de carga
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">Auditoría de registros en curso...</td></tr>';
+
+    db.collection("resultados_test").orderBy("fecha", "desc").get().then((querySnapshot) => {
+        tbody.innerHTML = ''; // Limpiamos tabla
+        
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            
+            // LÓGICA INTELIGENTE: 
+            // Si el nombre del test incluye la palabra "Taller", el sistema lo etiqueta como Taller.
+            // Si no, lo etiqueta como Test. ¡Sin cambios en tus archivos de GitHub!
+            const textoTest = data.Test_numero ? data.Test_numero.toLowerCase() : "";
+            const esTaller = textoTest.includes("taller");
+            
+            const colorTipo = esTaller ? "#00FF88" : "#D4AF37"; // Verde para Taller, Dorado para Test
+            const nombreTipo = esTaller ? "Taller" : "Test";
+            
+            // Filtro de calidad: Solo mostramos registros con nombre real
+            if (data.nombre && data.nombre !== "Alumno Anónimo") {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="padding: 12px; border: 1px solid #333;">${data.nombre}</td>
+                    <td style="padding: 12px; border: 1px solid #333; color: ${colorTipo}; font-weight: bold;">${nombreTipo}</td>
+                    <td style="padding: 12px; border: 1px solid #333;">${data.Test_numero || 'Sin título'}</td>
+                    <td style="padding: 12px; border: 1px solid #333; text-align: center;">${data.nota}</td>
+                    <td style="padding: 12px; border: 1px solid #333; text-align: center;">
+                        <button onclick="confirmarBorrado('${doc.id}')" style="background: #991b1b; color: white; border: none; padding: 5px 10px; cursor: pointer;">Eliminar</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            }
+        });
+    });
+}
 
 // 3. ARRANQUE
 document.body.onload = renderLogin;
