@@ -27,7 +27,7 @@ const MAPA_BOTONES = {
     "Calificaciones": "btn-green", "Auditoria Test": "btn-green", "Auditoria Taller": "btn-green", 
     "Analíticos": "btn-orange", "Visado analíticos": "btn-orange", "Emitir diplomas": "btn-orange", "Central de diplomas": "btn-orange",
     "Actividades recreativas": "btn-blue", "Enviar mensajes": "btn-blue",
-    "Mis Test": "btn-sky", "Mis Talleres": "btn-sky", "Mis pagos": "btn-sky", "Mi asistencia": "btn-sky", "Mi analítico": "btn-sky", "Mi diploma": "btn-sky", "Mis mensajes": "btn-sky", 
+    "Mis Test": "btn-sky", "Mis Talleres": "btn-sky", "Mis pagos": "btn-sky", "Mi asistencia": "btn-sky", "Mi analítico": "btn-sky", "Mi diploma": "btn-sky", "Mis mensajes": "btn-sky", "Mis calificaciones": "btn-sky",
 };
 
 const LISTA_ADMIN = ["Encuentros", "Talleres", "Biblioteca", "Actividades recreativas", "Participantes", "Pagos", "Asistencia", "Calificaciones", "Analíticos", "Visado analíticos", "Emitir diplomas", "Herramientas", "Auditoria Test", "Auditoria Taller", "Central de diplomas", "Enviar mensajes", ];
@@ -1378,13 +1378,12 @@ window.confirmarBorrado = (docId) => {
 // MIS CALIFICACIONES (ALUMNOS)
 window.abrirModuloCalificaciones = function() {
     const vista = document.getElementById('main-view');
-    vista.innerHTML = ''; // Limpia el dashboard
+    vista.innerHTML = ''; 
 
-    // 1. Contenedor de la animación
+    // Contenedor de animación
     const contenedorAnim = document.createElement('div');
     contenedorAnim.style.cssText = "display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 50px;";
     
-    // 2. SVG Vectorial animado (Flecha de flujo)
     contenedorAnim.innerHTML = `
         <svg width="100" height="100" viewBox="0 0 100 100" style="margin-bottom: 20px;">
             <path d="M20 50 L80 50 M60 30 L80 50 L60 70" stroke="#D4AF37" stroke-width="4" fill="none">
@@ -1393,21 +1392,27 @@ window.abrirModuloCalificaciones = function() {
         </svg>
         <p style="color: #D4AF37; font-family: sans-serif;">Procesando acceso a calificaciones...</p>
     `;
-    
     vista.appendChild(contenedorAnim);
 
-    // 3. Crear botón tras un breve retardo visual (opcional)
+    // Botones (aparecen tras la animación)
     setTimeout(() => {
-        const btn = document.createElement('button');
-        btn.innerText = "Consultar Calificaciones";
-        btn.style.cssText = "display: block; margin: 20px auto; padding: 20px 40px; font-size: 20px; cursor: pointer; background: #D4AF37; border: none; border-radius: 5px; font-weight: bold; color: #000;";
+        contenedorAnim.style.display = 'none'; // Ocultamos la animación
+
+        // Botón Consultar
+        const btnConsultar = document.createElement('button');
+        btnConsultar.innerText = "Consultar Calificaciones";
+        btnConsultar.style.cssText = "display: block; margin: 20px auto; padding: 20px 40px; font-size: 20px; cursor: pointer; background: #D4AF37; border: none; border-radius: 5px; font-weight: bold; color: #000;";
+        btnConsultar.onclick = () => window.open("https://drrubenmpereyra-stack.github.io/Consulta-Calificaciones/", "_blank");
         
-        btn.onclick = function() {
-            window.open("https://drrubenmpereyra-stack.github.io/Consulta-Calificaciones/", "_blank");
-        };
+        // Botón Volver
+        const btnVolver = document.createElement('button');
+        btnVolver.innerText = "Volver al Dashboard";
+        btnVolver.style.cssText = "display: block; margin: 10px auto; padding: 10px 20px; cursor: pointer; background: #333; color: #fff; border: 1px solid #D4AF37; border-radius: 5px;";
+        btnVolver.onclick = () => mostrarDashboard(); // Asegúrese de que esta es su función de retorno
         
-        vista.appendChild(btn);
-    }, 2000); // El botón aparece tras 2 segundos de animación
+        vista.appendChild(btnConsultar);
+        vista.appendChild(btnVolver);
+    }, 2000);
 };
 // 3. ARRANQUE
 document.body.onload = renderLogin;
