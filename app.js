@@ -1417,27 +1417,30 @@ window.reproducirVideoIntro = function() {
  * @param {string} view - El nombre de la vista a mostrar
  */
 function mostrarSeccion(view) {
-    const contenedor = document.getElementById("dashboard-content");
+    // Buscamos cualquier contenedor, si no hay, creamos uno al vuelo
+    let contenedor = document.getElementById("dashboard-content");
     
-    // Si la vista es 'analiticos', inyectamos el encabezado y el botón
+    if (!contenedor) {
+        contenedor = document.createElement("div");
+        contenedor.id = "dashboard-content";
+        document.body.appendChild(contenedor); // Lo pone al final del body
+    }
+    
     if (view === 'analiticos') {
         contenedor.innerHTML = `
             <div style="text-align: center; margin-top: 20px;">
                 <img src="analitico.png" alt="Encabezado Analítico" style="width: 100%; max-width: 800px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
                 <div style="margin-top: 30px;">
                     <button onclick="window.open('https://drrubenmpereyra-stack.github.io/anal-tico-nuev-a-aula-virtual/', '_blank')" 
-                            style="padding: 15px 40px; font-size: 1.2em; background-color: #003366; color: white; border: none; border-radius: 5px; cursor: pointer; transition: 0.3s;">
+                            style="padding: 15px 40px; font-size: 1.2em; background-color: #003366; color: white; border: none; border-radius: 5px; cursor: pointer;">
                         Ir a Analítico
                     </button>
                 </div>
             </div>
         `;
-    } 
-    // Otros bloques 'if' para las demás secciones de su dashboard...
-    else if (view === 'inicio') {
-        contenedor.innerHTML = `<h1>Bienvenido, Dr. Pereyra</h1>`;
     }
 }
 
 // 3. ARRANQUE
 document.body.onload = renderLogin;
+
