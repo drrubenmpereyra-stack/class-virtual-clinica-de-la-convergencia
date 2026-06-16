@@ -1417,17 +1417,26 @@ window.reproducirVideoIntro = function() {
  * @param {string} view - El nombre de la vista a mostrar
  */
 function mostrarSeccion(view) {
-    // Buscamos cualquier contenedor, si no hay, creamos uno al vuelo
     let contenedor = document.getElementById("dashboard-content");
     
     if (!contenedor) {
         contenedor = document.createElement("div");
         contenedor.id = "dashboard-content";
-        document.body.appendChild(contenedor); // Lo pone al final del body
+        document.body.appendChild(contenedor);
+    }
+
+    // Si el usuario presiona "Cerrar", limpiamos todo
+    if (view === 'cerrar') {
+        contenedor.innerHTML = '';
+        return;
     }
     
+    // Vista de Analíticos
     if (view === 'analiticos') {
         contenedor.innerHTML = `
+            <div style="text-align: right; margin-bottom: 10px;">
+                <button onclick="mostrarSeccion('cerrar')" style="background:#ff4444; color:white; border:none; padding:5px 15px; cursor:pointer; border-radius:3px;">Cerrar</button>
+            </div>
             <div style="text-align: center; margin-top: 20px;">
                 <img src="analitico.png" alt="Encabezado Analítico" style="width: 100%; max-width: 800px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
                 <div style="margin-top: 30px;">
