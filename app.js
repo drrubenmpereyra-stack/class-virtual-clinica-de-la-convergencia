@@ -1540,36 +1540,40 @@ async function mostrarMiAsistencia(nombreAlumno) {
     }
 }
 // MI ASISTENCIA (ALUMNO)
+
 window.abrirVistaAsistencia = function() {
     const vista = document.getElementById('main-view');
-    vista.innerHTML = ''; // Limpiamos la vista actual
-
-    const contenedor = document.createElement('div');
-    contenedor.style.cssText = "text-align: center; padding: 40px; color: #fff;";
     
+    // Limpiamos el contenido actual de la vista
+    vista.innerHTML = ''; 
+
+    // Creamos el contenedor principal de la vista
+    const contenedor = document.createElement('div');
+    contenedor.style.cssText = "text-align: center; padding: 40px; color: #fff; background-color: #050508; min-height: 400px;";
+    
+    // Inyectamos la imagen, el botón de acción y el botón de volver
     contenedor.innerHTML = `
-        <img src="miasistencia.png" alt="Mi Asistencia" style="max-width: 400px; margin-bottom: 30px;">
+        <img src="miasistencia.png" alt="Mi Asistencia" style="max-width: 400px; margin-bottom: 30px; display: block; margin-left: auto; margin-right: auto;">
         <br>
-        <button id="btn-ver-asistencia" style="background: #D4AF37; color: black; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px;">
+        <button id="btn-ver-asistencia" style="background: #D4AF37; color: black; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px; font-weight: bold;">
             Ver mi asistencia
         </button>
-        <button id="btn-volver" style="background: #991b1b; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px;">
+        <button id="btn-volver" style="background: #991b1b; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px; font-weight: bold;">
             Volver
         </button>
     `;
     
     vista.appendChild(contenedor);
 
-    // Evento para abrir el link de GitHub
+    // Evento para abrir el enlace externo de GitHub
     document.getElementById('btn-ver-asistencia').onclick = () => {
         window.open("https://drrubenmpereyra-stack.github.io/mi-asistencia-/", "_blank");
     };
 
-    // Evento para volver (recarga el dashboard inicial del alumno)
+    // Evento para volver al dashboard principal usando su función original
     document.getElementById('btn-volver').onclick = () => {
-        cargarDashboardAlumno(); // O la función que usted use para cargar su menú principal
+        mostrarDashboard();
     };
 };
 // 3. ARRANQUE
 document.body.onload = renderLogin;
-
