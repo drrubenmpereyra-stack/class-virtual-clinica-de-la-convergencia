@@ -1309,11 +1309,11 @@ window.gestionarDiploma = () => {
     vista.appendChild(contenedor);
 };
 // CALIFICACIONES (admnistrador)
+// CALIFICACIONES (administrador)
 window.gestionarCalificacionesAdmin = function() {
     const vista = document.getElementById('main-view');
     vista.innerHTML = ''; // Limpiamos la pantalla
 
-    // Construimos la estructura de la pantalla
     const contenedor = document.createElement('div');
     contenedor.style.cssText = "padding: 20px; color: #fff;";
     contenedor.innerHTML = `
@@ -1333,48 +1333,69 @@ window.gestionarCalificacionesAdmin = function() {
     `;
     vista.appendChild(contenedor);
 
-    // Llamamos a la función que carga los datos
     cargarDatosGenerales();
 };
 
-// --- FUNCIÓN QUE IMPORTA DATOS DE LA BASE ---
-function cargarDatosGenerales() {
+// --- FUNCIÓN QUE IMPORTA DATOS DE AMBAS COLECCIONES ---
+async function cargarDatosGenerales() {
     const tbody = document.getElementById('tabla-datos-admin');
+    if (!tbody) return;
+
     tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">Auditoría de registros en curso...</td></tr>';
 
-    db.collection("resultados_test").orderBy("fecha", "desc").get().then((querySnapshot) => {
+    try {
+        // Consultamos ambas colecciones
+        const [snapTest, snapTalleres] = await Promise.all([
+            db.collection("resultados_test").orderBy("fecha", "desc").get(),
+            db.collection("resultados_talleres").orderBy("fecha", "desc").get()
+        ]);
+
         tbody.innerHTML = ''; 
-        querySnapshot.forEach((doc) => {
+
+        // Procesar Test
+        snapTest.forEach((doc) => {
             const data = doc.data();
-            
-            const textoTest = data.Test_numero ? data.Test_numero.toLowerCase() : "";
-            const esTaller = textoTest.includes("taller");
-            
-            const colorTipo = esTaller ? "#00FF88" : "#D4AF37";
-            const nombreTipo = esTaller ? "Taller" : "Test";
-            
             if (data.nombre && data.nombre !== "Alumno Anónimo") {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td style="padding: 12px; border: 1px solid #333;">${data.nombre}</td>
-                    <td style="padding: 12px; border: 1px solid #333; color: ${colorTipo}; font-weight: bold;">${nombreTipo}</td>
-                    <td style="padding: 12px; border: 1px solid #333;">${data.Test_numero || 'Sin título'}</td>
-                    <td style="padding: 12px; border: 1px solid #333; text-align: center;">${data.nota}</td>
-                    <td style="padding: 12px; border: 1px solid #333; text-align: center;">
-                        <button onclick="confirmarBorrado('${doc.id}')" style="background: #991b1b; color: white; border: none; padding: 5px 10px; cursor: pointer;">Eliminar</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
+                agregarFila(tbody, data.nombre, "Test", data.Test_numero, data.nota, doc.id, "resultados_test");
             }
         });
-    });
+
+        // Procesar Talleres
+        snapTalleres.forEach((doc) => {
+            const data = doc.data();
+            const nombre = data.alumno || "Sin nombre"; 
+            if (nombre !== "Alumno Anónimo") {
+                agregarFila(tbody, nombre, "Taller", data.taller_numero, data.nota, doc.id, "resultados_talleres");
+            }
+        });
+
+    } catch (error) {
+        console.error("Error al cargar auditoría:", error);
+        tbody.innerHTML = '<tr><td colspan="5" style="color:red; text-align:center;">Error al conectar con la base de datos.</td></tr>';
+    }
+}
+
+// --- FUNCIÓN AUXILIAR DE RENDERIZADO ---
+function agregarFila(tbody, nombre, tipo, detalle, nota, docId, coleccion) {
+    const colorTipo = (tipo === "Taller") ? "#00FF88" : "#D4AF37";
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+        <td style="padding: 12px; border: 1px solid #333;">${nombre}</td>
+        <td style="padding: 12px; border: 1px solid #333; color: ${colorTipo}; font-weight: bold;">${tipo}</td>
+        <td style="padding: 12px; border: 1px solid #333;">${detalle || 'Sin título'}</td>
+        <td style="padding: 12px; border: 1px solid #333; text-align: center;">${nota}</td>
+        <td style="padding: 12px; border: 1px solid #333; text-align: center;">
+            <button onclick="confirmarBorrado('${docId}', '${coleccion}')" style="background: #991b1b; color: white; border: none; padding: 5px 10px; cursor: pointer;">Eliminar</button>
+        </td>
+    `;
+    tbody.appendChild(tr);
 }
 
 // --- FUNCIÓN DE SEGURIDAD PARA BORRAR ---
-window.confirmarBorrado = (docId) => {
+window.confirmarBorrado = (docId, coleccion) => {
     if (confirm("ATENCIÓN: Se eliminará permanentemente este registro. ¿Desea continuar?")) {
-        db.collection("resultados_test").doc(docId).delete().then(() => {
-            cargarDatosGenerales(); // Refresca la tabla
+        db.collection(coleccion).doc(docId).delete().then(() => {
+            cargarDatosGenerales(); // Refresca la tabla completa
         });
     }
 };
