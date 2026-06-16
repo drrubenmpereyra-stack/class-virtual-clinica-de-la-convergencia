@@ -27,7 +27,7 @@ const MAPA_BOTONES = {
     "Calificaciones": "btn-green", "Auditoria Test": "btn-green", "Auditoria Taller": "btn-green", 
     "Analíticos": "btn-orange", "Visado analíticos": "btn-orange", "Emitir diplomas": "btn-orange", "Central de diplomas": "btn-orange",
     "Actividades recreativas": "btn-blue", "Enviar mensajes": "btn-blue",
-    "Mis Test": "btn-sky", "Mis Talleres": "btn-sky", "Mis pagos": "btn-sky", "Mi asistencia": "btn-sky", "Mi analítico": "btn-sky", "Mi diploma": "btn-sky", "Mis mensajes": "btn-sky", "Mis calificaciones": "btn-sky",
+    "Mis Test": "btn-sky", "Mis Talleres": "btn-sky", "Mis pagos": "btn-sky", "Mi asistencia": "btn-sky", "Mi analítico": "btn-sky", "Mi diploma": "btn-sky", "Mis mensajes": "btn-sky", 
 };
 
 const LISTA_ADMIN = ["Encuentros", "Talleres", "Biblioteca", "Actividades recreativas", "Participantes", "Pagos", "Asistencia", "Calificaciones", "Analíticos", "Visado analíticos", "Emitir diplomas", "Herramientas", "Auditoria Test", "Auditoria Taller", "Central de diplomas", "Enviar mensajes", ];
@@ -160,9 +160,12 @@ if (b === "Calificaciones") {
 }
 // MIS CALIFICACIONES (ALUMNO)
 if (b === "Mis calificaciones") {
-    btn.onclick = () => abrirModuloCalificaciones();
+    btn.onclick = () => reproducirVideoIntro();
 }
-
+// ANALITICOS (ADMINISTRADOR)
+if (b === "Analíticos") {
+    btn.onclick = () => mostrarSeccion('analiticos');
+}
 
     navMenu.appendChild(btn);
 });
@@ -1376,43 +1379,65 @@ window.confirmarBorrado = (docId) => {
     }
 };
 // MIS CALIFICACIONES (ALUMNOS)
-window.abrirModuloCalificaciones = function() {
+window.reproducirVideoIntro = function() {
     const vista = document.getElementById('main-view');
     vista.innerHTML = ''; 
 
-    // Contenedor de animación
-    const contenedorAnim = document.createElement('div');
-    contenedorAnim.style.cssText = "display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 50px;";
+    // Crear elemento de video
+    const video = document.createElement('video');
+    video.src = "introespera.mp4"; // Asegúrese que el archivo esté en la carpeta raíz
+    video.style.width = "100%";
+    video.style.borderRadius = "10px";
+    video.autoplay = true;
     
-    contenedorAnim.innerHTML = `
-        <svg width="100" height="100" viewBox="0 0 100 100" style="margin-bottom: 20px;">
-            <path d="M20 50 L80 50 M60 30 L80 50 L60 70" stroke="#D4AF37" stroke-width="4" fill="none">
-                <animate attributeName="stroke-dasharray" from="0,150" to="150,150" dur="2s" repeatCount="indefinite" />
-            </path>
-        </svg>
-        <p style="color: #D4AF37; font-family: sans-serif;">Procesando acceso a calificaciones...</p>
-    `;
-    vista.appendChild(contenedorAnim);
+    // Contenedor para el botón que aparecerá al final
+    const contenedorBoton = document.createElement('div');
+    contenedorBoton.style.textAlign = "center";
+    contenedorBoton.style.marginTop = "20px";
+    
+    vista.appendChild(video);
+    vista.appendChild(contenedorBoton);
 
-    // Botones (aparecen tras la animación)
-    setTimeout(() => {
-        contenedorAnim.style.display = 'none'; // Ocultamos la animación
-
-        // Botón Consultar
-        const btnConsultar = document.createElement('button');
-        btnConsultar.innerText = "Consultar Calificaciones";
-        btnConsultar.style.cssText = "display: block; margin: 20px auto; padding: 20px 40px; font-size: 20px; cursor: pointer; background: #D4AF37; border: none; border-radius: 5px; font-weight: bold; color: #000;";
-        btnConsultar.onclick = () => window.open("https://drrubenmpereyra-stack.github.io/Consulta-Calificaciones/", "_blank");
+    // Evento al terminar el video
+    video.onended = () => {
+        contenedorBoton.innerHTML = `
+            <button id="btnIrConsulta" style="padding: 15px 30px; background: #D4AF37; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; font-weight: bold;">
+                Ir a consulta
+            </button>
+        `;
         
-        // Botón Volver
-        const btnVolver = document.createElement('button');
-        btnVolver.innerText = "Volver al Dashboard";
-        btnVolver.style.cssText = "display: block; margin: 10px auto; padding: 10px 20px; cursor: pointer; background: #333; color: #fff; border: 1px solid #D4AF37; border-radius: 5px;";
-        btnVolver.onclick = () => mostrarDashboard(); // Asegúrese de que esta es su función de retorno
-        
-        vista.appendChild(btnConsultar);
-        vista.appendChild(btnVolver);
-    }, 2000);
+        document.getElementById('btnIrConsulta').onclick = () => {
+            window.open("https://drrubenmpereyra-stack.github.io/Consulta-Calificaciones/", "_blank");
+        };
+    };
 };
+// PARA ANALÍTICOS EN ADMINISTRADOR
+/**
+ * Función para renderizar el módulo de Analíticos en el Dashboard
+ * @param {string} view - El nombre de la vista a mostrar
+ */
+function mostrarSeccion(view) {
+    const contenedor = document.getElementById("dashboard-content");
+    
+    // Si la vista es 'analiticos', inyectamos el encabezado y el botón
+    if (view === 'analiticos') {
+        contenedor.innerHTML = `
+            <div style="text-align: center; margin-top: 20px;">
+                <img src="analitico.png" alt="Encabezado Analítico" style="width: 100%; max-width: 800px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                <div style="margin-top: 30px;">
+                    <button onclick="window.open('https://drrubenmpereyra-stack.github.io/anal-tico-nuev-a-aula-virtual/', '_blank')" 
+                            style="padding: 15px 40px; font-size: 1.2em; background-color: #003366; color: white; border: none; border-radius: 5px; cursor: pointer; transition: 0.3s;">
+                        Ir a Analítico
+                    </button>
+                </div>
+            </div>
+        `;
+    } 
+    // Otros bloques 'if' para las demás secciones de su dashboard...
+    else if (view === 'inicio') {
+        contenedor.innerHTML = `<h1>Bienvenido, Dr. Pereyra</h1>`;
+    }
+}
+
 // 3. ARRANQUE
 document.body.onload = renderLogin;
