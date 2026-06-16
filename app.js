@@ -170,6 +170,10 @@ if (b === "Analíticos") {
 if (b === "Mi asistencia") {
     btn.onclick = () => abrirVistaAsistencia();
 }
+// MIS CLIFICACIONES
+if (b === "Mis calificaciones") {
+    btn.onclick = () => abrirVistaNotas();
+}
 
     navMenu.appendChild(btn);
 
@@ -1313,7 +1317,7 @@ window.gestionarDiploma = () => {
     contenedor.appendChild(divCarta);
     vista.appendChild(contenedor);
 };
-// CALIFICACIONES (admnistrador)
+
 // CALIFICACIONES (administrador)
 window.gestionarCalificacionesAdmin = function() {
     const vista = document.getElementById('main-view');
@@ -1571,6 +1575,44 @@ window.abrirVistaAsistencia = function() {
     };
 
     // Evento para volver al dashboard principal usando su función original
+    document.getElementById('btn-volver').onclick = () => {
+        mostrarDashboard();
+    };
+};
+// MIS NOTAS
+/**
+ * Función para mostrar la vista de notas en el dashboard del alumno
+ */
+window.abrirVistaNotas = function() {
+    const vista = document.getElementById('main-view');
+    
+    // Limpiamos la vista actual
+    vista.innerHTML = ''; 
+
+    // Creamos el contenedor de la vista
+    const contenedor = document.createElement('div');
+    contenedor.style.cssText = "text-align: center; padding: 40px; color: #fff; background-color: #050508; min-height: 400px;";
+    
+    // Inyectamos la imagen, el botón de acción y el botón de volver
+    contenedor.innerHTML = `
+        <img src="misnotas.png" alt="Mis Calificaciones" style="max-width: 400px; margin-bottom: 30px; display: block; margin-left: auto; margin-right: auto;">
+        <br>
+        <button id="btn-ver-notas" style="background: #D4AF37; color: black; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px; font-weight: bold;">
+            Ver mis notas
+        </button>
+        <button id="btn-volver" style="background: #991b1b; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px; font-weight: bold;">
+            Volver
+        </button>
+    `;
+    
+    vista.appendChild(contenedor);
+
+    // Evento para abrir el enlace externo de GitHub
+    document.getElementById('btn-ver-notas').onclick = () => {
+        window.open("https://drrubenmpereyra-stack.github.io/mis-notas/index.html", "_blank");
+    };
+
+    // Evento para volver al dashboard principal llamando a su función
     document.getElementById('btn-volver').onclick = () => {
         mostrarDashboard();
     };
