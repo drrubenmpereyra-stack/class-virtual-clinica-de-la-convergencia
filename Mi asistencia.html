@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mi Asistencia - Clínica de la Convergencia</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <style>
+        body { background: #050508; color: #fff; font-family: sans-serif; padding: 20px; }
+        .container { max-width: 800px; margin: auto; text-align: center; }
+        input { padding: 12px; width: 80%; border-radius: 5px; border: 1px solid #333; background: #1a1a1a; color: white; margin: 10px 0; font-size: 16px; }
+        button { padding: 12px 25px; cursor: pointer; border: none; border-radius: 5px; margin: 10px; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; color: #fff; }
+        th, td { padding: 15px; border: 1px solid #333; text-align: center; }
+        th { background: #1a1a1a; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <img src="miasistencia.png" alt="Mi Asistencia" style="max-width: 100%; height: auto; margin-bottom: 20px;">
+    
+    <div id="form-area">
+        <p>Ingrese su nombre tal como figura en el sistema:</p>
+        <input type="text" id="input-nombre" placeholder="Ej: Rios Graciela">
+        <br>
+        <button onclick="consultarAsistencia()" style="background: #D4AF37; color: black;">Ver mi asistencia</button>
+        <button onclick="window.close()" style="background: #991b1b; color: white;">Salir</button>
+    </div>
+
+    <div id="resultado-area" style="margin-top: 30px;"></div>
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyD47_2UtWLFI_VRVvvXVAqn4zZzZ4d1ggo",
+        authDomain: "av-clinica-convergencia.firebaseapp.com",
+        databaseURL: "https://av-clinica-convergencia-default-rtdb.firebaseio.com",
+        projectId: "av-clinica-convergencia",
+        storageBucket: "av-clinica-convergencia.firebasestorage.app",
+        messagingSenderId: "939404425675",
+        appId: "1:939404425675:web:8cfae157099efabd741e4e"
+    };
+    
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    async function consultarAsistencia() {
+        const nombreBusqueda = document.getElementById('input-nombre').value.trim();
+        const area = document.getElementById('resultado-area');
+        
+        if (!nombreBusqueda) {
+            alert("Por favor, ingrese un nombre.");
+            return;
+        }
+
+        area.innerHTML = 'Consultando base de datos...';
+
+        try {
+            // Buscamos coincidencia exacta con el formato "Rios Graciela"
+            const snapshot = await db.collection("asistencia")
+                                     .where("nombreEstudiante", "==", nombreBusqueda)
+                                     .get();
+            
+            if (snapshot.empty) {
+                area.innerHTML = '<p style="color: #FF4444;">No se encontraron registros para: <b>' + nombreBusqueda + '</b>. Asegúrese de escribirlo exactamente igual (respetando mayúsculas y espacios).</p>';
+                return;
+            }
+
+            let html = `<table><thead><tr><th>Encuentro</th><th>Fecha</th><th>Estado</th></tr></thead><tbody>`;
+            snapshot.forEach(doc => {
+                const d = doc.data();
+                const colorEstado = d.estado === "Presente" ? "#00FF88" : "#FF4444";
+                html += `<tr>
+                            <td>${d.encuentro || '-'}</td>
+                            <td>${d.fecha || '-'}</td>
+                            <td style="color: ${colorEstado}; font-weight: bold;">${d.estado || '-'}</td>
+                         </tr>`;
+            });
+            html += `</tbody></table>`;
+            area.innerHTML = html;
+        } catch (e) {
+            console.error(e);
+            area.innerHTML = '<p style="color:red;">Error al conectar con la base de datos.</p>';
+        }
+    }
+</script>
+</body>
+</html>
