@@ -166,8 +166,13 @@ if (b === "Mis calificaciones") {
 if (b === "Analíticos") {
     btn.onclick = () => mostrarSeccion('analiticos');
 }
+// MI ASISTENCIA (vista alumno)
+if (b === "Mi asistencia") {
+    btn.onclick = () => mostrarMiAsistencia(nombreUsuarioLogueado);
+}
 
     navMenu.appendChild(btn);
+
 });
 
     document.getElementById('main-view').innerHTML = `
@@ -1468,6 +1473,70 @@ function mostrarSeccion(view) {
                 </div>
             </div>
         `;
+    }
+}
+// Mi sistencia vista alumno
+/**
+ * Muestra el reporte de asistencia filtrado para el alumno
+ * @param {string} nombreAlumno - El nombre del alumno que está logueado
+ */
+async function mostrarMiAsistencia(nombreAlumno) {
+    const vista = document.getElementById('main-view');
+    vista.innerHTML = '<h2>Cargando mi asistencia...</h2>';
+
+    try {
+        // Consultamos la colección de asistencia
+        const snapshot = await db.collection("asistencia").get();
+        
+        let html = `
+            <h2 style="color: #D4AF37;">Mi Registro de Asistencia</h2>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 20px; color: #fff;">
+                <thead>
+                    <tr style="background: #1a1a1a;">
+                        <th style="padding: 15px; border: 1px solid #333;">Encuentro</th>
+                        <th style="padding: 15px; border: 1px solid #333;">Fecha</th>
+                        <th style="padding: 15px; border: 1px solid #333;">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        let totalPresente = 0;
+        let totalEncuentros = 0;
+        let encontrado = false;
+
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            // Normalizamos nombres para comparar (evita errores de tildes o mayúsculas)
+            if (data.nombreEstudiante && data.nombreEstudiante.toUpperCase() === nombreAlumno.toUpperCase()) {
+                encontrado = true;
+                totalEncuentros++;
+                if (data.estado.toLowerCase() === "presente") totalPresente++;
+
+                html += `
+                    <tr>
+                        <td style="padding: 12px; border: 1px solid #333;">${data.encuentro || '-'}</td>
+                        <td style="padding: 12px; border: 1px solid #333;">${data.fecha || '-'}</td>
+                        <td style="padding: 12px; border: 1px solid #333; color: ${data.estado.toLowerCase() === 'presente' ? '#00FF88' : '#FF4444'}">
+                            ${data.estado}
+                        </td>
+                    </tr>
+                `;
+            }
+        });
+
+        if (!encontrado) {
+            html += `<tr><td colspan="3" style="text-align:center; padding:20px;">No se encontraron registros de asistencia.</td></tr>`;
+        }
+
+        html += `</tbody></table>`;
+        html += `<p style="margin-top:20px; font-size:1.2em;"><strong>Asistencia Total:</strong> ${totalPresente}/${totalEncuentros} (${totalEncuentros > 0 ? ((totalPresente/totalEncuentros)*100).toFixed(0) : 0}%)</p>`;
+        
+        vista.innerHTML = html;
+
+    } catch (error) {
+        console.error("Error al cargar asistencia:", error);
+        vista.innerHTML = `<p style="color:red;">Error al conectar con la base de datos.</p>`;
     }
 }
 
