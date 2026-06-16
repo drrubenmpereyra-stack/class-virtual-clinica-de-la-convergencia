@@ -168,7 +168,7 @@ if (b === "Analíticos") {
 }
 // MI ASISTENCIA (vista alumno)
 if (b === "Mi asistencia") {
-    btn.onclick = () => mostrarMiAsistencia(nombreUsuarioLogueado);
+    btn.onclick = () => abrirVistaAsistencia();
 }
 
     navMenu.appendChild(btn);
@@ -1539,7 +1539,37 @@ async function mostrarMiAsistencia(nombreAlumno) {
         vista.innerHTML = `<p style="color:red;">Error al conectar con la base de datos.</p>`;
     }
 }
+// MI ASISTENCIA (ALUMNO)
+window.abrirVistaAsistencia = function() {
+    const vista = document.getElementById('main-view');
+    vista.innerHTML = ''; // Limpiamos la vista actual
 
+    const contenedor = document.createElement('div');
+    contenedor.style.cssText = "text-align: center; padding: 40px; color: #fff;";
+    
+    contenedor.innerHTML = `
+        <img src="miasistencia.png" alt="Mi Asistencia" style="max-width: 400px; margin-bottom: 30px;">
+        <br>
+        <button id="btn-ver-asistencia" style="background: #D4AF37; color: black; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px;">
+            Ver mi asistencia
+        </button>
+        <button id="btn-volver" style="background: #991b1b; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px;">
+            Volver
+        </button>
+    `;
+    
+    vista.appendChild(contenedor);
+
+    // Evento para abrir el link de GitHub
+    document.getElementById('btn-ver-asistencia').onclick = () => {
+        window.open("https://drrubenmpereyra-stack.github.io/mi-asistencia-/", "_blank");
+    };
+
+    // Evento para volver (recarga el dashboard inicial del alumno)
+    document.getElementById('btn-volver').onclick = () => {
+        cargarDashboardAlumno(); // O la función que usted use para cargar su menú principal
+    };
+};
 // 3. ARRANQUE
 document.body.onload = renderLogin;
 
