@@ -1888,12 +1888,11 @@ window.salirSistema = () => {
     const realizarBackup = confirm("⚠️ RECORDATORIO: ¿Has realizado tu backup semanal? \n\nPresiona 'Aceptar' para ir a Herramientas y hacerlo, o 'Cancelar' para salir del sistema ahora.");
 
     if (realizarBackup) {
-        // Vamos a la pantalla de herramientas
+        // Redirige al panel donde está la herramienta de Backup
         window.mostrarHerramientasAdministrador();
     } else {
-        // "Cerrar" el sistema (redirección a tu home o pantalla de inicio de sesión)
-        alert("Sesión finalizada. Asegúrate de mantener tus datos a salvo.");
-        window.location.href = "index.html"; // Ajusta a tu URL de login o home
+        // Salida directa sin alertas extra
+        window.location.href = "index.html"; 
     }
 };
 // 3. ARRANQUE
