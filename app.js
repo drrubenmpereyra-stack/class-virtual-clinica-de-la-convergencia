@@ -1691,59 +1691,45 @@ window.abrirMiAnalitico = function() {
 };
 // ASISTENCIA (administrador)
 window.mostrarAsistenciaAdmin = async () => {
-    const vista = document.getElementById('main-view');
-    vista.innerHTML = '<h2>Cargando registros...</h2>';
-
-    try {
-        const snapshot = await db.collection("asistencia").get();
-        
-        let html = `
-            <div style="padding: 20px; color: #fff; background-color: #050508; font-family: sans-serif;">
-                <button onclick="mostrarDashboard()" style="background: #991b1b; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-bottom: 20px;">
-                    ⬅ Volver al Dashboard
-                </button>
-                <h2 style="color: #D4AF37;">Panel de Auditoría de Asistencia</h2>
-                <table class="tabla-clinica" style="width: 100%; border-collapse: collapse; margin-top: 20px; color: #fff;">
-                    <thead>
-                        <tr style="background: #1a1a1a; color: #D4AF37;">
-                            <th style="padding: 15px; border: 1px solid #333;">Estudiante</th>
-                            <th style="padding: 15px; border: 1px solid #333;">Encuentro</th>
-                            <th style="padding: 15px; border: 1px solid #333;">Fecha</th>
-                            <th style="padding: 15px; border: 1px solid #333;">Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-        `;
-
-        snapshot.forEach(doc => {
-            const p = doc.data();
-            
-            // Usamos tus nombres exactos de campo
-            const nombre = p.nombreEstudiante || '-';
-            const encuentro = p.encuentro || '-';
-            const fecha = p.fecha || '-';
-            const estado = p.estado || '-';
-
-            const colorEstado = estado === 'Presente' ? '#00FF88' : '#FF4444';
-            
-            html += `
-                <tr style="border-bottom: 1px solid #333;">
-                    <td style="padding: 12px;">${nombre}</td>
-                    <td style="padding: 12px;">Encuentro ${encuentro}</td>
-                    <td style="padding: 12px;">${fecha}</td>
-                    <td style="padding: 12px; color: ${colorEstado}; font-weight: bold;">${estado}</td>
-                </tr>
-            `;
-        });
-
-        html += `</tbody></table></div>`;
-        vista.innerHTML = html;
-
-    } catch (error) {
-        console.error("Error al cargar asistencia:", error);
-        vista.innerHTML = `<p style="color:red;">Error al cargar: ${error.message}</p>`;
-    }
+    const main = document.getElementById('main-view');
+    // 1. Inyectamos la estructura base
+    main.innerHTML = `
+        <h2>Historial de Asistencia</h2>
+        <div id="lista-asistencia">Cargando...</div>
+    `;
+    
+    const snapshot = await db.collection("asistencia").get();
+    
+    // 2. Preparamos el HTML de la tabla
+    let html = `<table class="tabla-clinica">
+        <thead>
+            <tr>
+                <th>Estudiante</th>
+                <th>Encuentro</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>`;
+    
+    // 3. Llenamos las filas
+    snapshot.forEach(doc => {
+        const p = doc.data();
+        html += `<tr>
+            <td>${p.nombreEstudiante}</td>
+            <td>Encuentro ${p.encuentro}</td>
+            <td>${p.fecha}</td>
+            <td>${p.estado}</td>
+        </tr>`;
+    });
+    
+    // 4. Cerramos la tabla y agregamos el botón volver
+    html += `</tbody></table>
+             <br>
+             <button onclick="mostrarDashboard()" class="btn-red">Volver al Dashboard</button>`;
+             
+    // 5. Inyectamos dentro del contenedor creado
+    document.getElementById('lista-asistencia').innerHTML = html;
 };
-
 // 3. ARRANQUE
 document.body.onload = renderLogin;
