@@ -174,6 +174,10 @@ if (b === "Mi asistencia") {
 if (b === "Mis calificaciones") {
     btn.onclick = () => abrirVistaNotas();
 }
+// AUDITORIA ANALÍTICOS (ADMINISTRADOR)
+if (b === "Visado analíticos") {
+    btn.onclick = () => window.abrirAuditoriaAnaliticos();
+}
 
     navMenu.appendChild(btn);
 
@@ -1617,5 +1621,66 @@ window.abrirVistaNotas = function() {
         mostrarDashboard();
     };
 };
+// AUDITORIA ANALÍTICOS
+window.abrirAuditoriaAnaliticos = function() {
+    const vista = document.getElementById('main-view');
+    
+    // Función auxiliar para obtener el link según el nombre
+    const obtenerLinkDrive = (nombre) => {
+        const links = {
+            "RIOS Graciela": "https://drive.google.com/drive/folders/1da5V0BKy4FghsOCz7B66mNOz7ZTFMKt5?usp=drive_link",
+            "SCHWAB Gisela": "https://drive.google.com/drive/folders/1xDl_o19beXQrXMo4AdLBF4TWmEHkqwYb?usp=drive_link",
+            "STEFANINI BENZO Romina": "https://drive.google.com/drive/folders/1PioVY2n5eJp7W1-c-yLqVzHkiXfNbEzh?usp=drive_link",
+            "RODRIGUEZ Ramiro": "https://drive.google.com/drive/folders/1kixAS7AqD1zr3pDYKC4mjBBW0sqNimx0?usp=drive_link",
+            "CAON Federico": "https://drive.google.com/drive/folders/1LnnPq0w7P81ShMJsG3MNoLkfhktakV6v?usp=drive_link",
+            "PRAVAZ Emilia": "https://drive.google.com/drive/folders/1S9em-SWYKJcDn_ntTBznWgviHVjP5x5n?usp=sharing"
+        };
+        return links[nombre] || "#";
+    };
+
+    vista.innerHTML = `
+        <div style="padding: 20px; color: #fff; background: #050508;">
+            <h2 style="color: #D4AF37; margin-bottom: 20px;">AUDITORIA DE ANALÍTICOS</h2>
+            <table style="width: 100%; border-collapse: collapse; background: #1a1a1a;">
+                <thead>
+                    <tr style="background: #333; color: #D4AF37;">
+                        <th style="padding: 12px; border: 1px solid #444;">APELLIDO_Nombres</th>
+                        <th style="padding: 12px; border: 1px solid #444;">Fecha</th>
+                        <th style="padding: 12px; border: 1px solid #444;">Drive</th>
+                        <th style="padding: 12px; border: 1px solid #444;">Visado</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-auditoria"></tbody>
+            </table>
+            <br>
+            <button onclick="mostrarDashboard()" style="background: #991b1b; color: white; padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer;">Volver al Dashboard</button>
+        </div>
+    `;
+
+    const tbody = document.getElementById('tabla-auditoria');
+    const alumnos = CONFIGURACION_USUARIOS.filter(u => u.rol === 'alumno');
+
+    alumnos.forEach((est, index) => {
+        const row = document.createElement('tr');
+        const link = obtenerLinkDrive(est.nombre);
+        
+        row.innerHTML = `
+            <td style="padding: 10px; border: 1px solid #444;">${est.nombre}</td>
+            <td style="padding: 10px; border: 1px solid #444;">
+                <input type="date" id="fecha-${index}" value="${new Date().toISOString().split('T')[0]}">
+            </td>
+            <td style="padding: 10px; border: 1px solid #444; text-align: center;">
+                <button onclick="window.open('${link}', '_blank')" style="background: #2563eb; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px;">
+                    Abrir Carpeta
+                </button>
+            </td>
+            <td style="padding: 10px; border: 1px solid #444; text-align: center;">
+                <input type="checkbox" onchange="guardarVisado('${est.nombre}', 'fecha-${index}', this)">
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+};
 // 3. ARRANQUE
 document.body.onload = renderLogin;
+ 
