@@ -1811,11 +1811,6 @@ window.mostrarHerramientasAdministrador = () => {
                     <p style="margin-top: 10px; color: #D4AF37; font-weight: bold;">Restaurar Backup</p>
                 </div>
 
-                <div onclick="limpiarDatosPrueba()" style="cursor: pointer; display: flex; flex-direction: column; align-items: center; width: 160px;">
-                    <img src="limpiardatos.png" alt="Limpiar" style="width: 150px; height: 150px; border-radius: 10px; border: 2px solid #ef4444; object-fit: cover;">
-                    <p style="margin-top: 10px; color: #ef4444; font-weight: bold;">Limpiar Datos</p>
-                </div>
-
             </div>
             <div style="margin-top: 40px;">
                 <button onclick="mostrarDashboardAdmin()" style="background:#1e293b; color:white; padding:10px 20px; border:1px solid #475569; cursor:pointer; border-radius:5px;">⬅ Volver al Panel</button>
@@ -1895,35 +1890,6 @@ window.salirSistema = () => {
         window.location.href = "index.html"; 
     }
 };
-window.limpiarDatosPrueba = async () => {
-    if (!confirm("¿ESTÁS SEGURO? Esto borrará toda la información de pagos, asistencias y registros de diplomas. Esta acción no se puede deshacer.")) {
-        return;
-    }
 
-    try {
-        const colecciones = ['pagos', 'asistencia', 'registro_diplomas'];
-        
-        // Ejecutamos las limpiezas de forma secuencial y limpia
-        for (const col of colecciones) {
-            const snapshot = await db.collection(col).get();
-            const batch = db.batch();
-            snapshot.forEach(doc => {
-                batch.delete(doc.ref);
-            });
-            await batch.commit();
-        }
-
-        alert("Base de datos de prueba limpiada con éxito.");
-        
-        // En lugar de llamar al dashboard directamente, forzamos una recarga limpia
-        // o llamamos a mostrarDashboardAdmin solo después de asegurar la limpieza
-        window.mostrarDashboardAdmin();
-        
-    } catch (e) {
-        console.error("Error al limpiar:", e);
-        // Solo lanzamos este alert si realmente hubo un error técnico
-        alert("Ocurrió un error técnico al limpiar los datos: " + e.message);
-    }
-};
 // 3. ARRANQUE
 document.body.onload = renderLogin;
