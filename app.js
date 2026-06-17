@@ -1670,7 +1670,7 @@ window.abrirAuditoriaAnaliticos = function() {
                 <input type="date" id="fecha-${index}" value="${new Date().toISOString().split('T')[0]}" style="background: #333; color: white; border: none;">
             </td>
             <td style="padding: 10px; border: 1px solid #444; text-align: center;">
-                <input type="checkbox" onchange="if(this.checked) { window.open('${link}', '_blank'); this.checked = false; }">
+                <a href="${link}" target="_blank" style="color: #60a5fa; text-decoration: underline; font-weight: bold;">Abrir Drive</a>
             </td>
             <td style="padding: 10px; border: 1px solid #444; text-align: center;">
                 <input type="checkbox" id="check-${index}" onchange="guardarVisado('${est.nombre}', 'fecha-${index}', 'estado-${index}', this)">
@@ -1679,33 +1679,6 @@ window.abrirAuditoriaAnaliticos = function() {
         `;
         tbody.appendChild(row);
     });
-};
-
-window.guardarVisado = async function(nombre, fechaId, estadoId, checkbox) {
-    if (!checkbox.checked) return;
-    
-    const fecha = document.getElementById(fechaId).value;
-    const estadoCampo = document.getElementById(estadoId);
-    
-    estadoCampo.innerText = "Guardando...";
-    
-    try {
-        await db.collection("visado_analítico").add({
-            estudiante: nombre,
-            fecha: fecha,
-            verificado: true,
-            auditor: "Dr. Pereyra",
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        
-        // Cambio de mensaje tras éxito
-        estadoCampo.innerText = "✓ Guardado";
-        setTimeout(() => { estadoCampo.innerText = ""; }, 3000); // Se limpia tras 3 segundos
-    } catch (e) {
-        console.error(e);
-        estadoCampo.innerText = "Error";
-        checkbox.checked = false;
-    }
 };
 // 3. ARRANQUE
 document.body.onload = renderLogin;
