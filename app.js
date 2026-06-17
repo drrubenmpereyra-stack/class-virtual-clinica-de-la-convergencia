@@ -1584,102 +1584,47 @@ window.abrirVistaAsistencia = function() {
     };
 };
 // MIS NOTAS
-/**
- * Función para mostrar la vista de notas en el dashboard del alumno
- */
-window.abrirVistaNotas = function() {
-    const vista = document.getElementById('main-view');
-    
-    // Limpiamos la vista actual
-    vista.innerHTML = ''; 
-
-    // Creamos el contenedor de la vista
-    const contenedor = document.createElement('div');
-    contenedor.style.cssText = "text-align: center; padding: 40px; color: #fff; background-color: #050508; min-height: 400px;";
-    
-    // Inyectamos la imagen, el botón de acción y el botón de volver
-    contenedor.innerHTML = `
-        <img src="misnotas.png" alt="Mis Calificaciones" style="max-width: 400px; margin-bottom: 30px; display: block; margin-left: auto; margin-right: auto;">
-        <br>
-        <button id="btn-ver-notas" style="background: #D4AF37; color: black; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px; font-weight: bold;">
-            Ver mis notas
-        </button>
-        <button id="btn-volver" style="background: #991b1b; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px; font-weight: bold;">
-            Volver
-        </button>
-    `;
-    
-    vista.appendChild(contenedor);
-
-    // Evento para abrir el enlace externo de GitHub
-    document.getElementById('btn-ver-notas').onclick = () => {
-        window.open("https://drrubenmpereyra-stack.github.io/mis-notas/index.html", "_blank");
-    };
-
-    // Evento para volver al dashboard principal llamando a su función
-    document.getElementById('btn-volver').onclick = () => {
-        mostrarDashboard();
-    };
-};
-// AUDITORIA ANALÍTICOS
 window.abrirAuditoriaAnaliticos = function() {
     const vista = document.getElementById('main-view');
-    
-    const obtenerLinkDrive = (nombre) => {
-        const links = {
-            "RIOS Graciela": "https://drive.google.com/drive/folders/1da5V0BKy4FghsOCz7B66mNOz7ZTFMKt5?usp=drive_link",
-            "SCHWAB Gisela": "https://drive.google.com/drive/folders/1xDl_o19beXQrXMo4AdLBF4TWmEHkqwYb?usp=drive_link",
-            "STEFANINI BENZO Romina": "https://drive.google.com/drive/folders/1PioVY2n5eJp7W1-c-yLqVzHkiXfNbEzh?usp=drive_link",
-            "RODRIGUEZ Ramiro": "https://drive.google.com/drive/folders/1kixAS7AqD1zr3pDYKC4mjBBW0sqNimx0?usp=drive_link",
-            "CAON Federico": "https://drive.google.com/drive/folders/1LnnPq0w7P81ShMJsG3MNoLkfhktakV6v?usp=drive_link",
-            "PRAVAZ Emilia": "https://drive.google.com/drive/folders/1S9em-SWYKJcDn_ntTBznWgviHVjP5x5n?usp=sharing"
-        };
-        return links[nombre] || "#";
-    };
 
     vista.innerHTML = `
         <div style="padding: 20px; color: #fff; background: #050508;">
             <h2 style="color: #D4AF37; margin-bottom: 20px;">AUDITORIA DE ANALÍTICOS</h2>
-            <table id="tabla-analiticos" style="width: 100%; border-collapse: collapse; background: #1a1a1a;">
+            <table style="width: 100%; border-collapse: collapse; background: #1a1a1a;">
                 <thead>
                     <tr style="background: #333; color: #D4AF37;">
                         <th style="padding: 12px; border: 1px solid #444;">APELLIDO_Nombres</th>
                         <th style="padding: 12px; border: 1px solid #444;">Fecha</th>
-                        <th style="padding: 12px; border: 1px solid #444;">Drive</th>
                         <th style="padding: 12px; border: 1px solid #444;">Visado</th>
                         <th style="padding: 12px; border: 1px solid #444;">Estado</th>
                     </tr>
                 </thead>
-                <tbody id="tabla-body"></tbody>
+                <tbody id="tabla-auditoria"></tbody>
             </table>
             <br>
             <button onclick="mostrarDashboard()" style="background: #991b1b; color: white; padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer;">Volver al Dashboard</button>
         </div>
     `;
 
-    const tbody = document.getElementById('tabla-body');
+    const tbody = document.getElementById('tabla-auditoria');
     const alumnos = CONFIGURACION_USUARIOS.filter(u => u.rol === 'alumno');
 
     alumnos.forEach((est, index) => {
-        const tr = document.createElement('tr');
-        const link = obtenerLinkDrive(est.nombre);
+        const row = document.createElement('tr');
         
-        tr.innerHTML = `
+        row.innerHTML = `
             <td style="padding: 10px; border: 1px solid #444;">${est.nombre}</td>
             <td style="padding: 10px; border: 1px solid #444;">
-                <input type="date" id="fecha-${index}" value="${new Date().toISOString().split('T')[0]}" style="background: #333; color: white; border: none;">
+                <input type="date" id="fecha-${index}" value="${new Date().toISOString().split('T')[0]}" style="background: #333; color: white; border: none; padding: 5px;">
             </td>
             <td style="padding: 10px; border: 1px solid #444; text-align: center;">
-                <a href="${link}" target="_blank" style="color: #60a5fa; text-decoration: underline; font-weight: bold; font-size: 14px;">ABRIR</a>
-            </td>
-            <td style="padding: 10px; border: 1px solid #444; text-align: center;">
-                <input type="checkbox" onchange="guardarVisado('${est.nombre}', 'fecha-${index}', 'estado-${index}', this)">
+                <input type="checkbox" id="check-${index}" onchange="guardarVisado('${est.nombre}', 'fecha-${index}', 'estado-${index}', this)">
             </td>
             <td style="padding: 10px; border: 1px solid #444; text-align: center; color: #D4AF37; font-size: 12px;" id="estado-${index}"></td>
         `;
-        tbody.appendChild(tr);
+        tbody.appendChild(row);
     });
 };
+
 // 3. ARRANQUE
 document.body.onload = renderLogin;
- 
