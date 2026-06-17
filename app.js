@@ -1625,7 +1625,6 @@ window.abrirVistaNotas = function() {
 window.abrirAuditoriaAnaliticos = function() {
     const vista = document.getElementById('main-view');
     
-    // Función auxiliar para obtener el link según el nombre
     const obtenerLinkDrive = (nombre) => {
         const links = {
             "RIOS Graciela": "https://drive.google.com/drive/folders/1da5V0BKy4FghsOCz7B66mNOz7ZTFMKt5?usp=drive_link",
@@ -1641,47 +1640,44 @@ window.abrirAuditoriaAnaliticos = function() {
     vista.innerHTML = `
         <div style="padding: 20px; color: #fff; background: #050508;">
             <h2 style="color: #D4AF37; margin-bottom: 20px;">AUDITORIA DE ANALÍTICOS</h2>
-            <table style="width: 100%; border-collapse: collapse; background: #1a1a1a;">
+            <table id="tabla-analiticos" style="width: 100%; border-collapse: collapse; background: #1a1a1a;">
                 <thead>
                     <tr style="background: #333; color: #D4AF37;">
                         <th style="padding: 12px; border: 1px solid #444;">APELLIDO_Nombres</th>
                         <th style="padding: 12px; border: 1px solid #444;">Fecha</th>
-                        <th style="padding: 12px; border: 1px solid #444;">Abrir Drive</th>
+                        <th style="padding: 12px; border: 1px solid #444;">Drive</th>
                         <th style="padding: 12px; border: 1px solid #444;">Visado</th>
                         <th style="padding: 12px; border: 1px solid #444;">Estado</th>
                     </tr>
                 </thead>
-                <tbody id="tabla-auditoria"></tbody>
+                <tbody id="tabla-body"></tbody>
             </table>
             <br>
             <button onclick="mostrarDashboard()" style="background: #991b1b; color: white; padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer;">Volver al Dashboard</button>
         </div>
     `;
 
-    const tbody = document.getElementById('tabla-auditoria');
+    const tbody = document.getElementById('tabla-body');
     const alumnos = CONFIGURACION_USUARIOS.filter(u => u.rol === 'alumno');
 
     alumnos.forEach((est, index) => {
-        const row = document.createElement('tr');
+        const tr = document.createElement('tr');
         const link = obtenerLinkDrive(est.nombre);
         
-        row.innerHTML = `
+        tr.innerHTML = `
             <td style="padding: 10px; border: 1px solid #444;">${est.nombre}</td>
             <td style="padding: 10px; border: 1px solid #444;">
-                <input type="date" id="fecha-${index}" value="${new Date().toISOString().split('T')[0]}" style="background: #333; color: white; border: none; padding: 5px;">
+                <input type="date" id="fecha-${index}" value="${new Date().toISOString().split('T')[0]}" style="background: #333; color: white; border: none;">
             </td>
             <td style="padding: 10px; border: 1px solid #444; text-align: center;">
-                <span onclick="event.stopPropagation(); window.open('${link}', '_blank');" 
-                      style="color: #60a5fa; text-decoration: underline; font-weight: bold; cursor: pointer;">
-                    Abrir Drive
-                </span>
+                <a href="${link}" target="_blank" style="color: #60a5fa; text-decoration: underline; font-weight: bold; font-size: 14px;">ABRIR</a>
             </td>
             <td style="padding: 10px; border: 1px solid #444; text-align: center;">
-                <input type="checkbox" id="check-${index}" onchange="guardarVisado('${est.nombre}', 'fecha-${index}', 'estado-${index}', this)">
+                <input type="checkbox" onchange="guardarVisado('${est.nombre}', 'fecha-${index}', 'estado-${index}', this)">
             </td>
             <td style="padding: 10px; border: 1px solid #444; text-align: center; color: #D4AF37; font-size: 12px;" id="estado-${index}"></td>
         `;
-        tbody.appendChild(row);
+        tbody.appendChild(tr);
     });
 };
 // 3. ARRANQUE
