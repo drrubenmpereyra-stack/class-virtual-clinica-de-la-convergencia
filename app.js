@@ -1204,13 +1204,24 @@ window.gestionarDiplomas = () => {
         </div>
     `;
 };
-// EMITIR DIPLOMA
 window.emitirDiplomas = async () => {
     const vista = document.getElementById('main-view');
-    vista.innerHTML = `<div style="padding: 20px; color: #fff;">Cargando lista...</div>`;
+    vista.innerHTML = `<div style="padding: 20px; color: #fff;">Cargando lista de participantes y diplomas...</div>`;
 
     try {
-        const snapshot = await db.collection("participantes").get();
+        // Obtenemos participantes y los diplomas ya emitidos
+        const [snapPart, snapDiplomas] = await Promise.all([
+            db.collection("participantes").get(),
+            db.collection("registro_diplomas").get()
+        ]);
+
+        // Creamos un mapa de diplomas emitidos para consultar rápido
+        const diplomasEmitidos = {};
+        snapDiplomas.forEach(doc => {
+            const d = doc.data();
+            diplomasEmitidos[d.alumno] = d; 
+        });
+
         let htmlTabla = `
             <div style="padding: 20px; color: #fff;">
                 <button onclick="mostrarDashboard()" style="background:#d32f2f; color:white; padding:10px; border:none; cursor:pointer;">⬅ Volver</button>
@@ -1221,23 +1232,31 @@ window.emitirDiplomas = async () => {
                             <th style="padding:10px;">Alumno</th>
                             <th style="padding:10px;">Fecha</th>
                             <th style="padding:10px;">Observaciones</th>
-                            <th style="padding:10px;">Emitir</th>
+                            <th style="padding:10px;">Emitido</th>
                         </tr>
                     </thead>
                     <tbody>`;
 
-        snapshot.forEach(doc => {
-            const data = doc.data();
+        snapPart.forEach(doc => {
+            const p = doc.data();
             const id = doc.id;
+            const emitido = diplomasEmitidos[p.nombre];
+            
+            // Si ya está emitido, precargamos los datos
+            const fechaVal = emitido ? emitido.fecha : '';
+            const obsVal = emitido ? emitido.observaciones : '';
+            const check = emitido ? 'checked' : '';
+            const colorSwitch = emitido ? 'background-color: #D4AF37;' : '';
+
             htmlTabla += `
                 <tr style="border-bottom:1px solid #334155;">
-                    <td style="padding:10px;">${data.nombre}</td>
-                    <td style="padding:10px;"><input type="date" id="f-${id}" style="background:#1e293b; color:white; border:1px solid #475569; padding:5px;"></td>
-                    <td style="padding:10px;"><input type="text" id="obs-${id}" style="background:#1e293b; color:white; border:1px solid #475569; padding:5px;"></td>
+                    <td style="padding:10px;">${p.nombre}</td>
+                    <td style="padding:10px;"><input type="date" id="f-${id}" value="${fechaVal}" style="background:#1e293b; color:white; border:1px solid #475569; padding:5px;"></td>
+                    <td style="padding:10px;"><input type="text" id="obs-${id}" value="${obsVal}" style="background:#1e293b; color:white; border:1px solid #475569; padding:5px;"></td>
                     <td style="padding:10px; text-align:center;">
                         <label class="switch">
-                            <input type="checkbox" id="sw-${id}" onchange="guardarDiploma('${id}', '${data.nombre}')">
-                            <span class="slider"></span>
+                            <input type="checkbox" id="sw-${id}" ${check} onchange="guardarDiploma('${id}', '${p.nombre}')">
+                            <span class="slider" style="${colorSwitch}"></span>
                         </label>
                     </td>
                 </tr>`;
@@ -1246,13 +1265,12 @@ window.emitirDiplomas = async () => {
         htmlTabla += `</tbody></table></div>`;
         vista.innerHTML = htmlTabla;
     } catch (e) {
-        console.error("Error:", e);
+        console.error("Error al cargar:", e);
+        vista.innerHTML = `<p style="color:red;">Error al cargar la base de datos.</p>`;
     }
-};
-
-window.guardarDiploma = async (id, nombre) => {
+};window.guardarDiploma = async (id, nombre) => {
     const sw = document.getElementById(`sw-${id}`);
-    const slider = sw.nextElementSibling; // El span del switch
+    const slider = sw.nextElementSibling;
     const fecha = document.getElementById(`f-${id}`).value;
     const obs = document.getElementById(`obs-${id}`).value;
 
@@ -1263,20 +1281,28 @@ window.guardarDiploma = async (id, nombre) => {
             return;
         }
         try {
-            await db.collection("registro_diplomas").add({
+            // Usamos .set() con un ID único basado en el nombre para evitar duplicados
+            await db.collection("registro_diplomas").doc(nombre).set({
                 alumno: nombre,
                 fecha: fecha,
                 observaciones: obs,
                 timestamp: new Date()
             });
-            slider.style.backgroundColor = "#D4AF37"; // Cambia a dorado al guardar
-            alert(`Diploma de ${nombre} registrado.`);
+            slider.style.backgroundColor = "#D4AF37";
+            alert(`Diploma de ${nombre} registrado con éxito.`);
         } catch (e) {
             console.error(e);
             sw.checked = false;
         }
     } else {
-        slider.style.backgroundColor = "#334155"; // Regresa a gris
+        // Si desmarca, eliminamos el registro
+        try {
+            await db.collection("registro_diplomas").doc(nombre).delete();
+            slider.style.backgroundColor = "#334155";
+            alert(`Diploma de ${nombre} eliminado.`);
+        } catch (e) {
+            console.error(e);
+        }
     }
 };
 // Mi diploma
