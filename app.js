@@ -1657,13 +1657,37 @@ window.guardarVisado = async function(nombre, fechaId, estadoId, checkbox) {
 // MI ANALÍTICO (ALUMNO)
 window.abrirMiAnalitico = function() {
     const vista = document.getElementById('main-view');
-    if (vista) {
-        vista.innerHTML = `
-            <img src="visanal.png">
-            <button onclick="window.location.href='https://drrubenmpereyra-stack.github.io/Auditoria-anal-tico/'">Consulta</button>
-            <button onclick="window.mostrardashboard()">Volver</button>
-        `;
-    }
+    
+    // Limpiamos el contenido actual de la vista
+    vista.innerHTML = ''; 
+
+    // Creamos el contenedor principal de la vista
+    const contenedor = document.createElement('div');
+    contenedor.style.cssText = "text-align: center; padding: 40px; color: #fff; background-color: #050508; min-height: 400px;";
+    
+    // Inyectamos la imagen, el botón de acción y el botón de volver
+    contenedor.innerHTML = `
+        <img src="visanal.png" alt="Mi Analítico" style="max-width: 400px; margin-bottom: 30px; display: block; margin-left: auto; margin-right: auto;">
+        <br>
+        <button id="btn-ver-analitico" style="background: #D4AF37; color: black; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px; font-weight: bold;">
+            Consulta
+        </button>
+        <button id="btn-volver-analitico" style="background: #991b1b; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px; font-weight: bold;">
+            Volver
+        </button>
+    `;
+    
+    vista.appendChild(contenedor);
+
+    // Evento para abrir el enlace externo
+    document.getElementById('btn-ver-analitico').onclick = () => {
+        window.open("https://drrubenmpereyra-stack.github.io/Auditoria-anal-tico/", "_blank");
+    };
+
+    // Evento para volver al dashboard principal
+    document.getElementById('btn-volver-analitico').onclick = () => {
+        mostrarDashboard();
+    };
 };
 
 
