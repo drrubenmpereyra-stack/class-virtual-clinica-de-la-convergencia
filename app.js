@@ -1797,19 +1797,19 @@ window.mostrarHerramientasAdministrador = () => {
             <h2 style="color: #D4AF37; margin-bottom: 30px;">Herramientas de Administración</h2>
             <div style="display: flex; justify-content: center; gap: 30px; flex-wrap: wrap;">
                 
-                <div style="cursor: pointer;" onclick="hacerBackup()">
-                    <img src="hbac.png" alt="Hacer Backup" style="width: 150px; border-radius: 10px; border: 2px solid #D4AF37;">
-                    <p>Hacer Backup</p>
+                <div onclick="hacerBackup()" style="cursor: pointer; display: flex; flex-direction: column; align-items: center; width: 160px;">
+                    <img src="hbac.png" alt="Backup" style="width: 150px; height: 150px; border-radius: 10px; border: 2px solid #D4AF37; object-fit: cover;">
+                    <p style="margin-top: 10px; color: #D4AF37; font-weight: bold;">Hacer Backup</p>
                 </div>
 
-                <div style="cursor: pointer;" onclick="restaurarBackup()">
-                    <img src="rbac.png" alt="Restaurar Backup" style="width: 150px; border-radius: 10px; border: 2px solid #D4AF37;">
-                    <p>Restaurar Backup</p>
+                <div onclick="restaurarBackup()" style="cursor: pointer; display: flex; flex-direction: column; align-items: center; width: 160px;">
+                    <img src="rbac.png" alt="Restaurar" style="width: 150px; height: 150px; border-radius: 10px; border: 2px solid #D4AF37; object-fit: cover;">
+                    <p style="margin-top: 10px; color: #D4AF37; font-weight: bold;">Restaurar Backup</p>
                 </div>
 
-                <div style="cursor: pointer;" onclick="limpiarDatosPrueba()">
-                    <img src="limpiardatos.png" alt="Limpiar Datos" style="width: 150px; border-radius: 10px; border: 2px solid #ef4444;">
-                    <p style="color: #ef4444;">Limpiar Datos</p>
+                <div onclick="limpiarDatosPrueba()" style="cursor: pointer; display: flex; flex-direction: column; align-items: center; width: 160px;">
+                    <img src="limpiardatos.png" alt="Limpiar" style="width: 150px; height: 150px; border-radius: 10px; border: 2px solid #ef4444; object-fit: cover;">
+                    <p style="margin-top: 10px; color: #ef4444; font-weight: bold;">Limpiar Datos</p>
                 </div>
 
             </div>
