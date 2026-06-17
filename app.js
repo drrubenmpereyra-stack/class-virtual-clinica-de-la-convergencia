@@ -184,6 +184,10 @@ if (b === "Mi analítico") {
 if (b === "Herramientas") {
         btn.onclick = () => limpiarDatosPrueba();
     }
+// PARA HERRAMIENTAS (administrador)
+if (b === "Herramientas") {
+        btn.onclick = () => mostrarHerramientasAdministrador();
+    }
 
     navMenu.appendChild(btn);
 
@@ -1784,6 +1788,36 @@ window.limpiarDatosPrueba = async () => {
         console.error("Error al limpiar:", e);
         alert("Ocurrió un error al limpiar los datos.");
     }
+};
+// HERRAMIENTAS (administrador)
+window.mostrarHerramientasAdministrador = () => {
+    const main = document.getElementById('main-view');
+    main.innerHTML = `
+        <div style="padding: 40px; color: #fff; text-align: center;">
+            <h2 style="color: #D4AF37; margin-bottom: 30px;">Herramientas de Administración</h2>
+            <div style="display: flex; justify-content: center; gap: 30px; flex-wrap: wrap;">
+                
+                <div style="cursor: pointer;" onclick="hacerBackup()">
+                    <img src="hbac.png" alt="Hacer Backup" style="width: 150px; border-radius: 10px; border: 2px solid #D4AF37;">
+                    <p>Hacer Backup</p>
+                </div>
+
+                <div style="cursor: pointer;" onclick="restaurarBackup()">
+                    <img src="rbac.png" alt="Restaurar Backup" style="width: 150px; border-radius: 10px; border: 2px solid #D4AF37;">
+                    <p>Restaurar Backup</p>
+                </div>
+
+                <div style="cursor: pointer;" onclick="limpiarDatosPrueba()">
+                    <img src="limpiardatos.png" alt="Limpiar Datos" style="width: 150px; border-radius: 10px; border: 2px solid #ef4444;">
+                    <p style="color: #ef4444;">Limpiar Datos</p>
+                </div>
+
+            </div>
+            <div style="margin-top: 40px;">
+                <button onclick="mostrarDashboardAdmin()" style="background:#1e293b; color:white; padding:10px 20px; border:1px solid #475569; cursor:pointer; border-radius:5px;">⬅ Volver al Panel</button>
+            </div>
+        </div>
+    `;
 };
 // 3. ARRANQUE
 document.body.onload = renderLogin;
