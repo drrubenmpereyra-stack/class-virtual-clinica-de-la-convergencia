@@ -180,6 +180,10 @@ if (b === "Visado analíticos") {
 if (b === "Mi analítico") {
     btn.onclick = () => abrirMiAnalitico();
 }
+// PARA HERRAMIENTAS (ADM)
+if (b === "Herramientas") {
+        btn.onclick = () => limpiarDatosPrueba();
+    }
 
     navMenu.appendChild(btn);
 
@@ -1756,6 +1760,30 @@ window.mostrarAsistenciaAdmin = async () => {
              
     // 5. Inyectamos dentro del contenedor creado
     document.getElementById('lista-asistencia').innerHTML = html;
+};
+window.limpiarDatosPrueba = async () => {
+    if (!confirm("¿ESTÁS SEGURO? Esto borrará toda la información de pagos, asistencias y registros de diplomas. Esta acción no se puede deshacer.")) {
+        return;
+    }
+
+    try {
+        const colecciones = ['pagos', 'asistencia', 'registro_diplomas'];
+        
+        for (const col of colecciones) {
+            const snapshot = await db.collection(col).get();
+            const batch = db.batch();
+            snapshot.forEach(doc => {
+                batch.delete(doc.ref);
+            });
+            await batch.commit();
+        }
+
+        alert("Base de datos de prueba limpiada con éxito.");
+        window.mostrarDashboardAdmin();
+    } catch (e) {
+        console.error("Error al limpiar:", e);
+        alert("Ocurrió un error al limpiar los datos.");
+    }
 };
 // 3. ARRANQUE
 document.body.onload = renderLogin;
