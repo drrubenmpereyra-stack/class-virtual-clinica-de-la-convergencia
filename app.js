@@ -1625,7 +1625,6 @@ window.abrirVistaNotas = function() {
 window.abrirAuditoriaAnaliticos = function() {
     const vista = document.getElementById('main-view');
     
-    // Función auxiliar para obtener el link según el nombre
     const obtenerLinkDrive = (nombre) => {
         const links = {
             "RIOS Graciela": "https://drive.google.com/drive/folders/1da5V0BKy4FghsOCz7B66mNOz7ZTFMKt5?usp=drive_link",
@@ -1646,8 +1645,9 @@ window.abrirAuditoriaAnaliticos = function() {
                     <tr style="background: #333; color: #D4AF37;">
                         <th style="padding: 12px; border: 1px solid #444;">APELLIDO_Nombres</th>
                         <th style="padding: 12px; border: 1px solid #444;">Fecha</th>
-                        <th style="padding: 12px; border: 1px solid #444;">Drive</th>
+                        <th style="padding: 12px; border: 1px solid #444;">Abrir Drive</th>
                         <th style="padding: 12px; border: 1px solid #444;">Visado</th>
+                        <th style="padding: 12px; border: 1px solid #444;">Estado</th>
                     </tr>
                 </thead>
                 <tbody id="tabla-auditoria"></tbody>
@@ -1667,19 +1667,45 @@ window.abrirAuditoriaAnaliticos = function() {
         row.innerHTML = `
             <td style="padding: 10px; border: 1px solid #444;">${est.nombre}</td>
             <td style="padding: 10px; border: 1px solid #444;">
-                <input type="date" id="fecha-${index}" value="${new Date().toISOString().split('T')[0]}">
+                <input type="date" id="fecha-${index}" value="${new Date().toISOString().split('T')[0]}" style="background: #333; color: white; border: none;">
             </td>
             <td style="padding: 10px; border: 1px solid #444; text-align: center;">
-                <button onclick="event.stopPropagation(); window.open('${link}', '_blank');" style="background: #2563eb; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px;">
-                    Abrir Carpeta
-                </button>
+                <input type="checkbox" onchange="if(this.checked) { window.open('${link}', '_blank'); this.checked = false; }">
             </td>
             <td style="padding: 10px; border: 1px solid #444; text-align: center;">
-                <input type="checkbox" onchange="guardarVisado('${est.nombre}', 'fecha-${index}', this)">
+                <input type="checkbox" id="check-${index}" onchange="guardarVisado('${est.nombre}', 'fecha-${index}', 'estado-${index}', this)">
             </td>
+            <td style="padding: 10px; border: 1px solid #444; text-align: center; color: #D4AF37; font-size: 12px;" id="estado-${index}"></td>
         `;
         tbody.appendChild(row);
     });
+};
+
+window.guardarVisado = async function(nombre, fechaId, estadoId, checkbox) {
+    if (!checkbox.checked) return;
+    
+    const fecha = document.getElementById(fechaId).value;
+    const estadoCampo = document.getElementById(estadoId);
+    
+    estadoCampo.innerText = "Guardando...";
+    
+    try {
+        await db.collection("visado_analítico").add({
+            estudiante: nombre,
+            fecha: fecha,
+            verificado: true,
+            auditor: "Dr. Pereyra",
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        // Cambio de mensaje tras éxito
+        estadoCampo.innerText = "✓ Guardado";
+        setTimeout(() => { estadoCampo.innerText = ""; }, 3000); // Se limpia tras 3 segundos
+    } catch (e) {
+        console.error(e);
+        estadoCampo.innerText = "Error";
+        checkbox.checked = false;
+    }
 };
 // 3. ARRANQUE
 document.body.onload = renderLogin;
