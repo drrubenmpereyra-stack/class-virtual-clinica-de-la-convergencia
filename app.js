@@ -1670,7 +1670,7 @@ window.abrirAuditoriaAnaliticos = function() {
                 <input type="date" id="fecha-${index}" value="${new Date().toISOString().split('T')[0]}">
             </td>
             <td style="padding: 10px; border: 1px solid #444; text-align: center;">
-                <button onclick="window.open('${link}', '_blank')" style="background: #2563eb; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px;">
+                <button onclick="event.stopPropagation(); window.open('${link}', '_blank');" style="background: #2563eb; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px;">
                     Abrir Carpeta
                 </button>
             </td>
