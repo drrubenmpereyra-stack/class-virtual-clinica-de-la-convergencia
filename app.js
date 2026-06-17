@@ -27,11 +27,11 @@ const MAPA_BOTONES = {
     "Calificaciones": "btn-green", "Auditoria Test": "btn-green", "Auditoria Taller": "btn-green", 
     "Analíticos": "btn-orange", "Visado analíticos": "btn-orange", "Emitir diplomas": "btn-orange", "Central de diplomas": "btn-orange",
     "Actividades recreativas": "btn-blue", "Enviar mensajes": "btn-blue",
-    "Mis Test": "btn-sky", "Mis Talleres": "btn-sky", "Mis pagos": "btn-sky", "Mi asistencia": "btn-sky", "Mi analítico": "btn-sky", "Mi diploma": "btn-sky", "Mis mensajes": "btn-sky", "Mis calificaciones": "btn-sky", "Herramientas": "btn-red",
+    "Mis Test": "btn-sky", "Mis Talleres": "btn-sky", "Mis pagos": "btn-sky", "Mi asistencia": "btn-sky", "Mi analítico": "btn-sky", "Mi diploma": "btn-sky", "Mis mensajes": "btn-sky", "Mis calificaciones": "btn-sky", "Herramientas": "btn-red", "Salir": "btn-black",
 };
 
-const LISTA_ADMIN = ["Encuentros", "Talleres", "Biblioteca", "Actividades recreativas", "Participantes", "Pagos", "Asistencia", "Calificaciones", "Analíticos", "Visado analíticos", "Emitir diplomas", "Herramientas", "Auditoria Test", "Auditoria Taller", "Central de diplomas", "Enviar mensajes", ];
-const LISTA_ALUMNO = ["Encuentros", "Talleres", "Biblioteca", "Actividades recreativas", "Mis Test", "Mis Talleres", "Mis pagos", "Mi asistencia", "Mi analítico", "Mi diploma", "Mis mensajes", "Mis calificaciones"];
+const LISTA_ADMIN = ["Encuentros", "Talleres", "Biblioteca", "Actividades recreativas", "Participantes", "Pagos", "Asistencia", "Calificaciones", "Analíticos", "Visado analíticos", "Emitir diplomas", "Herramientas", "Auditoria Test", "Auditoria Taller", "Central de diplomas", "Enviar mensajes", "Salir" ];
+const LISTA_ALUMNO = ["Encuentros", "Talleres", "Biblioteca", "Actividades recreativas", "Mis Test", "Mis Talleres", "Mis pagos", "Mi asistencia", "Mi analítico", "Mi diploma", "Mis mensajes", "Mis calificaciones", "Salir"];
 
 let usuarioActual = null;
 
@@ -187,6 +187,10 @@ if (b === "Herramientas") {
 // PARA HERRAMIENTAS (administrador)
 if (b === "Herramientas") {
         btn.onclick = () => mostrarHerramientasAdministrador();
+    }
+// PARA SALIR
+if (b === "Salir") {
+        btn.onclick = () => salirSistema();
     }
 
     navMenu.appendChild(btn);
@@ -1878,6 +1882,19 @@ window.restaurarBackup = async () => {
     };
     
     input.click();
+};
+// SALIR SISTEMA
+window.salirSistema = () => {
+    const realizarBackup = confirm("⚠️ RECORDATORIO: ¿Has realizado tu backup semanal? \n\nPresiona 'Aceptar' para ir a Herramientas y hacerlo, o 'Cancelar' para salir del sistema ahora.");
+
+    if (realizarBackup) {
+        // Vamos a la pantalla de herramientas
+        window.mostrarHerramientasAdministrador();
+    } else {
+        // "Cerrar" el sistema (redirección a tu home o pantalla de inicio de sesión)
+        alert("Sesión finalizada. Asegúrate de mantener tus datos a salvo.");
+        window.location.href = "index.html"; // Ajusta a tu URL de login o home
+    }
 };
 // 3. ARRANQUE
 document.body.onload = renderLogin;
