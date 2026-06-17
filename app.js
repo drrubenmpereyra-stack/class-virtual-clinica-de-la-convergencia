@@ -1625,6 +1625,7 @@ window.abrirVistaNotas = function() {
 window.abrirAuditoriaAnaliticos = function() {
     const vista = document.getElementById('main-view');
     
+    // Función auxiliar para obtener el link según el nombre
     const obtenerLinkDrive = (nombre) => {
         const links = {
             "RIOS Graciela": "https://drive.google.com/drive/folders/1da5V0BKy4FghsOCz7B66mNOz7ZTFMKt5?usp=drive_link",
@@ -1667,10 +1668,13 @@ window.abrirAuditoriaAnaliticos = function() {
         row.innerHTML = `
             <td style="padding: 10px; border: 1px solid #444;">${est.nombre}</td>
             <td style="padding: 10px; border: 1px solid #444;">
-                <input type="date" id="fecha-${index}" value="${new Date().toISOString().split('T')[0]}" style="background: #333; color: white; border: none;">
+                <input type="date" id="fecha-${index}" value="${new Date().toISOString().split('T')[0]}" style="background: #333; color: white; border: none; padding: 5px;">
             </td>
             <td style="padding: 10px; border: 1px solid #444; text-align: center;">
-                <a href="${link}" target="_blank" style="color: #60a5fa; text-decoration: underline; font-weight: bold;">Abrir Drive</a>
+                <span onclick="event.stopPropagation(); window.open('${link}', '_blank');" 
+                      style="color: #60a5fa; text-decoration: underline; font-weight: bold; cursor: pointer;">
+                    Abrir Drive
+                </span>
             </td>
             <td style="padding: 10px; border: 1px solid #444; text-align: center;">
                 <input type="checkbox" id="check-${index}" onchange="guardarVisado('${est.nombre}', 'fecha-${index}', 'estado-${index}', this)">
