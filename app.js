@@ -105,10 +105,6 @@ if (b === "Pagos") {
 if (b === "Mis pagos") {
     btn.onclick = () => mostrarMisPagos(usuarioActual.nombre);
 }
-// PARA ASISTENCIA (vista adm)
-if (b === "Asistencia") {
-    btn.onclick = () => mostrarDashboardAsistencia();
-}
 // PARA ASISTENCIA (vista alumno)
 if (b === "Mi asistencia") {
     btn.onclick = () => mostrarMiAsistencia(usuarioActual.nombre);
@@ -158,10 +154,11 @@ if (b === "Mi diploma") {
 if (b === "Calificaciones") {
     btn.onclick = () => gestionarCalificacionesAdmin();
 }
-// MIS CALIFICACIONES (ALUMNO)
+// PARA MIS CALIFICACIONES (alumnos)
 if (b === "Mis calificaciones") {
-    btn.onclick = () => reproducirVideoIntro();
+    btn.onclick = () => abrirMisCalificaciones();
 }
+
 // ANALITICOS (ADMINISTRADOR)
 if (b === "Analíticos") {
     btn.onclick = () => mostrarSeccion('analiticos');
@@ -170,10 +167,7 @@ if (b === "Analíticos") {
 if (b === "Mi asistencia") {
     btn.onclick = () => abrirVistaAsistencia();
 }
-// MIS CLIFICACIONES
-if (b === "Mis calificaciones") {
-    btn.onclick = () => abrirVistaNotas();
-}
+
 // AUDITORIA ANALÍTICOS (ADMINISTRADOR)
 if (b === "Visado analíticos") {
     btn.onclick = () => window.abrirAuditoriaAnaliticos();
@@ -1417,36 +1411,38 @@ window.confirmarBorrado = (docId, coleccion) => {
     }
 };
 // MIS CALIFICACIONES (ALUMNOS)
-window.reproducirVideoIntro = function() {
+window.abrirMisCalificaciones = function() {
     const vista = document.getElementById('main-view');
+    
+    // Limpiamos el contenido actual de la vista
     vista.innerHTML = ''; 
 
-    // Crear elemento de video
-    const video = document.createElement('video');
-    video.src = "introespera.mp4"; // Asegúrese que el archivo esté en la carpeta raíz
-    video.style.width = "100%";
-    video.style.borderRadius = "10px";
-    video.autoplay = true;
+    // Creamos el contenedor principal de la vista
+    const contenedor = document.createElement('div');
+    contenedor.style.cssText = "text-align: center; padding: 40px; color: #fff; background-color: #050508; min-height: 400px;";
     
-    // Contenedor para el botón que aparecerá al final
-    const contenedorBoton = document.createElement('div');
-    contenedorBoton.style.textAlign = "center";
-    contenedorBoton.style.marginTop = "20px";
+    // Inyectamos la imagen, el botón de acción y el botón de volver
+    contenedor.innerHTML = `
+        <img src="miasistencia.png" alt="Mis Calificaciones" style="max-width: 400px; margin-bottom: 30px; display: block; margin-left: auto; margin-right: auto;">
+        <br>
+        <button id="btn-consultar-calificaciones" style="background: #D4AF37; color: black; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px; font-weight: bold;">
+            Consultar calificaciones
+        </button>
+        <button id="btn-volver-calificaciones" style="background: #991b1b; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px; font-weight: bold;">
+            Volver
+        </button>
+    `;
     
-    vista.appendChild(video);
-    vista.appendChild(contenedorBoton);
+    vista.appendChild(contenedor);
 
-    // Evento al terminar el video
-    video.onended = () => {
-        contenedorBoton.innerHTML = `
-            <button id="btnIrConsulta" style="padding: 15px 30px; background: #D4AF37; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; font-weight: bold;">
-                Ir a consulta
-            </button>
-        `;
-        
-        document.getElementById('btnIrConsulta').onclick = () => {
-            window.open("https://drrubenmpereyra-stack.github.io/Consulta-Calificaciones/", "_blank");
-        };
+    // Evento para abrir el enlace externo de GitHub
+    document.getElementById('btn-consultar-calificaciones').onclick = () => {
+        window.open("https://drrubenmpereyra-stack.github.io/Consulta-Calificaciones/", "_blank");
+    };
+
+    // Evento para volver al dashboard principal
+    document.getElementById('btn-volver-calificaciones').onclick = () => {
+        mostrarDashboard();
     };
 };
 // PARA ANALÍTICOS EN ADMINISTRADOR
