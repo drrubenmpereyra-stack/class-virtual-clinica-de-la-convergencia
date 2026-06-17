@@ -1692,18 +1692,18 @@ window.abrirMiAnalitico = function() {
 // ASISTENCIA (administrador)
 window.mostrarAsistenciaAdmin = async () => {
     const vista = document.getElementById('main-view');
-    vista.innerHTML = '<h2>Cargando registros de asistencia...</h2>';
+    vista.innerHTML = '<h2>Cargando registros...</h2>';
 
     try {
         const snapshot = await db.collection("asistencia").get();
         
         let html = `
-            <div style="padding: 20px; color: #fff; background: #050508; font-family: sans-serif;">
+            <div style="padding: 20px; color: #fff; background-color: #050508; font-family: sans-serif;">
                 <button onclick="mostrarDashboard()" style="background: #991b1b; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-bottom: 20px;">
                     ⬅ Volver al Dashboard
                 </button>
                 <h2 style="color: #D4AF37;">Panel de Auditoría de Asistencia</h2>
-                <table class="tabla-clinica" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                <table class="tabla-clinica" style="width: 100%; border-collapse: collapse; margin-top: 20px; color: #fff;">
                     <thead>
                         <tr style="background: #1a1a1a; color: #D4AF37;">
                             <th style="padding: 15px; border: 1px solid #333;">Estudiante</th>
@@ -1717,13 +1717,21 @@ window.mostrarAsistenciaAdmin = async () => {
 
         snapshot.forEach(doc => {
             const p = doc.data();
-            const colorEstado = p.estado.toLowerCase() === 'presente' ? '#00FF88' : '#FF4444';
+            
+            // Usamos tus nombres exactos de campo
+            const nombre = p.nombreEstudiante || '-';
+            const encuentro = p.encuentro || '-';
+            const fecha = p.fecha || '-';
+            const estado = p.estado || '-';
+
+            const colorEstado = estado === 'Presente' ? '#00FF88' : '#FF4444';
+            
             html += `
                 <tr style="border-bottom: 1px solid #333;">
-                    <td style="padding: 12px;">${p.nombreEstudiante || 'Sin nombre'}</td>
-                    <td style="padding: 12px;">${p.encuentro || '-'}</td>
-                    <td style="padding: 12px;">${p.fecha || '-'}</td>
-                    <td style="padding: 12px; color: ${colorEstado}; font-weight: bold;">${p.estado}</td>
+                    <td style="padding: 12px;">${nombre}</td>
+                    <td style="padding: 12px;">Encuentro ${encuentro}</td>
+                    <td style="padding: 12px;">${fecha}</td>
+                    <td style="padding: 12px; color: ${colorEstado}; font-weight: bold;">${estado}</td>
                 </tr>
             `;
         });
@@ -1733,7 +1741,7 @@ window.mostrarAsistenciaAdmin = async () => {
 
     } catch (error) {
         console.error("Error al cargar asistencia:", error);
-        vista.innerHTML = `<p style="color:red;">Error al conectar con la base de datos: ${error.message}</p>`;
+        vista.innerHTML = `<p style="color:red;">Error al cargar: ${error.message}</p>`;
     }
 };
 
