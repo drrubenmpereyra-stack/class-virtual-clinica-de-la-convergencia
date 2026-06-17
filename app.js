@@ -1819,5 +1819,65 @@ window.mostrarHerramientasAdministrador = () => {
         </div>
     `;
 };
+window.hacerBackup = async () => {
+    try {
+        const colecciones = ['pagos', 'asistencia', 'registro_diplomas'];
+        let respaldoTotal = {};
+
+        for (const col of colecciones) {
+            const snapshot = await db.collection(col).get();
+            respaldoTotal[col] = [];
+            snapshot.forEach(doc => {
+                respaldoTotal[col].push({ id: doc.id, ...doc.data() });
+            });
+        }
+
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(respaldoTotal, null, 2));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", "backup_aula_virtual_" + new Date().toISOString() + ".json");
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+        
+        alert("Backup descargado con éxito.");
+    } catch (e) {
+        console.error("Error en backup:", e);
+        alert("Falló el backup.");
+    }
+};
+
+window.restaurarBackup = async () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/json';
+    
+    input.onchange = async (e) => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        
+        reader.onload = async (event) => {
+            try {
+                const data = JSON.parse(event.target.result);
+                for (const col in data) {
+                    const batch = db.batch();
+                    data[col].forEach(docData => {
+                        const { id, ...campos } = docData;
+                        const ref = db.collection(col).doc(id);
+                        batch.set(ref, campos);
+                    });
+                    await batch.commit();
+                }
+                alert("¡Restauración completada con éxito!");
+            } catch (err) {
+                console.error("Error al restaurar:", err);
+                alert("Error al procesar el archivo. Asegúrate de que sea un JSON válido.");
+            }
+        };
+        reader.readAsText(file);
+    };
+    
+    input.click();
+};
 // 3. ARRANQUE
 document.body.onload = renderLogin;
