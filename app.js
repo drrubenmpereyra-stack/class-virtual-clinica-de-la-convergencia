@@ -1796,12 +1796,24 @@ window.limpiarDatosPrueba = async () => {
 // HERRAMIENTAS (administrador)
 window.mostrarHerramientasAdministrador = () => {
     const main = document.getElementById('main-view');
+    
+    // Re-renderizamos toda la vista de Herramientas incluyendo los botones
     main.innerHTML = `
         <div style="padding: 40px; color: #fff; text-align: center;">
             <h2 style="color: #D4AF37; margin-bottom: 30px;">Herramientas de Administración</h2>
             <div id="contenedor-herramientas" style="display: flex; justify-content: center; gap: 30px; flex-wrap: wrap;">
-                <!-- Tus botones actuales aquí -->
+                
+                <div id="btn-backup" style="cursor: pointer; display: flex; flex-direction: column; align-items: center; width: 160px;">
+                    <img src="hbac.png" alt="Backup" style="width: 150px; height: 150px; border-radius: 10px; border: 2px solid #D4AF37; object-fit: cover;">
+                    <p style="margin-top: 10px; color: #D4AF37; font-weight: bold;">Hacer Backup</p>
+                </div>
+
+                <div id="btn-restaurar" style="cursor: pointer; display: flex; flex-direction: column; align-items: center; width: 160px;">
+                    <img src="rbac.png" alt="Restaurar" style="width: 150px; height: 150px; border-radius: 10px; border: 2px solid #D4AF37; object-fit: cover;">
+                    <p style="margin-top: 10px; color: #D4AF37; font-weight: bold;">Restaurar Backup</p>
+                </div>
             </div>
+            
             <div style="margin-top: 40px;">
                 <button id="btn-volver-seguro" style="background:#1e293b; color:white; padding:10px 20px; border:1px solid #475569; cursor:pointer; border-radius:5px;">
                     ⬅ Volver al Panel
@@ -1810,15 +1822,14 @@ window.mostrarHerramientasAdministrador = () => {
         </div>
     `;
 
-    // Asignación directa mediante listener (esto sí o sí funciona)
-    document.getElementById('btn-volver-seguro').onclick = () => {
-        // Recargamos el dashboard principal
-        window.mostrarDashboardAdmin();
-    };
-    
-    // Re-asignamos los otros botones también para estar seguros
+    // Asignamos todos los eventos aquí, una vez que el HTML ya existe en el DOM
     document.getElementById('btn-backup').onclick = window.hacerBackup;
     document.getElementById('btn-restaurar').onclick = window.restaurarBackup;
+    
+    // Este es el botón de Volver que te estaba dando problemas
+    document.getElementById('btn-volver-seguro').onclick = () => {
+        window.mostrarDashboardAdmin();
+    };
 };
 window.hacerBackup = async () => {
     try {
