@@ -1813,7 +1813,9 @@ window.mostrarHerramientasAdministrador = () => {
 
             </div>
             <div style="margin-top: 40px;">
-                <button onclick="mostrarDashboardAdmin()" style="background:#1e293b; color:white; padding:10px 20px; border:1px solid #475569; cursor:pointer; border-radius:5px;">⬅ Volver al Panel</button>
+             <button onclick="mostrarDashboardAdmin()" style="background:#1e293b; color:white; padding:10px 20px; border:1px solid #475569; cursor:pointer; border-radius:5px;">
+                ⬅ Volver al Panel
+             </button>
             </div>
         </div>
     `;
