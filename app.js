@@ -178,6 +178,10 @@ if (b === "Mis calificaciones") {
 if (b === "Visado analíticos") {
     btn.onclick = () => window.abrirAuditoriaAnaliticos();
 }
+// MI ANALITICO
+if (b === "Mi analítico") {
+    btn.onclick = () => mostrarAnaliticoDashboard();
+}
 
     navMenu.appendChild(btn);
 
@@ -1650,6 +1654,15 @@ window.guardarVisado = async function(nombre, fechaId, estadoId, checkbox) {
         checkbox.checked = false;
     }
 };
+// MI ANALÍTICO (ALUMNO)
+function mostrarAnaliticoDashboard() {
+    const contenedor = document.getElementById("contenedor-principal"); // O el ID que utilices para el dashboard
+    contenedor.innerHTML = `
+        <img src="visanal.png">
+        <button onclick="window.location.href='https://drrubenmpereyra-stack.github.io/Auditoria-anal-tico/'">Consulta</button>
+        <button onclick="window.mostrardashboard()">Volver</button>
+    `;
+}
 
 // 3. ARRANQUE
 document.body.onload = renderLogin;
