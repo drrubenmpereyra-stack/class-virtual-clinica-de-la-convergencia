@@ -1625,6 +1625,31 @@ window.abrirAuditoriaAnaliticos = function() {
         tbody.appendChild(row);
     });
 };
+// Guarda el visado de analiticos en la base de datos
+window.guardarVisado = async function(nombre, fechaId, estadoId, checkbox) {
+    if (!checkbox.checked) return;
+    
+    const fecha = document.getElementById(fechaId).value;
+    const estadoCampo = document.getElementById(estadoId);
+    
+    estadoCampo.innerText = "Guardando...";
+    
+    try {
+        await db.collection("visado_analítico").add({
+            estudiante: nombre,
+            fecha: fecha,
+            verificado: true,
+            auditor: "Dr. Pereyra",
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        estadoCampo.innerText = "✓ Guardado";
+    } catch (e) {
+        console.error("Error al guardar:", e);
+        estadoCampo.innerText = "Error";
+        checkbox.checked = false;
+    }
+};
 
 // 3. ARRANQUE
 document.body.onload = renderLogin;
