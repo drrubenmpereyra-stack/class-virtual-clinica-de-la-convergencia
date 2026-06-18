@@ -1782,21 +1782,53 @@ window.guardarAsistencia = async () => {
 };
 
 // Función para renderizar la tabla
+// 1. Reemplaza tu función actual por esta versión con botones
 window.actualizarTablaAsistencia = async () => {
     const listaDiv = document.getElementById('lista-asistencia');
     const snapshot = await db.collection("asistencia").orderBy("timestamp", "desc").get();
     
     let html = `<table class="tabla-clinica">
-        <thead><tr><th>Estudiante</th><th>Encuentro</th><th>Fecha</th><th>Estado</th></tr></thead>
+        <thead>
+            <tr>
+                <th>Estudiante</th>
+                <th>Encuentro</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
         <tbody>`;
     
     snapshot.forEach(doc => {
         const p = doc.data();
-        html += `<tr><td>${p.nombreEstudiante}</td><td>${p.encuentro}</td><td>${p.fecha}</td><td>${p.estado}</td></tr>`;
+        const id = doc.id; 
+        html += `<tr>
+            <td>${p.nombreEstudiante}</td>
+            <td>${p.encuentro}</td>
+            <td>${p.fecha}</td>
+            <td>${p.estado}</td>
+            <td>
+                <button onclick="eliminarAsistencia('${id}')" style="background-color: #ff4d4d; color: white; border: none; padding: 5px 10px; cursor: pointer;">Eliminar</button>
+            </td>
+        </tr>`;
     });
     
     html += `</tbody></table>`;
     listaDiv.innerHTML = html;
+};
+
+// 2. Agrega esta nueva función al final de tu archivo
+window.eliminarAsistencia = async (id) => {
+    if (!confirm("¿Seguro que deseas eliminar este registro de asistencia? Esta acción no se puede deshacer.")) return;
+    
+    try {
+        await db.collection("asistencia").doc(id).delete();
+        alert("Registro eliminado correctamente.");
+        await actualizarTablaAsistencia(); // Refresca la tabla automáticamente
+    } catch (e) {
+        console.error("Error al eliminar:", e);
+        alert("No se pudo eliminar el registro.");
+    }
 };
 // HERRAMIENTAS (administrador)
 window.mostrarHerramientasAdministrador = () => {
