@@ -102,7 +102,7 @@ if (b === "Pagos") {
     btn.onclick = () => mostrarDashboardPagos();
 }
 // PARA MIS PAGOS
-if (b === "Pagos") {
+if (b === "Mis pagos") {
     btn.onclick = () => mostrarPagosAlumno();
 }
 // PARA ASISTENCIA (vista alumno)
