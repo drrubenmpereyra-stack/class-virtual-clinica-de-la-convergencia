@@ -102,8 +102,8 @@ if (b === "Pagos") {
     btn.onclick = () => mostrarDashboardPagos();
 }
 // PARA MIS PAGOS
-if (b === "Mis pagos") {
-    btn.onclick = () => mostrarMisPagos(usuarioActual.nombre);
+if (b === "Pagos") {
+    btn.onclick = () => mostrarPagosAlumno();
 }
 // PARA ASISTENCIA (vista alumno)
 if (b === "Mi asistencia") {
@@ -1940,6 +1940,25 @@ window.salirSistema = () => {
         window.location.href = "index.html"; 
     }
 };
-
+// PARA MIS PAGOS (VISTA ALUMNO)
+function mostrarPagosAlumno() {
+    const mainDiv = document.getElementById('dashboard-content'); // Ajusta según el ID de tu contenedor
+    
+    mainDiv.innerHTML = `
+        <div style="text-align: center; padding: 20px;">
+            <img src="mispagos.png" alt="Mis Pagos" style="max-width: 300px; margin-bottom: 20px;">
+            <br>
+            <button onclick="window.open('https://drrubenmpereyra-stack.github.io/pagos-convergencia/', '_blank')" 
+                    style="padding: 15px 30px; background: #2c3e50; color: white; border: none; border-radius: 5px; cursor: pointer; display: block; margin: 10px auto;">
+                Consultar Pagos
+            </button>
+            <br>
+            <button onclick="mostrarDashboard()" 
+                    style="padding: 10px 20px; background: #95a5a6; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                Volver
+            </button>
+        </div>
+    `;
+}
 // 3. ARRANQUE
 document.body.onload = renderLogin;
