@@ -1728,70 +1728,75 @@ window.abrirMiAnalitico = function() {
     };
 };
 // ASISTENCIA (administrador)
+// Función para mostrar la vista de Asistencia (Administrador)
 window.mostrarAsistenciaAdmin = async () => {
     const main = document.getElementById('main-view');
-    // 1. Inyectamos la estructura base
     main.innerHTML = `
-        <h2>Historial de Asistencia</h2>
-        <div id="lista-asistencia">Cargando...</div>
+        <h2>Gestión de Asistencia</h2>
+        <div class="formulario-admin" style="padding: 20px; background: #f4f4f4; border-radius: 8px;">
+            <input type="text" id="input-nombre" placeholder="Nombre del Estudiante">
+            <input type="number" id="input-encuentro" placeholder="Nro de Encuentro">
+            <input type="date" id="input-fecha">
+            <select id="input-estado">
+                <option value="Presente">Presente</option>
+                <option value="Ausente">Ausente</option>
+            </select>
+            <button onclick="guardarAsistencia()" class="btn-verde">Guardar Registro</button>
+        </div>
+        <hr>
+        <div id="lista-asistencia">Cargando historial...</div>
+        <br>
+        <button onclick="mostrarDashboard()" class="btn-red">Volver al Dashboard</button>
     `;
     
-    const snapshot = await db.collection("asistencia").get();
-    
-    // 2. Preparamos el HTML de la tabla
-    let html = `<table class="tabla-clinica">
-        <thead>
-            <tr>
-                <th>Estudiante</th>
-                <th>Encuentro</th>
-                <th>Fecha</th>
-                <th>Estado</th>
-            </tr>
-        </thead>
-        <tbody>`;
-    
-    // 3. Llenamos las filas
-    snapshot.forEach(doc => {
-        const p = doc.data();
-        html += `<tr>
-            <td>${p.nombreEstudiante}</td>
-            <td>Encuentro ${p.encuentro}</td>
-            <td>${p.fecha}</td>
-            <td>${p.estado}</td>
-        </tr>`;
-    });
-    
-    // 4. Cerramos la tabla y agregamos el botón volver
-    html += `</tbody></table>
-             <br>
-             <button onclick="mostrarDashboard()" class="btn-red">Volver al Dashboard</button>`;
-             
-    // 5. Inyectamos dentro del contenedor creado
-    document.getElementById('lista-asistencia').innerHTML = html;
+    // Cargar historial inmediatamente
+    await actualizarTablaAsistencia();
 };
-window.limpiarDatosPrueba = async () => {
-    if (!confirm("¿ESTÁS SEGURO? Esto borrará toda la información de pagos, asistencias y registros de diplomas. Esta acción no se puede deshacer.")) {
+
+// Función para guardar en Firestore
+window.guardarAsistencia = async () => {
+    const nombre = document.getElementById('input-nombre').value;
+    const encuentro = document.getElementById('input-encuentro').value;
+    const fecha = document.getElementById('input-fecha').value;
+    const estado = document.getElementById('input-estado').value;
+
+    if (!nombre || !encuentro || !fecha) {
+        alert("Por favor, completa los campos obligatorios.");
         return;
     }
 
     try {
-        const colecciones = ['pagos', 'asistencia', 'registro_diplomas'];
-        
-        for (const col of colecciones) {
-            const snapshot = await db.collection(col).get();
-            const batch = db.batch();
-            snapshot.forEach(doc => {
-                batch.delete(doc.ref);
-            });
-            await batch.commit();
-        }
-
-        alert("Base de datos de prueba limpiada con éxito.");
-        window.mostrarDashboardAdmin();
+        await db.collection("asistencia").add({
+            nombreEstudiante: nombre,
+            encuentro: parseInt(encuentro),
+            fecha: fecha,
+            estado: estado,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        alert("Registro guardado.");
+        await actualizarTablaAsistencia(); // Refrescar tabla tras guardar
     } catch (e) {
-        console.error("Error al limpiar:", e);
-        alert("Ocurrió un error al limpiar los datos.");
+        console.error("Error al guardar asistencia:", e);
+        alert("Error al conectar con la base de datos.");
     }
+};
+
+// Función para renderizar la tabla
+window.actualizarTablaAsistencia = async () => {
+    const listaDiv = document.getElementById('lista-asistencia');
+    const snapshot = await db.collection("asistencia").orderBy("timestamp", "desc").get();
+    
+    let html = `<table class="tabla-clinica">
+        <thead><tr><th>Estudiante</th><th>Encuentro</th><th>Fecha</th><th>Estado</th></tr></thead>
+        <tbody>`;
+    
+    snapshot.forEach(doc => {
+        const p = doc.data();
+        html += `<tr><td>${p.nombreEstudiante}</td><td>${p.encuentro}</td><td>${p.fecha}</td><td>${p.estado}</td></tr>`;
+    });
+    
+    html += `</tbody></table>`;
+    listaDiv.innerHTML = html;
 };
 // HERRAMIENTAS (administrador)
 window.mostrarHerramientasAdministrador = () => {
