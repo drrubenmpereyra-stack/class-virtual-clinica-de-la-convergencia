@@ -1942,18 +1942,29 @@ window.salirSistema = () => {
 };
 // PARA MIS PAGOS (VISTA ALUMNO)
 window.mostrarPagosAlumno = () => {
-    const mainDiv = document.getElementById('dashboard-content');
-    
+    // Probamos con los IDs más comunes que seguramente usas en tus otras vistas
+    const mainDiv = document.getElementById('dashboard-content') || 
+                    document.getElementById('vista-alumnos') || 
+                    document.getElementById('contenido');
+
     if (!mainDiv) {
-        console.error("El contenedor 'dashboard-content' no fue encontrado.");
+        alert("Error crítico: No se encontró el contenedor de la vista. Verifica el ID del div principal.");
         return;
     }
 
     mainDiv.innerHTML = `
-        <div class="vista-interna">
-            <img src="mispagos.png" alt="Mis Pagos" style="display:block; margin: 0 auto 20px;">
-            <button onclick="window.open('https://drrubenmpereyra-stack.github.io/pagos-convergencia/', '_blank')">Consultar Pagos</button>
-            <button onclick="mostrarDashboard()">Volver</button>
+        <div style="text-align: center; padding: 20px;">
+            <img src="mispagos.png" alt="Mis Pagos" style="max-width: 300px; margin-bottom: 20px;">
+            <br>
+            <button onclick="window.open('https://drrubenmpereyra-stack.github.io/pagos-convergencia/', '_blank')" 
+                    style="padding: 15px 30px; background: #2c3e50; color: white; border: none; border-radius: 5px; cursor: pointer; display: block; margin: 10px auto;">
+                Consultar Pagos
+            </button>
+            <br>
+            <button onclick="mostrarDashboard()" 
+                    style="padding: 10px 20px; background: #95a5a6; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                Volver
+            </button>
         </div>
     `;
 };
