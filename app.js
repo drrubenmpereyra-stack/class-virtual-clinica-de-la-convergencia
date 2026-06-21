@@ -2014,33 +2014,6 @@ window.abrirMonitorResonancia = function() {
     };
 };
 // MI RESONANCIA (ALUMNO)
-window.abrirMiResonancia = function() {
-    const vista = document.getElementById('main-view');
-    vista.innerHTML = ''; 
 
-    const contenedor = document.createElement('div');
-    contenedor.style.cssText = "text-align: center; padding: 40px; color: #fff; background-color: #050508; min-height: 400px;";
-    
-    contenedor.innerHTML = `
-        <img src="encuesta.png" alt="Mi Resonancia" style="max-width: 400px; margin-bottom: 30px; display: block; margin-left: auto; margin-right: auto;">
-        <br>
-        <button id="btn-ver-resonancia" style="background: #D4AF37; color: black; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px; font-weight: bold;">
-            Ir a encuesta
-        </button>
-        <button id="btn-volver-resonancia" style="background: #991b1b; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px; font-weight: bold;">
-            Volver
-        </button>
-    `;
-    
-    vista.appendChild(contenedor);
-
-    document.getElementById('btn-ver-resonancia').onclick = () => {
-        window.open("https://drrubenmpereyra-stack.github.io/Encuesta-de-satisfaccion/", "_blank");
-    };
-
-    document.getElementById('btn-volver-resonancia').onclick = () => {
-        mostrarDashboard();
-    };
-};
 // 3. ARRANQUE
 document.body.onload = renderLogin;
