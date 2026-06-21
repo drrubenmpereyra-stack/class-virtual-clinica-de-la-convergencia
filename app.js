@@ -192,6 +192,10 @@ if (b === "Herramientas") {
 if (b === "Monitor resonancia evaluativa") {
     btn.onclick = () => iniciarMonitorResonancia();
 }
+// PARA RESONANCIA EVALUATIVA (ALUMNOS)
+if (b === "Mi resonancia evaluativa") {
+    btn.onclick = () => iniciarResonanciaEstudiante();
+}
 // PARA SALIR
 if (b === "Salir") {
         btn.onclick = () => salirSistema();
@@ -2011,6 +2015,34 @@ window.iniciarMonitorResonancia = () => {
     vista.appendChild(contenedor);
 };
 // MI RESONANCIA (ALUMNO)
+window.iniciarResonanciaEstudiante = () => {
+    const vista = document.getElementById('main-view');
+    vista.textContent = ''; 
 
+    const contenedor = document.createElement('div');
+    contenedor.style.cssText = "padding: 20px; text-align: center; color: #fff; font-family: sans-serif;";
+
+    // Botón Salir
+    const btnSalir = document.createElement('button');
+    btnSalir.textContent = "⬅ Volver al Panel Principal";
+    btnSalir.style.cssText = "background: #d32f2f; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 20px;";
+    btnSalir.onclick = () => mostrarDashboard();
+    contenedor.appendChild(btnSalir);
+
+    // Imagen
+    const imgEncabezado = document.createElement('img');
+    imgEncabezado.src = 'encuesta.png';
+    imgEncabezado.style.cssText = "max-width: 400px; width: 100%; border-radius: 8px; display: block; margin: 0 auto 20px auto;";
+    contenedor.appendChild(imgEncabezado);
+
+    // Botón Ir a encuesta
+    const btnIr = document.createElement('button');
+    btnIr.textContent = "Ir a encuesta";
+    btnIr.style.cssText = "background: #D4AF37; color: black; border: none; padding: 15px 30px; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px; font-weight: bold;";
+    btnIr.onclick = () => window.open('https://drrubenmpereyra-stack.github.io/Encuesta-de-satisfaccion/', '_blank');
+    contenedor.appendChild(btnIr);
+
+    vista.appendChild(contenedor);
+};
 // 3. ARRANQUE
 document.body.onload = renderLogin;
