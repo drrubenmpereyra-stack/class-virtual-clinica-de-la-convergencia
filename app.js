@@ -192,6 +192,10 @@ if (b === "Herramientas") {
 if (b === "Monitor resonancia evaluativa") {
     btn.onclick = () => mostrarMonitorResonancia();
 }
+// PARA MI RESONANCIA EVALUATIVA (alumno)
+if (b === "Mi resonancia evaluativa") {
+    btn.onclick = () => mostrarResonanciaEstudiante();
+}
 // PARA SALIR
 if (b === "Salir") {
         btn.onclick = () => salirSistema();
@@ -1981,8 +1985,16 @@ window.abrirVistaPagos = function() {
     };
 };
 // MONITOR DE RESONANCIA EVALUATIVA (ADM)
-function mostrarMonitorResonancia() {
-    const mainContent = document.getElementById('main-content'); // Asegúrate que este sea tu ID de contenedor
+window.mostrarMonitorResonancia = function() {
+    const mainContent = document.getElementById('main-content');
+    
+    // Verificación: si no encuentra el elemento, lanza un aviso en consola 
+    // en lugar de bloquear la ejecución con un error fatal
+    if (!mainContent) {
+        console.error("Error: El contenedor 'main-content' no existe en el DOM.");
+        return; 
+    }
+
     mainContent.innerHTML = `
         <div style="text-align: center; padding: 20px;">
             <img src="analisis_enc.png" alt="Análisis de Resonancia" style="max-width: 800px; width: 100%; border-radius: 8px; border: 1px solid #30363d;">
@@ -2000,6 +2012,28 @@ function mostrarMonitorResonancia() {
             </div>
         </div>
     `;
-}
+};
+window.mostrarResonanciaEstudiante = function() {
+    const mainContent = document.getElementById('main-content');
+    if (!mainContent) return;
+
+    mainContent.innerHTML = `
+        <div style="text-align: center; padding: 20px;">
+            <img src="encuesta.png" alt="Resonancia Evaluativa" style="max-width: 500px; width: 100%; border-radius: 8px; border: 1px solid #2d3748; margin-bottom: 20px;">
+            
+            <div style="margin-top: 20px;">
+                <button onclick="window.open('https://drrubenmpereyra-stack.github.io/Encuesta-de-satisfaccion/', '_blank')" 
+                        style="padding: 12px 25px; background: #d69e2e; border: none; color: #000; font-weight: bold; cursor: pointer; border-radius: 4px; margin-right: 10px;">
+                    Ir a encuesta
+                </button>
+                
+                <button onclick="window.mostrardashboard()" 
+                        style="padding: 12px 25px; background: #2d3748; border: none; color: white; font-weight: bold; cursor: pointer; border-radius: 4px;">
+                    Volver
+                </button>
+            </div>
+        </div>
+    `;
+};
 // 3. ARRANQUE
 document.body.onload = renderLogin;
