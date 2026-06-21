@@ -26,12 +26,12 @@ const MAPA_BOTONES = {
     "Participantes": "btn-red", "Pagos": "btn-red", "Asistencia": "btn-red",
     "Calificaciones": "btn-green", "Auditoria Test": "btn-green", "Auditoria Taller": "btn-green", 
     "Analíticos": "btn-orange", "Visado analíticos": "btn-orange", "Emitir diplomas": "btn-orange", "Central de diplomas": "btn-orange",
-    "Actividades recreativas": "btn-blue", "Enviar mensajes": "btn-blue",
+    "Actividades recreativas": "btn-blue", "Enviar mensajes": "btn-blue", "Monitor resonancia evaluativa": "btn gold", "Mi resonancia evaluativa": "btn gold", 
     "Mis Test": "btn-sky", "Mis Talleres": "btn-sky", "Mis pagos": "btn-sky", "Mi asistencia": "btn-sky", "Mi analítico": "btn-sky", "Mi diploma": "btn-sky", "Mis mensajes": "btn-sky", "Mis calificaciones": "btn-sky", "Herramientas": "btn-red", "Salir": "btn-red",
 };
 
-const LISTA_ADMIN = ["Encuentros", "Talleres", "Biblioteca", "Actividades recreativas", "Participantes", "Pagos", "Asistencia", "Calificaciones", "Analíticos", "Visado analíticos", "Emitir diplomas", "Herramientas", "Auditoria Test", "Auditoria Taller", "Central de diplomas", "Enviar mensajes", "Salir" ];
-const LISTA_ALUMNO = ["Encuentros", "Talleres", "Biblioteca", "Actividades recreativas", "Mis Test", "Mis Talleres", "Mis pagos", "Mi asistencia", "Mi analítico", "Mi diploma", "Mis mensajes", "Mis calificaciones", "Salir"];
+const LISTA_ADMIN = ["Encuentros", "Talleres", "Biblioteca", "Actividades recreativas", "Participantes", "Pagos", "Asistencia", "Calificaciones", "Analíticos", "Visado analíticos", "Emitir diplomas", "Herramientas", "Auditoria Test", "Auditoria Taller", "Central de diplomas", "Enviar mensajes", "Monitor resonancia evaluativa",  "Salir" ];
+const LISTA_ALUMNO = ["Encuentros", "Talleres", "Biblioteca", "Actividades recreativas", "Mis Test", "Mis Talleres", "Mis pagos", "Mi asistencia", "Mi analítico", "Mi diploma", "Mis mensajes", "Mis calificaciones", "Mi resonancia evaluativa",  "Salir"];
 
 let usuarioActual = null;
 
@@ -188,6 +188,10 @@ if (b === "Herramientas") {
 if (b === "Herramientas") {
         btn.onclick = () => mostrarHerramientasAdministrador();
     }
+// PARA MONITOR RESONANCIA EVALUATIVA (ADM)
+if (b === "Monitor resonancia evaluativa") {
+    btn.onclick = () => mostrarMonitorResonancia();
+}
 // PARA SALIR
 if (b === "Salir") {
         btn.onclick = () => salirSistema();
@@ -1976,5 +1980,26 @@ window.abrirVistaPagos = function() {
         mostrarDashboard();
     };
 };
+// MONITOR DE RESONANCIA EVALUATIVA (ADM)
+function mostrarMonitorResonancia() {
+    const mainContent = document.getElementById('main-content'); // Asegúrate que este sea tu ID de contenedor
+    mainContent.innerHTML = `
+        <div style="text-align: center; padding: 20px;">
+            <img src="analisis_enc.png" alt="Análisis de Resonancia" style="max-width: 800px; width: 100%; border-radius: 8px; border: 1px solid #30363d;">
+            
+            <div style="margin-top: 30px;">
+                <button onclick="window.open('https://drrubenmpereyra-stack.github.io/Evaluacion-encuesta/', '_blank')" 
+                        style="padding: 12px 25px; background: #d69e2e; border: none; color: #000; font-weight: bold; cursor: pointer; border-radius: 4px; margin-right: 10px;">
+                    Ir al panel
+                </button>
+                
+                <button onclick="window.mostrardashboard()" 
+                        style="padding: 12px 25px; background: #2d3748; border: none; color: white; font-weight: bold; cursor: pointer; border-radius: 4px;">
+                    Volver
+                </button>
+            </div>
+        </div>
+    `;
+}
 // 3. ARRANQUE
 document.body.onload = renderLogin;
