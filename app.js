@@ -26,7 +26,7 @@ const MAPA_BOTONES = {
     "Participantes": "btn-red", "Pagos": "btn-red", "Asistencia": "btn-red",
     "Calificaciones": "btn-green", "Auditoria Test": "btn-green", "Auditoria Taller": "btn-green", 
     "Analíticos": "btn-orange", "Visado analíticos": "btn-orange", "Emitir diplomas": "btn-orange", "Central de diplomas": "btn-orange",
-    "Actividades recreativas": "btn-blue", "Enviar mensajes": "btn-blue", "Monitor resonancia evaluativa": "btn gold", "Mi resonancia evaluativa": "btn gold", 
+    "Actividades recreativas": "btn-blue", "Enviar mensajes": "btn-blue", "Monitor resonancia evaluativa": "btn red", "Mi resonancia evaluativa": "btn red", 
     "Mis Test": "btn-sky", "Mis Talleres": "btn-sky", "Mis pagos": "btn-sky", "Mi asistencia": "btn-sky", "Mi analítico": "btn-sky", "Mi diploma": "btn-sky", "Mis mensajes": "btn-sky", "Mis calificaciones": "btn-sky", "Herramientas": "btn-red", "Salir": "btn-red",
 };
 
