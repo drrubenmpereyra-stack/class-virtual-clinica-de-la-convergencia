@@ -190,11 +190,7 @@ if (b === "Herramientas") {
     }
 // PARA MONITOR RESONANCIA EVALUATIVA (ADM)
 if (b === "Monitor resonancia evaluativa") {
-    btn.onclick = () => mostrarMonitorResonancia();
-}
-// PARA MI RESONANCIA EVALUATIVA (alumno)
-if (b === "Mi resonancia evaluativa") {
-    btn.onclick = () => mostrarResonanciaEstudiante();
+    btn.onclick = () => iniciarMonitorResonancia();
 }
 // PARA SALIR
 if (b === "Salir") {
@@ -1985,33 +1981,34 @@ window.abrirVistaPagos = function() {
     };
 };
 // MONITOR DE RESONANCIA EVALUATIVA (ADM)
-window.abrirMonitorResonancia = function() {
+window.iniciarMonitorResonancia = () => {
     const vista = document.getElementById('main-view');
-    vista.innerHTML = ''; 
+    vista.textContent = ''; 
 
     const contenedor = document.createElement('div');
-    contenedor.style.cssText = "text-align: center; padding: 40px; color: #fff; background-color: #050508; min-height: 400px;";
-    
-    contenedor.innerHTML = `
-        <img src="analisis_enc.png" alt="Monitor Resonancia" style="max-width: 600px; margin-bottom: 30px; display: block; margin-left: auto; margin-right: auto; border: 1px solid #30363d; border-radius: 8px;">
-        <br>
-        <button id="btn-ver-monitor" style="background: #D4AF37; color: black; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px; font-weight: bold;">
-            Ir al panel
-        </button>
-        <button id="btn-volver-monitor" style="background: #991b1b; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px; font-weight: bold;">
-            Volver
-        </button>
-    `;
-    
+    contenedor.style.cssText = "padding: 20px; text-align: center; color: #fff; font-family: sans-serif;";
+
+    // Botón Salir
+    const btnSalir = document.createElement('button');
+    btnSalir.textContent = "⬅ Volver al Panel Principal";
+    btnSalir.style.cssText = "background: #d32f2f; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 20px;";
+    btnSalir.onclick = () => mostrarDashboard();
+    contenedor.appendChild(btnSalir);
+
+    // Imagen de Encabezado
+    const imgEncabezado = document.createElement('img');
+    imgEncabezado.src = 'analisis_enc.png';
+    imgEncabezado.style.cssText = "max-width: 600px; width: 100%; border-radius: 8px; display: block; margin: 0 auto 20px auto; border: 1px solid #30363d;";
+    contenedor.appendChild(imgEncabezado);
+
+    // Botón Ir al Panel
+    const btnIr = document.createElement('button');
+    btnIr.textContent = "Ir al panel";
+    btnIr.style.cssText = "background: #D4AF37; color: black; border: none; padding: 15px 30px; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold;";
+    btnIr.onclick = () => window.open('https://drrubenmpereyra-stack.github.io/Evaluacion-encuesta/', '_blank');
+    contenedor.appendChild(btnIr);
+
     vista.appendChild(contenedor);
-
-    document.getElementById('btn-ver-monitor').onclick = () => {
-        window.open("https://drrubenmpereyra-stack.github.io/Evaluacion-encuesta/", "_blank");
-    };
-
-    document.getElementById('btn-volver-monitor').onclick = () => {
-        mostrarDashboard();
-    };
 };
 // MI RESONANCIA (ALUMNO)
 
