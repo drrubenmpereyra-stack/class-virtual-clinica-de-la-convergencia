@@ -1995,7 +1995,7 @@ window.iniciarMonitorResonancia = () => {
     btnSalir.onclick = () => mostrarDashboard();
     contenedor.appendChild(btnSalir);
 
-    // Imagen de Encabezado
+    // Imagen
     const imgEncabezado = document.createElement('img');
     imgEncabezado.src = 'analisis_enc.png';
     imgEncabezado.style.cssText = "max-width: 600px; width: 100%; border-radius: 8px; display: block; margin: 0 auto 20px auto; border: 1px solid #30363d;";
@@ -2004,7 +2004,7 @@ window.iniciarMonitorResonancia = () => {
     // Botón Ir al Panel
     const btnIr = document.createElement('button');
     btnIr.textContent = "Ir al panel";
-    btnIr.style.cssText = "background: #D4AF37; color: black; border: none; padding: 15px 30px; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold;";
+    btnIr.style.cssText = "background: #D4AF37; color: black; border: none; padding: 15px 30px; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px; font-weight: bold;";
     btnIr.onclick = () => window.open('https://drrubenmpereyra-stack.github.io/Evaluacion-encuesta/', '_blank');
     contenedor.appendChild(btnIr);
 
