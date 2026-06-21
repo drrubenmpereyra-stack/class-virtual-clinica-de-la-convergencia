@@ -1985,55 +1985,62 @@ window.abrirVistaPagos = function() {
     };
 };
 // MONITOR DE RESONANCIA EVALUATIVA (ADM)
-window.mostrarMonitorResonancia = function() {
-    const mainContent = document.getElementById('main-content');
+window.abrirMonitorResonancia = function() {
+    const vista = document.getElementById('main-view');
+    vista.innerHTML = ''; 
+
+    const contenedor = document.createElement('div');
+    contenedor.style.cssText = "text-align: center; padding: 40px; color: #fff; background-color: #050508; min-height: 400px;";
     
-    // Verificación: si no encuentra el elemento, lanza un aviso en consola 
-    // en lugar de bloquear la ejecución con un error fatal
-    if (!mainContent) {
-        console.error("Error: El contenedor 'main-content' no existe en el DOM.");
-        return; 
-    }
-
-    mainContent.innerHTML = `
-        <div style="text-align: center; padding: 20px;">
-            <img src="analisis_enc.png" alt="Análisis de Resonancia" style="max-width: 800px; width: 100%; border-radius: 8px; border: 1px solid #30363d;">
-            
-            <div style="margin-top: 30px;">
-                <button onclick="window.open('https://drrubenmpereyra-stack.github.io/Evaluacion-encuesta/', '_blank')" 
-                        style="padding: 12px 25px; background: #d69e2e; border: none; color: #000; font-weight: bold; cursor: pointer; border-radius: 4px; margin-right: 10px;">
-                    Ir al panel
-                </button>
-                
-                <button onclick="window.mostrardashboard()" 
-                        style="padding: 12px 25px; background: #2d3748; border: none; color: white; font-weight: bold; cursor: pointer; border-radius: 4px;">
-                    Volver
-                </button>
-            </div>
-        </div>
+    contenedor.innerHTML = `
+        <img src="analisis_enc.png" alt="Monitor Resonancia" style="max-width: 600px; margin-bottom: 30px; display: block; margin-left: auto; margin-right: auto; border: 1px solid #30363d; border-radius: 8px;">
+        <br>
+        <button id="btn-ver-monitor" style="background: #D4AF37; color: black; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px; font-weight: bold;">
+            Ir al panel
+        </button>
+        <button id="btn-volver-monitor" style="background: #991b1b; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px; font-weight: bold;">
+            Volver
+        </button>
     `;
+    
+    vista.appendChild(contenedor);
+
+    document.getElementById('btn-ver-monitor').onclick = () => {
+        window.open("https://drrubenmpereyra-stack.github.io/Evaluacion-encuesta/", "_blank");
+    };
+
+    document.getElementById('btn-volver-monitor').onclick = () => {
+        mostrarDashboard();
+    };
 };
-window.mostrarResonanciaEstudiante = function() {
-    const mainContent = document.getElementById('main-content');
-    if (!mainContent) return;
+// MI RESONANCIA (ALUMNO)
+window.abrirMiResonancia = function() {
+    const vista = document.getElementById('main-view');
+    vista.innerHTML = ''; 
 
-    mainContent.innerHTML = `
-        <div style="text-align: center; padding: 20px;">
-            <img src="encuesta.png" alt="Resonancia Evaluativa" style="max-width: 500px; width: 100%; border-radius: 8px; border: 1px solid #2d3748; margin-bottom: 20px;">
-            
-            <div style="margin-top: 20px;">
-                <button onclick="window.open('https://drrubenmpereyra-stack.github.io/Encuesta-de-satisfaccion/', '_blank')" 
-                        style="padding: 12px 25px; background: #d69e2e; border: none; color: #000; font-weight: bold; cursor: pointer; border-radius: 4px; margin-right: 10px;">
-                    Ir a encuesta
-                </button>
-                
-                <button onclick="window.mostrardashboard()" 
-                        style="padding: 12px 25px; background: #2d3748; border: none; color: white; font-weight: bold; cursor: pointer; border-radius: 4px;">
-                    Volver
-                </button>
-            </div>
-        </div>
+    const contenedor = document.createElement('div');
+    contenedor.style.cssText = "text-align: center; padding: 40px; color: #fff; background-color: #050508; min-height: 400px;";
+    
+    contenedor.innerHTML = `
+        <img src="encuesta.png" alt="Mi Resonancia" style="max-width: 400px; margin-bottom: 30px; display: block; margin-left: auto; margin-right: auto;">
+        <br>
+        <button id="btn-ver-resonancia" style="background: #D4AF37; color: black; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px; font-weight: bold;">
+            Ir a encuesta
+        </button>
+        <button id="btn-volver-resonancia" style="background: #991b1b; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px; font-weight: bold;">
+            Volver
+        </button>
     `;
+    
+    vista.appendChild(contenedor);
+
+    document.getElementById('btn-ver-resonancia').onclick = () => {
+        window.open("https://drrubenmpereyra-stack.github.io/Encuesta-de-satisfaccion/", "_blank");
+    };
+
+    document.getElementById('btn-volver-resonancia').onclick = () => {
+        mostrarDashboard();
+    };
 };
 // 3. ARRANQUE
 document.body.onload = renderLogin;
