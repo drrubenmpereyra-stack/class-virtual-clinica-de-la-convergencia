@@ -2055,7 +2055,9 @@ window.abrirVistaMiResonancia = function() {
         mostrarDashboard();
     };
 };
-function abrirVistaRedEvaluativa() {
+// PARA MI RED EVALUATIVA
+// Definición al final del archivo
+window.abrirVistaRedEvaluativa = function() {
     const vista = document.getElementById('main-view');
     vista.innerHTML = ''; 
 
@@ -2082,6 +2084,6 @@ function abrirVistaRedEvaluativa() {
     document.getElementById('btn-volver').onclick = () => {
         mostrarDashboard();
     };
-}
+};
 // 3. ARRANQUE
 document.body.onload = renderLogin;
