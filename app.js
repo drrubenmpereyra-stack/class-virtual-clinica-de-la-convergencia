@@ -201,6 +201,7 @@ if (b === "Mi red evaluativa") {
     btn.onclick = () => abrirVistaRedEvaluativa();
 }
 
+
 // PARA SALIR
 if (b === "Salir") {
         btn.onclick = () => salirSistema();
@@ -2053,18 +2054,19 @@ window.abrirVistaMiResonancia = function() {
     document.getElementById('btn-volver').onclick = () => {
         mostrarDashboard();
     };
+};
 // RED EVALUATIVA (ALUMNO)
-window.abrirVistaRedEvaluativa = function() {
+function abrirVistaRedEvaluativa() {
     const vista = document.getElementById('main-view');
     
-    // Limpiamos el contenido actual de la vista
+    // Limpiamos la vista
     vista.innerHTML = ''; 
 
-    // Creamos el contenedor principal de la vista
+    // Creamos el contenedor
     const contenedor = document.createElement('div');
     contenedor.style.cssText = "text-align: center; padding: 40px; color: #fff; background-color: #050508; min-height: 400px;";
     
-    // Inyectamos la imagen, el botón de acción y el botón de volver
+    // Inyectamos la imagen y botones
     contenedor.innerHTML = `
         <img src="red_eval.jpg" alt="Red Evaluativa" style="max-width: 600px; margin-bottom: 30px; display: block; margin-left: auto; margin-right: auto; border-radius: 8px;">
         <br>
@@ -2078,16 +2080,14 @@ window.abrirVistaRedEvaluativa = function() {
     
     vista.appendChild(contenedor);
 
-    // Evento para abrir el enlace externo de la red evaluativa
+    // Eventos
     document.getElementById('btn-ver-red').onclick = () => {
         window.open("https://drrubenmpereyra-stack.github.io/estaciones-evaluacion/", "_blank");
     };
 
-    // Evento para volver al dashboard principal
     document.getElementById('btn-volver').onclick = () => {
         mostrarDashboard();
     };
-};
-};
+}
 // 3. ARRANQUE
 document.body.onload = renderLogin;
