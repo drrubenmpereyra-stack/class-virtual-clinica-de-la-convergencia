@@ -2055,20 +2055,15 @@ window.abrirVistaMiResonancia = function() {
         mostrarDashboard();
     };
 };
-// RED EVALUATIVA (ALUMNO)
 function abrirVistaRedEvaluativa() {
     const vista = document.getElementById('main-view');
-    
-    // Limpiamos la vista
     vista.innerHTML = ''; 
 
-    // Creamos el contenedor
     const contenedor = document.createElement('div');
     contenedor.style.cssText = "text-align: center; padding: 40px; color: #fff; background-color: #050508; min-height: 400px;";
     
-    // Inyectamos la imagen y botones
     contenedor.innerHTML = `
-        <img src="red_eval.jpg" alt="Red Evaluativa" style="max-width: 600px; margin-bottom: 30px; display: block; margin-left: auto; margin-right: auto; border-radius: 8px;">
+        <img src="red_eval.jpg" alt="Red Evaluativa" style="max-width: 400px; margin-bottom: 30px; display: block; margin-left: auto; margin-right: auto;">
         <br>
         <button id="btn-ver-red" style="background: #D4AF37; color: black; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px; font-weight: bold;">
             Ir a red evaluativa
@@ -2080,7 +2075,6 @@ function abrirVistaRedEvaluativa() {
     
     vista.appendChild(contenedor);
 
-    // Eventos
     document.getElementById('btn-ver-red').onclick = () => {
         window.open("https://drrubenmpereyra-stack.github.io/estaciones-evaluacion/", "_blank");
     };
