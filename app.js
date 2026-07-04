@@ -27,11 +27,11 @@ const MAPA_BOTONES = {
     "Calificaciones": "btn-green", "Auditoria Test": "btn-green", "Auditoria Taller": "btn-green", 
     "Analíticos": "btn-orange", "Visado analíticos": "btn-orange", "Emitir diplomas": "btn-orange", "Central de diplomas": "btn-orange",
     "Actividades recreativas": "btn-blue", "Enviar mensajes": "btn-blue", "Monitor resonancia evaluativa": "btn red", "Mi resonancia evaluativa": "btn red", 
-    "Mis Test": "btn-sky", "Mis Talleres": "btn-sky", "Mis pagos": "btn-sky", "Mi asistencia": "btn-sky", "Mi analítico": "btn-sky", "Mi diploma": "btn-sky", "Mis mensajes": "btn-sky", "Mis calificaciones": "btn-sky", "Herramientas": "btn-red", "Salir": "btn-red",
+    "Mis Test": "btn-sky", "Mis Talleres": "btn-sky", "Mis pagos": "btn-sky", "Mi asistencia": "btn-sky", "Mi analítico": "btn-sky", "Mi diploma": "btn-sky", "Mis mensajes": "btn-sky", "Mis calificaciones": "btn-sky", "Herramientas": "btn-red", "RED EVALIATIVA": "btn-orange", "Salir": "btn-red",
 };
 
 const LISTA_ADMIN = ["Encuentros", "Talleres", "Biblioteca", "Actividades recreativas", "Participantes", "Pagos", "Asistencia", "Calificaciones", "Analíticos", "Visado analíticos", "Emitir diplomas", "Herramientas", "Auditoria Test", "Auditoria Taller", "Central de diplomas", "Enviar mensajes", "Monitor resonancia evaluativa",  "Salir" ];
-const LISTA_ALUMNO = ["Encuentros", "Talleres", "Biblioteca", "Actividades recreativas", "Mis Test", "Mis Talleres", "Mis pagos", "Mi asistencia", "Mi analítico", "Mi diploma", "Mis mensajes", "Mis calificaciones", "Mi resonancia evaluativa",  "Salir"];
+const LISTA_ALUMNO = ["Encuentros", "Talleres", "Biblioteca", "Actividades recreativas", "Mis Test", "Mis Talleres", "Mis pagos", "Mi asistencia", "Mi analítico", "Mi diploma", "Mis mensajes", "Mis calificaciones", "Mi resonancia evaluativa", "Mi red evaluativa",  "Salir"];
 
 let usuarioActual = null;
 
