@@ -198,8 +198,9 @@ if (b === "Mi resonancia evaluativa") {
 }
 // PARA MI RED EVALUATIVA
 if (b === "Mi red evaluativa") {
-    btn.onclick = () => abrirVistaMiRedevaluativa();
+    btn.onclick = () => window.abrirVistaRedEvaluativa();
 }
+
 
 // PARA SALIR
 if (b === "Salir") {
@@ -2054,23 +2055,18 @@ window.abrirVistaMiResonancia = function() {
         mostrarDashboard();
     };
 };
-// MI RED EVALUATIVA (ALUMNO)
-window.abrirVistaMiRedevaluativa = function() {
+window.abrirVistaRedEvaluativa = function() {
     const vista = document.getElementById('main-view');
-    
-    // Limpiamos el contenido actual de la vista
     vista.innerHTML = ''; 
 
-    // Creamos el contenedor principal de la vista
     const contenedor = document.createElement('div');
     contenedor.style.cssText = "text-align: center; padding: 40px; color: #fff; background-color: #050508; min-height: 400px;";
     
-    // Inyectamos la imagen, el botón de acción y el botón de volver
     contenedor.innerHTML = `
-        <img src="red_aval.jpg" alt="Mi red evaluativa" style="max-width: 400px; margin-bottom: 30px; display: block; margin-left: auto; margin-right: auto;">
+        <img src="red_eval.jpg" alt="Red Evaluativa" style="max-width: 400px; margin-bottom: 30px; display: block; margin-left: auto; margin-right: auto;">
         <br>
         <button id="btn-ver-red" style="background: #D4AF37; color: black; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px; font-weight: bold;">
-            Ir a red
+            Ir a red evaluativa
         </button>
         <button id="btn-volver" style="background: #991b1b; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px; font-weight: bold;">
             Volver
@@ -2079,12 +2075,10 @@ window.abrirVistaMiRedevaluativa = function() {
     
     vista.appendChild(contenedor);
 
-    // Evento para abrir el enlace externo
     document.getElementById('btn-ver-red').onclick = () => {
         window.open("https://drrubenmpereyra-stack.github.io/estaciones-evaluacion/", "_blank");
     };
 
-    // Evento para volver al dashboard principal
     document.getElementById('btn-volver').onclick = () => {
         mostrarDashboard();
     };
