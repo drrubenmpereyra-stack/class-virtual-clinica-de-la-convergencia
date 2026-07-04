@@ -198,7 +198,7 @@ if (b === "Mi resonancia evaluativa") {
 }
 // PARA MI RED EVALUATIVA
 if (b === "Mi red evaluativa") {
-    btn.onclick = () => window.abrirVistaRedEvaluativa();
+    btn.onclick = () => abrirVistaRedEvaluativa();
 }
 
 
