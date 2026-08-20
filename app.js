@@ -936,7 +936,7 @@ window.iniciarModuloActividades = () => {
         divVisor.scrollIntoView({ behavior: 'smooth' });
     }
 };
-// MODULOS DE TEST 1 al 5
+// MODULOS DE TEST 1 al 6
 window.iniciarModuloTest = () => {
     const vista = document.getElementById('main-view');
     vista.textContent = ''; 
@@ -956,15 +956,16 @@ window.iniciarModuloTest = () => {
     contenedor.appendChild(h2);
 
     const grid = document.createElement('div');
-    grid.style.cssText = "display: flex; flex-wrap: wrap; justify-content: center; margin-top: 20px; gap: 20px;"; // Agregado flex-wrap y gap
+    grid.style.cssText = "display: flex; flex-wrap: wrap; justify-content: center; margin-top: 20px; gap: 20px;";
     
-    // Lista de datos para los tests
+    // Lista de datos para los tests (se agregó Test 6)
     const tests = [
         { nombre: "Test 1", img: "Test1.png", url: "https://drrubenmpereyra-stack.github.io/Cuestionario-1/" },
         { nombre: "Test 2", img: "Test2.png", url: "https://drrubenmpereyra-stack.github.io/Cuestionario-2/" },
         { nombre: "Test 3", img: "Test3.png", url: "https://drrubenmpereyra-stack.github.io/Cuestionario-3_1/" },
         { nombre: "Test 4", img: "Test4.png", url: "https://drrubenmpereyra-stack.github.io/Cuestionario-4/" },
-        { nombre: "Test 5", img: "Test5.png", url: "https://drrubenmpereyra-stack.github.io/Cuestionario-5/" }
+        { nombre: "Test 5", img: "Test5.png", url: "https://drrubenmpereyra-stack.github.io/Cuestionario-5/" },
+        { nombre: "Test 6", img: "Test6.png", url: "https://drrubenmpereyra-stack.github.io/cuestionario6/" }
     ];
 
     tests.forEach(test => {
