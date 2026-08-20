@@ -1078,7 +1078,7 @@ window.eliminarRegistro = async (id, test, alumno) => {
         alert("Hubo un error al intentar eliminar el registro.");
     }
 };
-// DESARROLLO PARA TALLERES (ALUMNOS)
+// DESARROLLO PARA TALLERES 1 al 6 (ALUMNOS)
 window.gestionarTalleres = () => {
     const vista = document.getElementById('main-view');
     const talleres = [
@@ -1086,7 +1086,8 @@ window.gestionarTalleres = () => {
         { titulo: "Memorias traumáticas y el a posteriori", url: "https://drrubenmpereyra-stack.github.io/Taller-2/", img: "Taller2.png" },
         { titulo: "Circuitos de recompensa y patologías del deseo", url: "https://drrubenmpereyra-stack.github.io/Taller-3/", img: "Taller3.png" },
         { titulo: "El marcador somático en la transferencia", url: "https://drrubenmpereyra-stack.github.io/Taller-4/", img: "Taller4.png" },
-        { titulo: "Neurobiología de la repetición", url: "https://drrubenmpereyra-stack.github.io/Taller-5/", img: "Taller5.png" }
+        { titulo: "Neurobiología de la repetición", url: "https://drrubenmpereyra-stack.github.io/Taller-5/", img: "Taller5.png" },
+        { titulo: "El laberinto de la urgencia y plasticidad sináptica", url: "https://drrubenmpereyra-stack.github.io/Taller-6/", img: "Taller6.png" }
     ];
 
     let contenido = `
