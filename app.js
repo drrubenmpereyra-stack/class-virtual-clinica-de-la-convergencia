@@ -1079,7 +1079,8 @@ window.eliminarRegistro = async (id, test, alumno) => {
         alert("Hubo un error al intentar eliminar el registro.");
     }
 };
-// DESARROLLO PARA TALLERES 1 al 6 (ALUMNOS)
+// DESARROLLO PARA TALLERES 1 al 7 (ALUMNOS)
+
 window.gestionarTalleres = () => {
     const vista = document.getElementById('main-view');
     const talleres = [
@@ -1088,7 +1089,8 @@ window.gestionarTalleres = () => {
         { titulo: "Circuitos de recompensa y patologías del deseo", url: "https://drrubenmpereyra-stack.github.io/Taller-3/", img: "Taller3.png" },
         { titulo: "El marcador somático en la transferencia", url: "https://drrubenmpereyra-stack.github.io/Taller-4/", img: "Taller4.png" },
         { titulo: "Neurobiología de la repetición", url: "https://drrubenmpereyra-stack.github.io/Taller-5/", img: "Taller5.png" },
-        { titulo: "El laberinto de la urgencia y plasticidad sináptica", url: "https://drrubenmpereyra-stack.github.io/Taller-6/", img: "Taller6.png" }
+        { titulo: "El laberinto de la urgencia y plasticidad sináptica", url: "https://drrubenmpereyra-stack.github.io/Taller-6/", img: "Taller6.png" },
+        { titulo: "Arquitectura del Sueño y Función Alucinatoria", url: "https://drrubenmpereyra-stack.github.io/Taller-7/", img: "Taller7.png" }
     ];
 
     let contenido = `
