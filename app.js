@@ -936,7 +936,7 @@ window.iniciarModuloActividades = () => {
         divVisor.scrollIntoView({ behavior: 'smooth' });
     }
 };
-// MODULOS DE TEST 1 al 8
+// MODULOS DE TEST 1 al 9
 window.iniciarModuloTest = () => {
     const vista = document.getElementById('main-view');
     vista.textContent = ''; 
@@ -958,7 +958,7 @@ window.iniciarModuloTest = () => {
     const grid = document.createElement('div');
     grid.style.cssText = "display: flex; flex-wrap: wrap; justify-content: center; margin-top: 20px; gap: 20px;";
     
-    // Lista de datos para los tests (se agregó Test 8)
+    // Lista de datos para los tests (se agregó Test 9)
     const tests = [
         { nombre: "Test 1", img: "Test1.png", url: "https://drrubenmpereyra-stack.github.io/Cuestionario-1/" },
         { nombre: "Test 2", img: "Test2.png", url: "https://drrubenmpereyra-stack.github.io/Cuestionario-2/" },
@@ -967,7 +967,8 @@ window.iniciarModuloTest = () => {
         { nombre: "Test 5", img: "Test5.png", url: "https://drrubenmpereyra-stack.github.io/Cuestionario-5/" },
         { nombre: "Test 6", img: "Test6.png", url: "https://drrubenmpereyra-stack.github.io/cuestionario6/" },
         { nombre: "Test 7", img: "Test7.png", url: "https://drrubenmpereyra-stack.github.io/Cuestionario-7/" },
-        { nombre: "Test 8", img: "Test8.png", url: "https://drrubenmpereyra-stack.github.io/Cuestionario-8/" }
+        { nombre: "Test 8", img: "Test8.png", url: "https://drrubenmpereyra-stack.github.io/Cuestionario-8/" },
+        { nombre: "Test 9", img: "Test9.png", url: "https://drrubenmpereyra-stack.github.io/Cuestionario-9/" }
     ];
 
     tests.forEach(test => {
@@ -1080,7 +1081,7 @@ window.eliminarRegistro = async (id, test, alumno) => {
         alert("Hubo un error al intentar eliminar el registro.");
     }
 };
-// DESARROLLO PARA TALLERES 1 al 8 (ALUMNOS)
+// DESARROLLO PARA TALLERES 1 al 9 (ALUMNOS)
 
 window.gestionarTalleres = () => {
     const vista = document.getElementById('main-view');
@@ -1092,7 +1093,8 @@ window.gestionarTalleres = () => {
         { titulo: "Neurobiología de la repetición", url: "https://drrubenmpereyra-stack.github.io/Taller-5/", img: "Taller5.png" },
         { titulo: "El laberinto de la urgencia y plasticidad sináptica", url: "https://drrubenmpereyra-stack.github.io/Taller-6/", img: "Taller6.png" },
         { titulo: "Arquitectura del Sueño y Función Alucinatoria", url: "https://drrubenmpereyra-stack.github.io/Taller-7/", img: "Taller7.png" },
-        { titulo: "El Ello Somático y Trastornos Psicosomáticos", url: "https://drrubenmpereyra-stack.github.io/Taller-8/", img: "Taller8.png" }
+        { titulo: "El Ello Somático y Trastornos Psicosomáticos", url: "https://drrubenmpereyra-stack.github.io/Taller-8/", img: "Taller8.png" },
+        { titulo: "Caso Valeria y el Tormento Límbico", url: "https://drrubenmpereyra-stack.github.io/Taller-9/", img: "Taller9.png" }
     ];
 
     let contenido = `
