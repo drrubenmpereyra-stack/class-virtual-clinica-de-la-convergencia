@@ -1445,9 +1445,7 @@ window.abrirMisCalificaciones = async function() {
     const vista = document.getElementById('main-view');
     vista.innerHTML = '<div style="text-align: center; padding: 40px; color: #fff;">Cargando tus calificaciones...</div>';
 
-    // Verificamos qué usuario está logueado
     const nombreAlumno = usuarioActual && usuarioActual.nombre ? usuarioActual.nombre.trim() : "";
-    console.log("--> Alumno logueado actual:", nombreAlumno);
 
     try {
         const snapshot = await db.collection("resultados").get();
@@ -1457,13 +1455,14 @@ window.abrirMisCalificaciones = async function() {
             const data = doc.data();
             const alumnoRegistro = data.alumno ? data.alumno.trim() : "";
             
-            console.log(`Revisando en DB -> Alumno: "${alumnoRegistro}" | Visible:`, data.visibleParaAlumno);
-
-            // Comparamos sin importar mayúsculas/minúsculas
+            // Comparamos el nombre del alumno y validamos que esté visible
             if (alumnoRegistro.toUpperCase() === nombreAlumno.toUpperCase() && data.visibleParaAlumno === true) {
+                // Normalizamos el número de test para mostrarlo prolijo
+                const numeroTest = data.test_numero ? data.test_numero : 'Evaluación';
+
                 filas += `
                     <tr style="border-bottom: 1px solid #334155;">
-                        <td style="padding: 12px;">${data.test_numero || 'Test'}</td>
+                        <td style="padding: 12px; font-weight: bold; color: #D4AF37;">${numeroTest}</td>
                         <td style="padding: 12px; text-align: center;">${data.nota || '-'}</td>
                         <td style="padding: 12px; text-align: center;">${data.fecha ? data.fecha.split('T')[0] : '-'}</td>
                     </tr>`;
