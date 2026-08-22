@@ -991,30 +991,30 @@ window.iniciarModuloTest = () => {
     vista.appendChild(contenedor);
 };
 // AUDITORIA TEST (funcion modificada corrige errores)
+// AUDITORIA TEST (A prueba de fallos: muestra todo sin filtros estrictos de orden)
 window.auditoriaTest = async () => {
     const vista = document.getElementById('main-view');
     vista.innerHTML = '<div style="color: #fff; padding: 20px; text-align: center;">Cargando registros de auditoría...</div>';
 
     try {
-        const snapshot = await db.collection("resultados").orderBy("fecha", "desc").get();
+        // Traemos todos los documentos sin el .orderBy estricto para que Firestore no oculte nada
+        const snapshot = await db.collection("resultados").get();
         
         let filas = "";
         snapshot.forEach(doc => {
             const data = doc.data();
-            // CAMBIO: Evaluamos el nuevo campo de visibilidad
             const esVerificado = data.visibleParaAlumno ? "checked" : "";
             
             filas += `
                 <tr style="border-bottom: 1px solid #334155;">
-                    <td style="padding: 15px;">${data.alumno}</td>
-                    <td style="padding: 15px;">${data.test_numero}</td>
-                    <td style="padding: 15px; text-align: center;">${data.nota}</td>
+                    <td style="padding: 15px;">${data.alumno || 'Sin nombre'}</td>
+                    <td style="padding: 15px;">${data.test_numero || 'Test'}</td>
+                    <td style="padding: 15px; text-align: center;">${data.nota || '-'}</td>
                     <td style="padding: 15px; text-align: center;">
-                        <!-- CAMBIO: Llamamos a la nueva función actualizarVisibilidadTest -->
                         <input type="checkbox" ${esVerificado} onchange="actualizarVisibilidadTest('${doc.id}', this.checked)" style="cursor: pointer; transform: scale(1.5);">
                     </td>
                     <td style="padding: 15px; text-align: center;">
-                        <button onclick="eliminarRegistro('${doc.id}', '${data.test_numero}', '${data.alumno}')" 
+                        <button onclick="eliminarRegistro('${doc.id}', '${data.test_numero || 'Test'}', '${data.alumno || 'Alumno'}')" 
                                 style="background:#8b0000; color:white; border:none; padding:5px 10px; border-radius:3px; cursor:pointer;">
                             Eliminar
                         </button>
@@ -1043,50 +1043,6 @@ window.auditoriaTest = async () => {
             </div>`;
     } catch (e) {
         vista.innerHTML = `<div style="color: red; padding: 20px; text-align: center;">Error al cargar auditoría: ${e.message}</div>`;
-    }
-};
-
-// NUEVA FUNCIÓN: Actualiza el estado de visibilidad directamente en la base de datos
-window.actualizarVisibilidadTest = async (idDoc, estado) => {
-    try {
-        await db.collection("resultados").doc(idDoc).update({
-            visibleParaAlumno: estado
-        });
-        // Solo para feedback visual opcional en la consola
-        console.log(`Estado de visibilidad actualizado a: ${estado}`);
-    } catch (e) {
-        console.error("Error al actualizar visibilidad:", e);
-        alert("No se pudo actualizar el estado de visibilidad.");
-    }
-};
-
-window.eliminarRegistro = async (id, test, alumno) => {
-    if (!confirm(`¿Estás seguro de eliminar el registro de ${alumno} (${test})?`)) return;
-
-    try {
-        // 1. Eliminar de la colección principal
-        await db.collection("resultados").doc(id).delete();
-        
-        // 2. Intentar eliminar de la colección de aprobados (lo mantenemos por si hay registros antiguos)
-        const nombreDoc = `Resultados ${test} de ${alumno}`;
-        await db.collection("resultados_aprobados").doc(nombreDoc).delete();
-
-        alert("Registro eliminado correctamente.");
-        // Refrescar la vista para que el usuario vea el cambio
-        auditoriaTest();
-    } catch (e) {
-        console.error("Error al eliminar:", e);
-        alert("Hubo un error al intentar eliminar el registro.");
-    }
-};
-window.actualizarVisibilidadTest = async (idDoc, estado) => {
-    try {
-        await db.collection("resultados").doc(idDoc).update({
-            visibleParaAlumno: estado
-        });
-    } catch (e) {
-        console.error("Error al actualizar visibilidad:", e);
-        alert("No se pudo actualizar el estado de visibilidad.");
     }
 };
 // DESARROLLO PARA TALLERES 1 al 10 (ALUMNOS)
