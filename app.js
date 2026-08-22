@@ -2047,27 +2047,14 @@ window.abrirVistaMiResonancia = function() {
     };
 };
 window.actualizarVisibilidadTest = async function(idDoc, estado) {
-    console.log("-> Intentando actualizar documento ID:", idDoc, "con estado visible:", estado);
     try {
-        // Intentamos actualizar la colección 'resultados'
         await db.collection("resultados").doc(idDoc).update({
             visibleParaAlumno: Boolean(estado)
         });
-        console.log("¡ÉXITO! Firestore actualizado correctamente en la colección 'resultados'.");
-        alert("Visibilidad actualizada correctamente.");
-    } catch (error1) {
-        console.warn("Falló en 'resultados', intentando en 'resultados_test'...");
-        try {
-            // Plan de respaldo por si acaso el documento original está en otra colección
-            await db.collection("resultados_test").doc(idDoc).update({
-                visibleParaAlumno: Boolean(estado)
-            });
-            console.log("¡ÉXITO! Firestore actualizado en 'resultados_test'.");
-            alert("Visibilidad actualizada (en colección alternativa).");
-        } catch (error2) {
-            console.error("ERROR CRÍTICO: No se pudo actualizar en ninguna colección:", error2);
-            alert("Error al actualizar. Revisa la consola (F12).");
-        }
+        console.log("✔ Visibilidad actualizada con éxito en Firestore para el documento:", idDoc);
+    } catch (error) {
+        console.error("❌ Error al actualizar la visibilidad en Firebase:", error);
+        alert("Error al actualizar: " + error.message);
     }
 };
 // 3. ARRANQUE
