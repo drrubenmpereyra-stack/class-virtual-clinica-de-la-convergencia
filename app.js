@@ -990,7 +990,7 @@ window.iniciarModuloTest = () => {
     contenedor.appendChild(grid);
     vista.appendChild(contenedor);
 };
-// AUDITORIA TEST
+// AUDITORIA TEST (funcion modificada corrige errores)
 window.auditoriaTest = async () => {
     const vista = document.getElementById('main-view');
     vista.innerHTML = '<div style="color: #fff; padding: 20px; text-align: center;">Cargando registros de auditoría...</div>';
@@ -1001,14 +1001,17 @@ window.auditoriaTest = async () => {
         let filas = "";
         snapshot.forEach(doc => {
             const data = doc.data();
-            const esVerificado = data.verificado ? "checked" : "";
+            // CAMBIO: Evaluamos el nuevo campo de visibilidad
+            const esVerificado = data.visibleParaAlumno ? "checked" : "";
+            
             filas += `
                 <tr style="border-bottom: 1px solid #334155;">
                     <td style="padding: 15px;">${data.alumno}</td>
                     <td style="padding: 15px;">${data.test_numero}</td>
                     <td style="padding: 15px; text-align: center;">${data.nota}</td>
                     <td style="padding: 15px; text-align: center;">
-                        <input type="checkbox" ${esVerificado} onchange="marcarVerificado('${doc.id}', '${data.test_numero}', '${data.alumno}', this.checked)">
+                        <!-- CAMBIO: Llamamos a la nueva función actualizarVisibilidadTest -->
+                        <input type="checkbox" ${esVerificado} onchange="actualizarVisibilidadTest('${doc.id}', this.checked)" style="cursor: pointer; transform: scale(1.5);">
                     </td>
                     <td style="padding: 15px; text-align: center;">
                         <button onclick="eliminarRegistro('${doc.id}', '${data.test_numero}', '${data.alumno}')" 
@@ -1030,7 +1033,7 @@ window.auditoriaTest = async () => {
                                 <th style="padding: 15px; border: 1px solid #334155;">Estudiante</th>
                                 <th style="padding: 15px; border: 1px solid #334155;">Test</th>
                                 <th style="padding: 15px; border: 1px solid #334155;">Nota</th>
-                                <th style="padding: 15px; border: 1px solid #334155;">Verificado</th>
+                                <th style="padding: 15px; border: 1px solid #334155;">Visible / Aprobado</th>
                                 <th style="padding: 15px; border: 1px solid #334155;">Acciones</th>
                             </tr>
                         </thead>
@@ -1042,27 +1045,21 @@ window.auditoriaTest = async () => {
         vista.innerHTML = `<div style="color: red; padding: 20px; text-align: center;">Error al cargar auditoría: ${e.message}</div>`;
     }
 };
-window.marcarVerificado = async (id, test, alumno, esVerificado) => {
-    if (!esVerificado) return; // Solo lógica si marca el checkbox
 
+// NUEVA FUNCIÓN: Actualiza el estado de visibilidad directamente en la base de datos
+window.actualizarVisibilidadTest = async (idDoc, estado) => {
     try {
-        // 1. Actualizar estado en la tabla original
-        await db.collection("resultados").doc(id).update({ verificado: true });
-        
-        // 2. Crear documento en la nueva colección (o documento específico)
-        const nombreDoc = `Resultados ${test} de ${alumno}`;
-        await db.collection("resultados_aprobados").doc(nombreDoc).set({
-            alumno: alumno,
-            test: test,
-            fecha_verificacion: new Date().toLocaleString(),
-            aprobado: true
+        await db.collection("resultados").doc(idDoc).update({
+            visibleParaAlumno: estado
         });
-
-        alert("Registro verificado y exportado con éxito.");
+        // Solo para feedback visual opcional en la consola
+        console.log(`Estado de visibilidad actualizado a: ${estado}`);
     } catch (e) {
-        console.error("Error al auditar:", e);
+        console.error("Error al actualizar visibilidad:", e);
+        alert("No se pudo actualizar el estado de visibilidad.");
     }
 };
+
 window.eliminarRegistro = async (id, test, alumno) => {
     if (!confirm(`¿Estás seguro de eliminar el registro de ${alumno} (${test})?`)) return;
 
@@ -1070,7 +1067,7 @@ window.eliminarRegistro = async (id, test, alumno) => {
         // 1. Eliminar de la colección principal
         await db.collection("resultados").doc(id).delete();
         
-        // 2. Intentar eliminar de la colección de aprobados (si existía)
+        // 2. Intentar eliminar de la colección de aprobados (lo mantenemos por si hay registros antiguos)
         const nombreDoc = `Resultados ${test} de ${alumno}`;
         await db.collection("resultados_aprobados").doc(nombreDoc).delete();
 
@@ -1080,6 +1077,16 @@ window.eliminarRegistro = async (id, test, alumno) => {
     } catch (e) {
         console.error("Error al eliminar:", e);
         alert("Hubo un error al intentar eliminar el registro.");
+    }
+};
+window.actualizarVisibilidadTest = async (idDoc, estado) => {
+    try {
+        await db.collection("resultados").doc(idDoc).update({
+            visibleParaAlumno: estado
+        });
+    } catch (e) {
+        console.error("Error al actualizar visibilidad:", e);
+        alert("No se pudo actualizar el estado de visibilidad.");
     }
 };
 // DESARROLLO PARA TALLERES 1 al 10 (ALUMNOS)
@@ -1477,40 +1484,52 @@ window.confirmarBorrado = (docId, coleccion) => {
         });
     }
 };
-// MIS CALIFICACIONES (ALUMNOS)
-window.abrirMisCalificaciones = function() {
+// MIS CALIFICACIONES (ALUMNOS)   (modificado por solución de errores)
+window.abrirMisCalificaciones = async function() {
     const vista = document.getElementById('main-view');
-    
-    // Limpiamos el contenido actual de la vista
-    vista.innerHTML = ''; 
+    vista.innerHTML = '<div style="text-align: center; padding: 40px; color: #fff;">Cargando tus calificaciones...</div>';
 
-    // Creamos el contenedor principal de la vista
-    const contenedor = document.createElement('div');
-    contenedor.style.cssText = "text-align: center; padding: 40px; color: #fff; background-color: #050508; min-height: 400px;";
-    
-    // Inyectamos la imagen, el botón de acción y el botón de volver
-    contenedor.innerHTML = `
-        <img src="miasistencia.png" alt="Mis Calificaciones" style="max-width: 400px; margin-bottom: 30px; display: block; margin-left: auto; margin-right: auto;">
-        <br>
-        <button id="btn-consultar-calificaciones" style="background: #D4AF37; color: black; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px; font-weight: bold;">
-            Consultar calificaciones
-        </button>
-        <button id="btn-volver-calificaciones" style="background: #991b1b; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px; font-weight: bold;">
-            Volver
-        </button>
-    `;
-    
-    vista.appendChild(contenedor);
+    const nombreAlumno = usuarioActual.nombre;
 
-    // Evento para abrir el enlace externo de GitHub
-    document.getElementById('btn-consultar-calificaciones').onclick = () => {
-        window.open("https://drrubenmpereyra-stack.github.io/Consulta-Calificaciones/", "_blank");
-    };
+    try {
+        const snapshot = await db.collection("resultados")
+            .where("alumno", "==", nombreAlumno)
+            .where("visibleParaAlumno", "==", true)
+            .get();
 
-    // Evento para volver al dashboard principal
-    document.getElementById('btn-volver-calificaciones').onclick = () => {
-        mostrarDashboard();
-    };
+        let filas = "";
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            filas += `
+                <tr style="border-bottom: 1px solid #334155;">
+                    <td style="padding: 12px;">${data.test_numero || 'Test'}</td>
+                    <td style="padding: 12px; text-align: center;">${data.nota || '-'}</td>
+                    <td style="padding: 12px; text-align: center;">${data.fecha || '-'}</td>
+                </tr>`;
+        });
+
+        vista.innerHTML = `
+            <div style="padding: 40px; color: #fff; font-family: sans-serif; max-width: 700px; margin: 0 auto;">
+                <button onclick="mostrarDashboard()" style="background: #991b1b; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-bottom: 20px;">⬅ Volver</button>
+                <h2 style="color: #D4AF37; text-align: center; margin-bottom: 20px;">Mis Calificaciones Aprobadas</h2>
+                <table style="width: 100%; border-collapse: collapse; background: #050508; border: 1px solid #D4AF37;">
+                    <thead>
+                        <tr style="background: #1e293b; color: #D4AF37;">
+                            <th style="padding: 12px; border: 1px solid #334155;">Evaluación</th>
+                            <th style="padding: 12px; border: 1px solid #334155; text-align: center;">Calificación</th>
+                            <th style="padding: 12px; border: 1px solid #334155; text-align: center;">Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${filas || '<tr><td colspan="3" style="padding: 20px; text-align: center;">Aún no tienes calificaciones publicadas por la administración.</td></tr>'}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    } catch (e) {
+        console.error("Error al consultar calificaciones:", e);
+        vista.innerHTML = `<div style="color: red; text-align: center; padding: 40px;">Error al cargar tus calificaciones.</div>`;
+    }
 };
 // PARA ANALÍTICOS EN ADMINISTRADOR
 /**
