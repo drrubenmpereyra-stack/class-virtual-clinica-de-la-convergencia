@@ -1489,23 +1489,26 @@ window.abrirMisCalificaciones = async function() {
     const vista = document.getElementById('main-view');
     vista.innerHTML = '<div style="text-align: center; padding: 40px; color: #fff;">Cargando tus calificaciones...</div>';
 
-    const nombreAlumno = usuarioActual.nombre;
+    const nombreAlumno = usuarioActual.nombre ? usuarioActual.nombre.trim() : "";
 
     try {
-        const snapshot = await db.collection("resultados")
-            .where("alumno", "==", nombreAlumno)
-            .where("visibleParaAlumno", "==", true)
-            .get();
+        // Traemos todos los registros de la colección resultados
+        const snapshot = await db.collection("resultados").get();
 
         let filas = "";
         snapshot.forEach(doc => {
             const data = doc.data();
-            filas += `
-                <tr style="border-bottom: 1px solid #334155;">
-                    <td style="padding: 12px;">${data.test_numero || 'Test'}</td>
-                    <td style="padding: 12px; text-align: center;">${data.nota || '-'}</td>
-                    <td style="padding: 12px; text-align: center;">${data.fecha || '-'}</td>
-                </tr>`;
+            const alumnoRegistro = data.alumno ? data.alumno.trim() : "";
+
+            // Comparamos ignorando mayúsculas/minúsculas y validamos que esté visible
+            if (alumnoRegistro.toUpperCase() === nombreAlumno.toUpperCase() && data.visibleParaAlumno === true) {
+                filas += `
+                    <tr style="border-bottom: 1px solid #334155;">
+                        <td style="padding: 12px;">${data.test_numero || 'Test'}</td>
+                        <td style="padding: 12px; text-align: center;">${data.nota || '-'}</td>
+                        <td style="padding: 12px; text-align: center;">${data.fecha ? data.fecha.split('T')[0] : '-'}</td>
+                    </tr>`;
+            }
         });
 
         vista.innerHTML = `
@@ -2115,4 +2118,5 @@ window.abrirVistaRedEvaluativa = function() {
 };
 // 3. ARRANQUE
 document.body.onload = renderLogin;
+
 
