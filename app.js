@@ -2047,43 +2047,28 @@ window.abrirVistaMiResonancia = function() {
     };
 };
 window.actualizarVisibilidadTest = async function(idDoc, estado) {
+    console.log("-> Intentando actualizar documento ID:", idDoc, "con estado visible:", estado);
     try {
+        // Intentamos actualizar la colección 'resultados'
         await db.collection("resultados").doc(idDoc).update({
             visibleParaAlumno: Boolean(estado)
         });
-        console.log("Visibilidad actualizada con éxito para el documento:", idDoc);
-    } catch (error) {
-        console.error("Error al actualizar la visibilidad del test:", error);
-        alert("Error al actualizar la visibilidad. Revisa la consola.");
+        console.log("¡ÉXITO! Firestore actualizado correctamente en la colección 'resultados'.");
+        alert("Visibilidad actualizada correctamente.");
+    } catch (error1) {
+        console.warn("Falló en 'resultados', intentando en 'resultados_test'...");
+        try {
+            // Plan de respaldo por si acaso el documento original está en otra colección
+            await db.collection("resultados_test").doc(idDoc).update({
+                visibleParaAlumno: Boolean(estado)
+            });
+            console.log("¡ÉXITO! Firestore actualizado en 'resultados_test'.");
+            alert("Visibilidad actualizada (en colección alternativa).");
+        } catch (error2) {
+            console.error("ERROR CRÍTICO: No se pudo actualizar en ninguna colección:", error2);
+            alert("Error al actualizar. Revisa la consola (F12).");
+        }
     }
-};
-window.abrirVistaRedEvaluativa = function() {
-    const vista = document.getElementById('main-view');
-    vista.innerHTML = ''; 
-
-    const contenedor = document.createElement('div');
-    contenedor.style.cssText = "text-align: center; padding: 40px; color: #fff; background-color: #050508; min-height: 400px;";
-    
-    contenedor.innerHTML = `
-        <img src="red_eval.jpg" alt="Red Evaluativa" style="max-width: 400px; margin-bottom: 30px; display: block; margin-left: auto; margin-right: auto;">
-        <br>
-        <button id="btn-ver-red" style="background: #D4AF37; color: black; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px; font-weight: bold;">
-            Ir a red evaluativa
-        </button>
-        <button id="btn-volver" style="background: #991b1b; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px; font-weight: bold;">
-            Volver
-        </button>
-    `;
-    
-    vista.appendChild(contenedor);
-
-    document.getElementById('btn-ver-red').onclick = () => {
-        window.open("https://drrubenmpereyra-stack.github.io/estaciones-evaluacion/", "_blank");
-    };
-
-    document.getElementById('btn-volver').onclick = () => {
-        mostrarDashboard();
-    };
 };
 // 3. ARRANQUE
 document.body.onload = renderLogin;
