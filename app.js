@@ -2046,6 +2046,17 @@ window.abrirVistaMiResonancia = function() {
         mostrarDashboard();
     };
 };
+window.actualizarVisibilidadTest = async function(idDoc, estado) {
+    try {
+        await db.collection("resultados").doc(idDoc).update({
+            visibleParaAlumno: Boolean(estado)
+        });
+        console.log("Visibilidad actualizada con éxito para el documento:", idDoc);
+    } catch (error) {
+        console.error("Error al actualizar la visibilidad del test:", error);
+        alert("Error al actualizar la visibilidad. Revisa la consola.");
+    }
+};
 window.abrirVistaRedEvaluativa = function() {
     const vista = document.getElementById('main-view');
     vista.innerHTML = ''; 
@@ -2076,5 +2087,4 @@ window.abrirVistaRedEvaluativa = function() {
 };
 // 3. ARRANQUE
 document.body.onload = renderLogin;
-
 
