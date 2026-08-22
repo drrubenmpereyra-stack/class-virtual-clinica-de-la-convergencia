@@ -1147,13 +1147,23 @@ window.toggleVerificado = async (id, estado) => {
 };
 
 // Función para eliminar un registro con confirmación
-window.eliminarRegistro = async (id) => {
-    if (confirm("¿Estás seguro de que deseas eliminar este registro de taller?")) {
+window.eliminarRegistro = async function(idDoc, testNombre, alumnoNombre) {
+    if (confirm(`¿Estás seguro de que deseas eliminar este registro de ${testNombre || 'evaluación'} para ${alumnoNombre || 'el alumno'}?`)) {
         try {
-            await db.collection("resultados_talleres").doc(id).delete();
-            auditoriaTaller(); // Recargar la tabla automáticamente
+            // Apuntamos estrictamente a la colección correcta 'resultados'
+            await db.collection("resultados").doc(idDoc).delete();
+            
+            console.log("✔ Registro eliminado correctamente de Firestore:", idDoc);
+            
+            // Recargamos la auditoría de tests para actualizar la tabla
+            if (typeof window.auditoriaTest === 'function') {
+                window.auditoriaTest();
+            } else {
+                location.reload();
+            }
         } catch (error) {
-            console.error("Error al eliminar:", error);
+            console.error("❌ Error al eliminar el registro:", error);
+            alert("No se pudo eliminar el registro de la base de datos: " + error.message);
         }
     }
 };
