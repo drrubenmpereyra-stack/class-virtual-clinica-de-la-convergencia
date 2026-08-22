@@ -997,7 +997,6 @@ window.auditoriaTest = async () => {
     vista.innerHTML = '<div style="color: #fff; padding: 20px; text-align: center;">Cargando registros de auditoría...</div>';
 
     try {
-        // Traemos todos los documentos sin el .orderBy estricto para que Firestore no oculte nada
         const snapshot = await db.collection("resultados").get();
         
         let filas = "";
@@ -1014,10 +1013,7 @@ window.auditoriaTest = async () => {
                         <input type="checkbox" ${esVerificado} onchange="actualizarVisibilidadTest('${doc.id}', this.checked)" style="cursor: pointer; transform: scale(1.5);">
                     </td>
                     <td style="padding: 15px; text-align: center;">
-                       <button onclick="eliminarRegistro('${doc.id}')" style="background: #991b1b; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Eliminar</button>
-                                style="background:#8b0000; color:white; border:none; padding:5px 10px; border-radius:3px; cursor:pointer;">
-                            Eliminar
-                        </button>
+                        <button onclick="eliminarRegistro('${doc.id}')" style="background: #991b1b; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Eliminar</button>
                     </td>
                 </tr>`;
         });
