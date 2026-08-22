@@ -1489,18 +1489,21 @@ window.abrirMisCalificaciones = async function() {
     const vista = document.getElementById('main-view');
     vista.innerHTML = '<div style="text-align: center; padding: 40px; color: #fff;">Cargando tus calificaciones...</div>';
 
-    const nombreAlumno = usuarioActual.nombre ? usuarioActual.nombre.trim() : "";
+    // Verificamos qué usuario está logueado
+    const nombreAlumno = usuarioActual && usuarioActual.nombre ? usuarioActual.nombre.trim() : "";
+    console.log("--> Alumno logueado actual:", nombreAlumno);
 
     try {
-        // Traemos todos los registros de la colección resultados
         const snapshot = await db.collection("resultados").get();
-
         let filas = "";
+
         snapshot.forEach(doc => {
             const data = doc.data();
             const alumnoRegistro = data.alumno ? data.alumno.trim() : "";
+            
+            console.log(`Revisando en DB -> Alumno: "${alumnoRegistro}" | Visible:`, data.visibleParaAlumno);
 
-            // Comparamos ignorando mayúsculas/minúsculas y validamos que esté visible
+            // Comparamos sin importar mayúsculas/minúsculas
             if (alumnoRegistro.toUpperCase() === nombreAlumno.toUpperCase() && data.visibleParaAlumno === true) {
                 filas += `
                     <tr style="border-bottom: 1px solid #334155;">
