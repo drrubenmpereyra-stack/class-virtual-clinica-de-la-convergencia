@@ -1014,7 +1014,7 @@ window.auditoriaTest = async () => {
                         <input type="checkbox" ${esVerificado} onchange="actualizarVisibilidadTest('${doc.id}', this.checked)" style="cursor: pointer; transform: scale(1.5);">
                     </td>
                     <td style="padding: 15px; text-align: center;">
-                        <button onclick="eliminarRegistro('${doc.id}', '${data.test_numero || 'Test'}', '${data.alumno || 'Alumno'}')" 
+                       <button onclick="eliminarRegistro('${doc.id}')" style="background: #991b1b; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Eliminar</button>
                                 style="background:#8b0000; color:white; border:none; padding:5px 10px; border-radius:3px; cursor:pointer;">
                             Eliminar
                         </button>
@@ -1147,23 +1147,26 @@ window.toggleVerificado = async (id, estado) => {
 };
 
 // Función para eliminar un registro con confirmación
-window.eliminarRegistro = async function(idDoc, testNombre, alumnoNombre) {
-    if (confirm(`¿Estás seguro de que deseas eliminar este registro de ${testNombre || 'evaluación'} para ${alumnoNombre || 'el alumno'}?`)) {
+window.eliminarRegistro = async function(idDoc) {
+    if (!idDoc) {
+        alert("Error: No se encontró el identificador del registro.");
+        return;
+    }
+
+    if (confirm("¿Estás seguro de que deseas eliminar este registro permanentemente?")) {
         try {
-            // Apuntamos estrictamente a la colección correcta 'resultados'
             await db.collection("resultados").doc(idDoc).delete();
+            console.log("✔ Registro borrado de Firestore:", idDoc);
             
-            console.log("✔ Registro eliminado correctamente de Firestore:", idDoc);
-            
-            // Recargamos la auditoría de tests para actualizar la tabla
+            // Actualiza la tabla del administrador automáticamente
             if (typeof window.auditoriaTest === 'function') {
                 window.auditoriaTest();
             } else {
                 location.reload();
             }
         } catch (error) {
-            console.error("❌ Error al eliminar el registro:", error);
-            alert("No se pudo eliminar el registro de la base de datos: " + error.message);
+            console.error("Error al eliminar:", error);
+            alert("No se pudo eliminar: " + error.message);
         }
     }
 };
