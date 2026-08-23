@@ -994,7 +994,7 @@ window.iniciarModuloTest = () => {
 // AUDITORIA TEST (A prueba de fallos: muestra todo sin filtros estrictos de orden)
 window.auditoriaTest = async () => {
     const vista = document.getElementById('main-view');
-    vista.innerHTML = '<div style="color: #fff; padding: 20px; text-align: center;">Cargando registros de auditoría...</div>';
+    vista.innerHTML = '<div style="color: #fff; padding: 20px; text-align: center;">Cargando registros de auditoría de test...</div>';
 
     try {
         const snapshot = await db.collection("resultados").get();
@@ -1006,14 +1006,14 @@ window.auditoriaTest = async () => {
             
             filas += `
                 <tr style="border-bottom: 1px solid #334155;">
-                    <td style="padding: 15px;">${data.alumno || 'Sin nombre'}</td>
-                    <td style="padding: 15px;">${data.test_numero || 'Test'}</td>
+                    <td style="padding: 15px;">${data.alumno || data.nombre || 'Sin nombre'}</td>
+                    <td style="padding: 15px;">${data.test_numero || data.Test_numero || 'Test'}</td>
                     <td style="padding: 15px; text-align: center;">${data.nota || '-'}</td>
                     <td style="padding: 15px; text-align: center;">
                         <input type="checkbox" ${esVerificado} onchange="actualizarVisibilidadTest('${doc.id}', this.checked)" style="cursor: pointer; transform: scale(1.5);">
                     </td>
                     <td style="padding: 15px; text-align: center;">
-                        <button onclick="eliminarRegistro('${doc.id}')" style="background: #991b1b; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Eliminar</button>
+                        <button onclick="eliminarRegistroTest('${doc.id}')" style="background: #991b1b; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Eliminar</button>
                     </td>
                 </tr>`;
         });
@@ -1039,6 +1039,18 @@ window.auditoriaTest = async () => {
             </div>`;
     } catch (e) {
         vista.innerHTML = `<div style="color: red; padding: 20px; text-align: center;">Error al cargar auditoría: ${e.message}</div>`;
+    }
+};
+
+// Función específica y segura para eliminar registros de test desde su auditoría (con llaves corregidas)
+window.eliminarRegistroTest = (docId) => {
+    if (confirm("¿Desea eliminar permanentemente este registro de test?")) {
+        db.collection("resultados").doc(docId).delete().then(() => {
+            window.auditoriaTest();
+        }).catch(err => {
+            console.error("Error al eliminar test:", err);
+            alert("No se pudo eliminar el registro.");
+        });
     }
 };
 // DESARROLLO PARA TALLERES 1 al 10 (ALUMNOS)
@@ -1386,20 +1398,19 @@ async function cargarDatosGenerales() {
     tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Auditoría de registros en curso...</td></tr>';
 
     try {
-        // Consultamos ambas colecciones
         const [snapTest, snapTalleres] = await Promise.all([
-            db.collection("resultados_test").get(),
+            db.collection("resultados").get(),
             db.collection("resultados_talleres").get()
         ]);
 
         tbody.innerHTML = ''; 
         let hayRegistros = false;
 
-        // 1. Procesar Test (con respaldo por si el campo de nombre o número varía)
+        // 1. Procesar Test
         snapTest.forEach((doc) => {
             const data = doc.data();
-            const nombre = data.nombre || data.alumno || "Sin nombre";
-            const detalle = data.test_numero || data.Test_numero || data.evaluacion || "Evaluación";
+            const nombre = data.alumno || data.nombre || "Sin nombre";
+            const detalle = data.test_numero || data.Test_numero || "Evaluación";
             
             if (nombre !== "Alumno Anónimo") {
                 hayRegistros = true;
@@ -1411,7 +1422,7 @@ async function cargarDatosGenerales() {
         snapTalleres.forEach((doc) => {
             const data = doc.data();
             const nombre = data.alumno || data.nombre || "Sin nombre"; 
-            const detalle = data.taller_numero || data.detalle || "Taller";
+            const detalle = data.taller_numero || "Taller";
 
             if (nombre !== "Alumno Anónimo") {
                 hayRegistros = true;
