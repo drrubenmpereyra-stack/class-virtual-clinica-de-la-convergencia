@@ -1663,71 +1663,72 @@ window.abrirVistaAsistencia = function() {
         mostrarDashboard();
     };
 };
-// MIS NOTAS
-window.abrirAuditoriaAnaliticos = function() {
+// AUDITORIA ANALITICOS (administracion)
+window.abrirAuditoriaAnaliticos = async function() {
     const vista = document.getElementById('main-view');
+    vista.innerHTML = '<div style="padding: 20px; color: #fff; background: #050508; text-align: center;">Cargando auditoría de analíticos...</div>';
 
-    vista.innerHTML = `
-        <div style="padding: 20px; color: #fff; background: #050508;">
-            <h2 style="color: #D4AF37; margin-bottom: 20px;">AUDITORIA DE ANALÍTICOS</h2>
-            <table style="width: 100%; border-collapse: collapse; background: #1a1a1a;">
-                <thead>
-                    <tr style="background: #333; color: #D4AF37;">
-                        <th style="padding: 12px; border: 1px solid #444;">APELLIDO_Nombres</th>
-                        <th style="padding: 12px; border: 1px solid #444;">Fecha</th>
-                        <th style="padding: 12px; border: 1px solid #444;">Visado</th>
-                        <th style="padding: 12px; border: 1px solid #444;">Estado</th>
-                    </tr>
-                </thead>
-                <tbody id="tabla-auditoria"></tbody>
-            </table>
-            <br>
-            <button onclick="mostrarDashboard()" style="background: #991b1b; color: white; padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer;">Volver al Dashboard</button>
-        </div>
-    `;
-
-    const tbody = document.getElementById('tabla-auditoria');
-    const alumnos = CONFIGURACION_USUARIOS.filter(u => u.rol === 'alumno');
-
-    alumnos.forEach((est, index) => {
-        const row = document.createElement('tr');
-        
-        row.innerHTML = `
-            <td style="padding: 10px; border: 1px solid #444;">${est.nombre}</td>
-            <td style="padding: 10px; border: 1px solid #444;">
-                <input type="date" id="fecha-${index}" value="${new Date().toISOString().split('T')[0]}" style="background: #333; color: white; border: none; padding: 5px;">
-            </td>
-            <td style="padding: 10px; border: 1px solid #444; text-align: center;">
-                <input type="checkbox" id="check-${index}" onchange="guardarVisado('${est.nombre}', 'fecha-${index}', 'estado-${index}', this)">
-            </td>
-            <td style="padding: 10px; border: 1px solid #444; text-align: center; color: #D4AF37; font-size: 12px;" id="estado-${index}"></td>
-        `;
-        tbody.appendChild(row);
-    });
-};
-// Guarda el visado de analiticos en la base de datos
-window.guardarVisado = async function(nombre, fechaId, estadoId, checkbox) {
-    if (!checkbox.checked) return;
-    
-    const fecha = document.getElementById(fechaId).value;
-    const estadoCampo = document.getElementById(estadoId);
-    
-    estadoCampo.innerText = "Guardando...";
-    
     try {
-        await db.collection("visado_analítico").add({
-            estudiante: nombre,
-            fecha: fecha,
-            verificado: true,
-            auditor: "Dr. Pereyra",
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        // 1. Consultamos los visados ya guardados en Firestore
+        const visadosSnap = await db.collection("visado_analítico").get();
+        const visadosMap = {};
         
-        estadoCampo.innerText = "✓ Guardado";
+        visadosSnap.forEach(doc => {
+            const data = doc.data();
+            if (data.estudiante) {
+                // Guardamos los datos previos usando el nombre en mayúsculas como clave
+                visadosMap[data.estudiante.toUpperCase()] = data;
+            }
+        });
+
+        vista.innerHTML = `
+            <div style="padding: 20px; color: #fff; background: #050508;">
+                <h2 style="color: #D4AF37; margin-bottom: 20px;">AUDITORIA DE ANALÍTICOS</h2>
+                <table style="width: 100%; border-collapse: collapse; background: #1a1a1a;">
+                    <thead>
+                        <tr style="background: #333; color: #D4AF37;">
+                            <th style="padding: 12px; border: 1px solid #444;">APELLIDO_Nombres</th>
+                            <th style="padding: 12px; border: 1px solid #444;">Fecha</th>
+                            <th style="padding: 12px; border: 1px solid #444;">Visado</th>
+                            <th style="padding: 12px; border: 1px solid #444;">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-auditoria"></tbody>
+                </table>
+                <br>
+                <button onclick="mostrarDashboard()" style="background: #991b1b; color: white; padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer;">Volver al Dashboard</button>
+            </div>
+        `;
+
+        const tbody = document.getElementById('tabla-auditoria');
+        const alumnos = CONFIGURACION_USUARIOS.filter(u => u.rol === 'alumno');
+
+        alumnos.forEach((est, index) => {
+            const row = document.createElement('tr');
+            const nombreUpper = est.nombre.toUpperCase();
+            const visadoPrevio = visadosMap[nombreUpper];
+
+            // Si ya estaba visado, recuperamos su fecha y marcamos el tilde
+            const fechaVal = visadoPrevio ? visadoPrevio.fecha : new Date().toISOString().split('T')[0];
+            const checkedVal = visadoPrevio ? "checked" : "";
+            const estadoVal = visadoPrevio ? "✓ Guardado" : "";
+            
+            row.innerHTML = `
+                <td style="padding: 10px; border: 1px solid #444;">${est.nombre}</td>
+                <td style="padding: 10px; border: 1px solid #444;">
+                    <input type="date" id="fecha-${index}" value="${fechaVal}" style="background: #333; color: white; border: none; padding: 5px;">
+                </td>
+                <td style="padding: 10px; border: 1px solid #444; text-align: center;">
+                    <input type="checkbox" id="check-${index}" ${checkedVal} onchange="guardarVisado('${est.nombre}', 'fecha-${index}', 'estado-${index}', this)">
+                </td>
+                <td style="padding: 10px; border: 1px solid #444; text-align: center; color: #D4AF37; font-size: 12px;" id="estado-${index}">${estadoVal}</td>
+            `;
+            tbody.appendChild(row);
+        });
+
     } catch (e) {
-        console.error("Error al guardar:", e);
-        estadoCampo.innerText = "Error";
-        checkbox.checked = false;
+        console.error("Error al cargar auditoría de analíticos:", e);
+        vista.innerHTML = `<div style="padding: 20px; color: red;">Error al cargar la auditoría: ${e.message}</div>`;
     }
 };
 // MI ANALÍTICO (ALUMNO)
