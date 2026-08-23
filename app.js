@@ -1358,17 +1358,16 @@ window.gestionarCalificacionesAdmin = function() {
     vista.innerHTML = ''; // Limpiamos la pantalla
 
     const contenedor = document.createElement('div');
-    contenedor.style.cssText = "padding: 20px; color: #fff;";
+    contenedor.style.cssText = "padding: 20px; color: #fff; max-width: 900px; margin: 0 auto;";
     contenedor.innerHTML = `
-        <h2 style="color: #D4AF37;">Consola de Auditoría: Test y Talleres</h2>
-        <table style="width: 100%; border-collapse: collapse; margin-top: 20px; background: #050508;">
+        <h2 style="color: #D4AF37; text-align: center; margin-bottom: 20px;">Consola de Auditoría: Test y Talleres</h2>
+        <table style="width: 100%; border-collapse: collapse; margin-top: 20px; background: #050508; border: 1px solid #D4AF37;">
             <thead>
-                <tr style="background: #1a1a1a; color: #fff;">
-                    <th style="padding: 15px; border: 1px solid #333;">Estudiante</th>
-                    <th style="padding: 15px; border: 1px solid #333;">Actividad</th>
-                    <th style="padding: 15px; border: 1px solid #333;">Detalle</th>
-                    <th style="padding: 15px; border: 1px solid #333;">Nota</th>
-                    <th style="padding: 15px; border: 1px solid #333;">Acción</th>
+                <tr style="background: #1e293b; color: #D4AF37;">
+                    <th style="padding: 15px; border: 1px solid #334155;">Estudiante</th>
+                    <th style="padding: 15px; border: 1px solid #334155;">Actividad</th>
+                    <th style="padding: 15px; border: 1px solid #334155;">Detalle</th>
+                    <th style="padding: 15px; border: 1px solid #334155; text-align: center;">Nota</th>
                 </tr>
             </thead>
             <tbody id="tabla-datos-admin"></tbody>
@@ -1379,15 +1378,15 @@ window.gestionarCalificacionesAdmin = function() {
     cargarDatosGenerales();
 };
 
-// --- FUNCIÓN QUE IMPORTA DATOS DE AMBAS COLECCIONES ---
+// --- FUNCIÓN QUE IMPORTA DATOS DE AMBUS COLECCIONES ---
 async function cargarDatosGenerales() {
     const tbody = document.getElementById('tabla-datos-admin');
     if (!tbody) return;
 
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">Auditoría de registros en curso...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Auditoría de registros en curso...</td></tr>';
 
     try {
-        // Consultamos ambas colecciones
+        // Consultamos ambas colecciones usando el nombre exacto 'resultados_test' y 'resultados_talleres'
         const [snapTest, snapTalleres] = await Promise.all([
             db.collection("resultados_test").orderBy("fecha", "desc").get(),
             db.collection("resultados_talleres").orderBy("fecha", "desc").get()
@@ -1395,11 +1394,15 @@ async function cargarDatosGenerales() {
 
         tbody.innerHTML = ''; 
 
+        let hayRegistros = false;
+
         // Procesar Test
         snapTest.forEach((doc) => {
             const data = doc.data();
-            if (data.nombre && data.nombre !== "Alumno Anónimo") {
-                agregarFila(tbody, data.nombre, "Test", data.Test_numero, data.nota, doc.id, "resultados_test");
+            const nombre = data.nombre || data.alumno || "Sin nombre";
+            if (nombre !== "Alumno Anónimo") {
+                hayRegistros = true;
+                agregarFila(tbody, nombre, "Test", data.Test_numero || data.test_numero, data.nota);
             }
         });
 
@@ -1408,40 +1411,34 @@ async function cargarDatosGenerales() {
             const data = doc.data();
             const nombre = data.alumno || "Sin nombre"; 
             if (nombre !== "Alumno Anónimo") {
-                agregarFila(tbody, nombre, "Taller", data.taller_numero, data.nota, doc.id, "resultados_talleres");
+                hayRegistros = true;
+                agregarFila(tbody, nombre, "Taller", data.taller_numero, data.nota);
             }
         });
 
+        if (!hayRegistros) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 20px; color: #8a8b8c;">No se encontraron registros en el sistema.</td></tr>';
+        }
+
     } catch (error) {
         console.error("Error al cargar auditoría:", error);
-        tbody.innerHTML = '<tr><td colspan="5" style="color:red; text-align:center;">Error al conectar con la base de datos.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" style="color:red; text-align:center; padding: 20px;">Error al conectar con la base de datos o índices pendientes en Firestore.</td></tr>';
     }
 }
 
-// --- FUNCIÓN AUXILIAR DE RENDERIZADO ---
-function agregarFila(tbody, nombre, tipo, detalle, nota, docId, coleccion) {
+// --- FUNCIÓN AUXILIAR DE RENDERIZADO (Sin botón de eliminar) ---
+function agregarFila(tbody, nombre, tipo, detalle, nota) {
     const colorTipo = (tipo === "Taller") ? "#00FF88" : "#D4AF37";
     const tr = document.createElement('tr');
+    tr.style.borderBottom = "1px solid #334155";
     tr.innerHTML = `
-        <td style="padding: 12px; border: 1px solid #333;">${nombre}</td>
-        <td style="padding: 12px; border: 1px solid #333; color: ${colorTipo}; font-weight: bold;">${tipo}</td>
-        <td style="padding: 12px; border: 1px solid #333;">${detalle || 'Sin título'}</td>
-        <td style="padding: 12px; border: 1px solid #333; text-align: center;">${nota}</td>
-        <td style="padding: 12px; border: 1px solid #333; text-align: center;">
-            <button onclick="confirmarBorrado('${docId}', '${coleccion}')" style="background: #991b1b; color: white; border: none; padding: 5px 10px; cursor: pointer;">Eliminar</button>
-        </td>
+        <td style="padding: 12px; border: 1px solid #334155; color: #fff;">${nombre}</td>
+        <td style="padding: 12px; border: 1px solid #334155; color: ${colorTipo}; font-weight: bold;">${tipo}</td>
+        <td style="padding: 12px; border: 1px solid #334155; color: #cbd5e1;">${detalle || 'Sin título'}</td>
+        <td style="padding: 12px; border: 1px solid #334155; text-align: center; color: #fff; font-weight: bold;">${nota || '-'}</td>
     `;
     tbody.appendChild(tr);
 }
-
-// --- FUNCIÓN DE SEGURIDAD PARA BORRAR ---
-window.confirmarBorrado = (docId, coleccion) => {
-    if (confirm("ATENCIÓN: Se eliminará permanentemente este registro. ¿Desea continuar?")) {
-        db.collection(coleccion).doc(docId).delete().then(() => {
-            cargarDatosGenerales(); // Refresca la tabla completa
-        });
-    }
-};
 // MIS CALIFICACIONES (ALUMNOS)   (modificado por solución de errores)
 window.abrirMisCalificaciones = async function() {
     const vista = document.getElementById('main-view');
