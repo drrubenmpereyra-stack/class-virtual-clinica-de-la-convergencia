@@ -1134,17 +1134,31 @@ window.actualizarVisibilidadTaller = async function(idDoc, estado) {
         console.error("Error al actualizar visibilidad de taller:", error);
     }
 };
-
 window.eliminarRegistroTaller = async function(idDoc) {
-    if (confirm("¿Estás seguro de eliminar este registro de Taller permanentemente?")) {
+    if (!idDoc) {
+        alert("Error: No se encontró el identificador del registro.");
+        return;
+    }
+
+    if (confirm("¿Estás seguro de que deseas eliminar este registro de taller permanentemente?")) {
         try {
+            // Apunta de manera exclusiva a la colección de talleres
             await db.collection("resultados_talleres").doc(idDoc).delete();
-            window.auditoriaTaller();
+            console.log("✔ Registro de taller borrado de Firestore:", idDoc);
+            
+            // Refresca únicamente la auditoría de talleres
+            if (typeof window.auditoriaTaller === 'function') {
+                window.auditoriaTaller();
+            } else {
+                location.reload();
+            }
         } catch (error) {
+            console.error("Error al eliminar taller:", error);
             alert("No se pudo eliminar: " + error.message);
         }
     }
 };
+
 
 // DEPARTAMENTO DE DIPLOMAS
 window.gestionarDiplomas = () => {
