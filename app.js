@@ -1079,89 +1079,68 @@ window.gestionarTalleres = () => {
 // Función completa de Auditoría de Talleres
 window.auditoriaTaller = async () => {
     const vista = document.getElementById('main-view');
-    vista.innerHTML = `
-        <div style="padding: 20px; color: #fff; font-family: sans-serif;">
-            <button onclick="mostrarDashboard()" style="background: #d32f2f; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 20px;">⬅ Volver al Panel</button>
-            <h2 style="color: #D4AF37; text-align: center; margin-bottom: 20px;">Auditoría de Talleres</h2>
-            <table style="width: 100%; border-collapse: collapse; background: #0f172a; border: 1px solid #334155;">
-                <thead>
-                    <tr style="border-bottom: 2px solid #D4AF37; color: #D4AF37;">
-                        <th style="padding: 12px; text-align: left;">Alumno</th>
-                        <th style="padding: 12px; text-align: left;">Taller</th>
-                        <th style="padding: 12px; text-align: left;">Nota</th>
-                        <th style="padding: 12px; text-align: left;">Fecha</th>
-                        <th style="padding: 12px; text-align: center;">Verificado</th>
-                        <th style="padding: 12px; text-align: center;">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="lista-resultados"></tbody>
-            </table>
-        </div>
-    `;
+    vista.innerHTML = '<div style="color: #fff; padding: 20px; text-align: center;">Cargando auditoría de Talleres...</div>';
 
     try {
-        const tbody = document.getElementById('lista-resultados');
-        const snapshot = await db.collection("resultados_talleres").orderBy("fecha", "desc").get();
-
-        if (snapshot.empty) {
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 20px;">No hay registros de talleres aún.</td></tr>`;
-            return;
-        }
+        const snapshot = await db.collection("resultados_talleres").get();
+        let filas = "";
 
         snapshot.forEach(doc => {
             const data = doc.data();
-            const tr = document.createElement('tr');
-            tr.style.borderBottom = "1px solid #334155";
+            const esVerificado = data.visibleParaAlumno ? "checked" : "";
             
-            tr.innerHTML = `
-                <td style="padding: 12px;">${data.alumno}</td>
-                <td style="padding: 12px;">${data.taller_numero}</td>
-                <td style="padding: 12px;">${data.nota}</td>
-                <td style="padding: 12px;">${data.fecha}</td>
-                <td style="padding: 12px; text-align: center;">
-                    <input type="checkbox" ${data.verificado ? 'checked' : ''} onchange="toggleVerificado('${doc.id}', this.checked)" style="cursor: pointer; transform: scale(1.5);">
-                </td>
-                <td style="padding: 12px; text-align: center;">
-                    <button onclick="eliminarRegistro('${doc.id}')" style="background: #991b1b; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Eliminar</button>
-                </td>
-            `;
-            tbody.appendChild(tr);
+            filas += `
+                <tr style="border-bottom: 1px solid #334155;">
+                    <td style="padding: 15px;">${data.alumno || 'Sin nombre'}</td>
+                    <td style="padding: 15px;">${data.taller_numero || 'Taller'}</td>
+                    <td style="padding: 15px; text-align: center;">${data.nota || '-'}</td>
+                    <td style="padding: 15px; text-align: center;">
+                        <input type="checkbox" ${esVerificado} onchange="actualizarVisibilidadTaller('${doc.id}', this.checked)" style="cursor: pointer; transform: scale(1.5);">
+                    </td>
+                    <td style="padding: 15px; text-align: center;">
+                        <button onclick="eliminarRegistroTaller('${doc.id}')" style="background: #991b1b; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Eliminar</button>
+                    </td>
+                </tr>`;
         });
-    } catch (error) {
-        console.error("Error al cargar auditoría:", error);
-        alert("Error al cargar los registros de la base de datos.");
+
+        vista.innerHTML = `
+            <div style="padding: 20px; color: #fff; font-family: sans-serif;">
+                <button onclick="mostrarDashboard()" style="background: #d32f2f; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 20px;">⬅ Volver al Panel</button>
+                <h2 style="color: #D4AF37; text-align: center; margin-bottom: 20px;">Auditoría de Talleres</h2>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; max-width: 900px; margin: 0 auto; border-collapse: collapse; background: #050508; border: 1px solid #D4AF37;">
+                        <thead>
+                            <tr style="background: #1e293b; color: #D4AF37;">
+                                <th style="padding: 15px; border: 1px solid #334155;">Estudiante</th>
+                                <th style="padding: 15px; border: 1px solid #334155;">Taller</th>
+                                <th style="padding: 15px; border: 1px solid #334155;">Nota</th>
+                                <th style="padding: 15px; border: 1px solid #334155;">Visible / Aprobado</th>
+                                <th style="padding: 15px; border: 1px solid #334155;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>${filas || '<tr><td colspan="5" style="padding:20px; text-align:center;">No hay resultados de talleres registrados.</td></tr>'}</tbody>
+                    </table>
+                </div>
+            </div>`;
+    } catch (e) {
+        vista.innerHTML = `<div style="color: red; padding: 20px; text-align: center;">Error al cargar auditoría: ${e.message}</div>`;
     }
 };
 
-// Función para alternar estado de verificación
-window.toggleVerificado = async (id, estado) => {
+window.actualizarVisibilidadTaller = async function(idDoc, estado) {
     try {
-        await db.collection("resultados_talleres").doc(id).update({ verificado: estado });
+        await db.collection("resultados_talleres").doc(idDoc).update({ visibleParaAlumno: Boolean(estado) });
     } catch (error) {
-        console.error("Error al actualizar verificación:", error);
+        console.error("Error al actualizar visibilidad de taller:", error);
     }
 };
 
-// Función para eliminar un registro con confirmación
-window.eliminarRegistro = async function(idDoc) {
-    if (!idDoc) {
-        alert("Error: No se encontró el identificador del registro.");
-        return;
-    }
-
-    if (confirm("¿Estás seguro de que deseas eliminar este registro permanentemente?")) {
+window.eliminarRegistroTaller = async function(idDoc) {
+    if (confirm("¿Estás seguro de eliminar este registro de Taller permanentemente?")) {
         try {
-            await db.collection("resultados").doc(idDoc).delete();
-            console.log("✔ Registro borrado de Firestore:", idDoc);
-            
-            // Actualiza la tabla del administrador automáticamente
-            if (typeof window.auditoriaTest === 'function') {
-                window.auditoriaTest();
-            } else {
-                location.reload();
-            }
+            await db.collection("resultados_talleres").doc(idDoc).delete();
+            window.auditoriaTaller();
         } catch (error) {
-            console.error("Error al eliminar:", error);
             alert("No se pudo eliminar: " + error.message);
         }
     }
@@ -1457,16 +1436,19 @@ window.abrirMisCalificaciones = async function() {
     const nombreAlumno = usuarioActual && usuarioActual.nombre ? usuarioActual.nombre.trim() : "";
 
     try {
-        const snapshot = await db.collection("resultados").get();
+        const [snapTest, snapTalleres] = await Promise.all([
+            db.collection("resultados").get(),
+            db.collection("resultados_talleres").get()
+        ]);
+
         let filas = "";
 
-        snapshot.forEach(doc => {
+        // 1. Procesar Test
+        snapTest.forEach(doc => {
             const data = doc.data();
             const alumnoRegistro = data.alumno ? data.alumno.trim() : "";
             
-            // Comparamos el nombre del alumno y validamos que esté visible
             if (alumnoRegistro.toUpperCase() === nombreAlumno.toUpperCase() && data.visibleParaAlumno === true) {
-                // Normalizamos el número de test para mostrarlo prolijo
                 const numeroTest = data.test_numero ? data.test_numero : 'Evaluación';
 
                 filas += `
@@ -1478,14 +1460,31 @@ window.abrirMisCalificaciones = async function() {
             }
         });
 
+        // 2. Procesar Talleres
+        snapTalleres.forEach(doc => {
+            const data = doc.data();
+            const alumnoRegistro = data.alumno ? data.alumno.trim() : "";
+            
+            if (alumnoRegistro.toUpperCase() === nombreAlumno.toUpperCase() && data.visibleParaAlumno === true) {
+                const nombreTaller = data.taller_numero ? data.taller_numero : 'Taller';
+
+                filas += `
+                    <tr style="border-bottom: 1px solid #334155;">
+                        <td style="padding: 12px; font-weight: bold; color: #00FF88;">${nombreTaller}</td>
+                        <td style="padding: 12px; text-align: center;">${data.nota || '-'}</td>
+                        <td style="padding: 12px; text-align: center;">${data.fecha ? data.fecha.split('T')[0] : '-'}</td>
+                    </tr>`;
+            }
+        });
+
         vista.innerHTML = `
             <div style="padding: 40px; color: #fff; font-family: sans-serif; max-width: 700px; margin: 0 auto;">
                 <button onclick="mostrarDashboard()" style="background: #991b1b; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-bottom: 20px;">⬅ Volver</button>
-                <h2 style="color: #D4AF37; text-align: center; margin-bottom: 20px;">Mis Calificaciones Aprobadas</h2>
+                <h2 style="color: #D4AF37; text-align: center; margin-bottom: 20px;">Mis Calificaciones Publicadas</h2>
                 <table style="width: 100%; border-collapse: collapse; background: #050508; border: 1px solid #D4AF37;">
                     <thead>
                         <tr style="background: #1e293b; color: #D4AF37;">
-                            <th style="padding: 12px; border: 1px solid #334155;">Evaluación</th>
+                            <th style="padding: 12px; border: 1px solid #334155;">Actividad / Taller</th>
                             <th style="padding: 12px; border: 1px solid #334155; text-align: center;">Calificación</th>
                             <th style="padding: 12px; border: 1px solid #334155; text-align: center;">Fecha</th>
                         </tr>
