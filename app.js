@@ -1386,33 +1386,36 @@ async function cargarDatosGenerales() {
     tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Auditoría de registros en curso...</td></tr>';
 
     try {
-        // Consultamos ambas colecciones usando el nombre exacto 'resultados_test' y 'resultados_talleres'
+        // Consultamos ambas colecciones
         const [snapTest, snapTalleres] = await Promise.all([
-            db.collection("resultados_test").orderBy("fecha", "desc").get(),
-            db.collection("resultados_talleres").orderBy("fecha", "desc").get()
+            db.collection("resultados_test").get(),
+            db.collection("resultados_talleres").get()
         ]);
 
         tbody.innerHTML = ''; 
-
         let hayRegistros = false;
 
-        // Procesar Test
+        // 1. Procesar Test (con respaldo por si el campo de nombre o número varía)
         snapTest.forEach((doc) => {
             const data = doc.data();
             const nombre = data.nombre || data.alumno || "Sin nombre";
+            const detalle = data.test_numero || data.Test_numero || data.evaluacion || "Evaluación";
+            
             if (nombre !== "Alumno Anónimo") {
                 hayRegistros = true;
-                agregarFila(tbody, nombre, "Test", data.Test_numero || data.test_numero, data.nota);
+                agregarFila(tbody, nombre, "Test", detalle, data.nota);
             }
         });
 
-        // Procesar Talleres
+        // 2. Procesar Talleres
         snapTalleres.forEach((doc) => {
             const data = doc.data();
-            const nombre = data.alumno || "Sin nombre"; 
+            const nombre = data.alumno || data.nombre || "Sin nombre"; 
+            const detalle = data.taller_numero || data.detalle || "Taller";
+
             if (nombre !== "Alumno Anónimo") {
                 hayRegistros = true;
-                agregarFila(tbody, nombre, "Taller", data.taller_numero, data.nota);
+                agregarFila(tbody, nombre, "Taller", detalle, data.nota);
             }
         });
 
@@ -1421,8 +1424,8 @@ async function cargarDatosGenerales() {
         }
 
     } catch (error) {
-        console.error("Error al cargar auditoría:", error);
-        tbody.innerHTML = '<tr><td colspan="4" style="color:red; text-align:center; padding: 20px;">Error al conectar con la base de datos o índices pendientes en Firestore.</td></tr>';
+        console.error("Error al cargar auditoría general:", error);
+        tbody.innerHTML = '<tr><td colspan="4" style="color:red; text-align:center; padding: 20px;">Error al conectar con la base de datos.</td></tr>';
     }
 }
 
